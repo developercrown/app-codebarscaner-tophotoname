@@ -47,10 +47,10 @@ const CaptureCodebarView = (props: any) => {
     }
 
     if (hasPermission === null) {
-        return <Text>Requesting for camera permission</Text>;
+        return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text style={{color: 'white'}}>Requesting for camera permission</Text></View>;
     }
     if (hasPermission === false) {
-        return <Text>No access to camera</Text>;
+        return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text style={{color: 'white'}}>No access to camera</Text></View>;
     }
 
 
