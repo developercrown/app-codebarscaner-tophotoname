@@ -73,10 +73,7 @@ const CapturePhotoView = (props: any) => {
                 "picture_" + codebar + '.jpg',
             );
             const options = {from: photo.uri, to: renamedURI}
-            console.log('options', options);
-
             await FileSystem.copyAsync(options);
-            
             let asset = await MediaLibrary.createAssetAsync(renamedURI);            
             const album = await MediaLibrary.getAlbumAsync('DevcrownPictures');
             let test = null;
@@ -183,7 +180,7 @@ const CapturePhotoView = (props: any) => {
 const containerStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1b1c27'
+        backgroundColor: 'rgba(0, 0, 0, 0)'
     },
 });
 
@@ -191,7 +188,7 @@ const headerStyles = StyleSheet.create({
     container: {
         flex: 1,
         height: 100,
-        backgroundColor: 'rgba(15, 16, 17, .75)',
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -207,14 +204,13 @@ const bodyStyles = StyleSheet.create({
         flex: 9,
         justifyContent: 'flex-start',
         alignItems: 'center',
-        backgroundColor: '#212332',
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
         overflow: 'hidden',
         borderColor: "white"
     },
     containerCamera: {
         padding: 0,
         overflow: 'hidden',
-        backgroundColor: 'red',
         width: "100%",
         height: "80%",
         zIndex: 1
@@ -226,7 +222,7 @@ const bodyStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-around',
-        backgroundColor: 'rgba(15, 16, 17, .75)',
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
         position: 'absolute',
         bottom: 0,
         width: "100%",

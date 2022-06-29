@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { Audio } from 'expo-av';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { BlurView } from 'expo-blur';
 
 const CaptureCodebarView = (props: any) => {
-    //TODO: auto goto next view on capture qr
-    const {gotoNext} = props;
-    const [view, setView] = useState<number>(1);
+    const {codebar, gotoNext} = props;
     const [sound, setSound] = useState<any>();
-    const [scannedCode, setScannedCode] = useState<string | undefined>('');
+    const [scannedCode, setScannedCode] = useState<string | undefined>(codebar ? codebar : '');
     const [hasPermission, setHasPermission] = useState<any>(null);
     const [scanned, setScanned] = useState<any>(false);
 
@@ -53,11 +52,13 @@ const CaptureCodebarView = (props: any) => {
     if (hasPermission === false) {
         return <Text>No access to camera</Text>;
     }
+
+
     return <View style={containerStyles.container}>
-        <View style={headerStyles.container}>
+        <BlurView intensity={10} style={headerStyles.container} tint="light">
             <Text style={headerStyles.title}>Captura de código</Text>
-        </View>
-        <View style={BodyStyles.container}>
+        </BlurView>
+        <BlurView intensity={10} style={BodyStyles.container} tint="light">
             <View style={BodyStyles.scanner}>
                 <BarCodeScanner
                     onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
@@ -67,7 +68,7 @@ const CaptureCodebarView = (props: any) => {
             <View style={BodyStyles.legendContainer}>
                 <Text style={BodyStyles.legend}>Apunta la camara al código</Text>
             </View>
-        </View>
+        </BlurView>
         <View style={controlsStyles.container}>
             <View style={controlsStyles.containerCodebarInput}>
                 <TextInput
@@ -119,7 +120,7 @@ const CaptureCodebarView = (props: any) => {
 const containerStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1b1c27'
+        backgroundColor: 'transparent',
     },
 });
 
@@ -127,11 +128,12 @@ const headerStyles = StyleSheet.create({
     container: {
         flex: 1,
         height: 100,
-        backgroundColor: '#1b1c27',
+        backgroundColor: 'rgba(59, 0, 153, 0.2)',
         alignItems: 'center',
         justifyContent: 'center',
-        borderBottomColor: 'rgba(255,255,255,.2)',
-        borderWidth: 1
+        borderColor: 'rgba(71, 21, 159, .6)',
+        borderLeftWidth: 1,
+        borderRightWidth: 1
     },
     title: {
         color: '#eee',
@@ -143,24 +145,33 @@ const headerStyles = StyleSheet.create({
 const BodyStyles = StyleSheet.create({
     container: {
         flex: 6,
-        backgroundColor: '#1b1c27',
+        backgroundColor: 'rgba(59, 0, 153, 0.2)',
         padding: 20,
         justifyContent: 'center',
         alignItems: 'center',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        borderBottomLeftRadius: 28,
+        borderBottomRightRadius: 28,
+        borderColor: 'rgba(71, 21, 159, .6)',
+        borderBottomColor: 'rgba(106, 50, 203, .6)',
+        borderBottomWidth: 2,
+        borderLeftWidth: 1,
+        borderRightWidth: 1
     },
     scanner: {
-        height: '105%',
-        width: '100%'
+        height: '100%',
+        width: '100%',
+        marginBottom: 32,
+        borderRadius: 0,
+        overflow: 'hidden'
     },
     legendContainer: {
         width: '93%',
-        // backgroundColor: 'rgba(0, 0, 0, .3)',
         position: 'absolute',
         justifyContent: 'center',
         alignItems: 'center',
         height: '10%',
-        bottom: 10
+        bottom: 40
     },
     legend: {
         color: 'white',
@@ -172,11 +183,7 @@ const BodyStyles = StyleSheet.create({
 const controlsStyles = StyleSheet.create({
     container: {
         flex: 3,
-        backgroundColor: '#212332',
-        paddingHorizontal: 20,
-        borderColor: "white",
-        borderTopLeftRadius: 40,
-        borderTopRightRadius: 0,
+        backgroundColor: 'rgba(0, 0, 0, .4)'
     },
     containerCodebarInput: {
 
