@@ -5,6 +5,7 @@ import { Audio } from 'expo-av';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 const CaptureCodebarView = (props: any) => {
+    //TODO: auto goto next view on capture qr
     const {gotoNext} = props;
     const [view, setView] = useState<number>(1);
     const [sound, setSound] = useState<any>();

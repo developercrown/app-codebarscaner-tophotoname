@@ -6,11 +6,11 @@ const TRANSITIONS = ['fade', 'slide', 'none'];
 const STYLES = ['default', 'dark-content', 'light-content'];
 
 export default function App() {
-  const [view, setView] = useState<number>(2);
-  const currentCode = "10650149";
+  const [view, setView] = useState<number>(1);
+  const [currentCodebar, setCurrentCodebar] = useState<string>("");
 
   const gotoCapturePhoto = (props: any) => {
-    console.log(props);
+    setCurrentCodebar(props);
     setView(2);
   }
 
@@ -25,7 +25,7 @@ export default function App() {
         backgroundColor="#1b1c27"
         barStyle={"light-content"}/>
       { view == 1 && <CaptureCodebarView gotoNext={gotoCapturePhoto}/> }
-      { view == 2 && <CapturePhotoView gotoInit={gotoInit} codebar={currentCode}/> }
+      { view == 2 && <CapturePhotoView gotoInit={gotoInit} codebar={currentCodebar}/> }
     </SafeAreaView>
   );
 }

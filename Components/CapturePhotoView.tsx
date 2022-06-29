@@ -3,8 +3,10 @@ import { StyleSheet, Text, View, TouchableOpacity, ImageBackground } from 'react
 import { Camera, CameraType, FlashMode } from 'expo-camera';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system';
 
 const CapturePhotoView = (props: any) => {
+    //TODO: permanent permission to update content
     const { codebar, gotoInit } = props;
     const cameraRef = useRef<any>();
     const [hasPermission, setHasPermission] = useState<boolean | undefined>(false);
@@ -64,7 +66,18 @@ const CapturePhotoView = (props: any) => {
     const savePhoto = async () => {
         setWait(true);
         try {
-            const asset = await MediaLibrary.createAssetAsync(photo.uri);
+            let uriArray = photo.uri.split('/');
+            let nameToChange = uriArray[uriArray.length - 1];
+            let renamedURI = photo.uri.replace(
+                nameToChange,
+                "picture_" + codebar + '.jpg',
+            );
+            const options = {from: photo.uri, to: renamedURI}
+            console.log('options', options);
+
+            await FileSystem.copyAsync(options);
+            
+            let asset = await MediaLibrary.createAssetAsync(renamedURI);            
             const album = await MediaLibrary.getAlbumAsync('DevcrownPictures');
             let test = null;
             if (album == null) {
