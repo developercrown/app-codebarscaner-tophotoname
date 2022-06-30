@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "rana-app",
-    "slug": "rana-app",
+    "name": "Inventory Reviewer Tool 1.0",
+    "slug": "devcrown-apps",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,9 +18,13 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.devcrown.inventoryreviewertool",
+      "buildNumber": "1.0.0"
     },
     "android": {
+      "package": "com.devcrown.inventoryreviewertool",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
