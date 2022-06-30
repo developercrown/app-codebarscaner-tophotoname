@@ -1,49 +1,45 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { Audio } from 'expo-av';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BlurView } from 'expo-blur';
+import useSound from '../hooks/useSound';
 
 const CaptureCodebarView = (props: any) => {
+    const sound = useSound(); 
     const {codebar, gotoNext} = props;
-    const [sound, setSound] = useState<any>();
     const [scannedCode, setScannedCode] = useState<string | undefined>(codebar ? codebar : '');
     const [hasPermission, setHasPermission] = useState<any>(null);
     const [scanned, setScanned] = useState<any>(false);
 
     useEffect(() => {
+        sound.start();
         (async () => {
             const { status } = await BarCodeScanner.requestPermissionsAsync();
             setHasPermission(status === 'granted');
         })();
-        return sound
-            ? () => {
-                sound.unloadAsync();
-            }
-            : undefined;
-    }, [sound]);
+    }, []);
 
     const handleBarCodeScanned = async (props: any) => {
-        let { type, data } = props
+        let { data } = props
         setScanned(true);
         setScannedCode(data);
-        (async () => {
-            const { sound } = await Audio.Sound.createAsync(
-                require('../assets/audio/short.mp3')
-            );
-            setSound(sound);
-            await sound.playAsync();
-        })();
+        sound.msn2()
     };
 
     const gotoPhoto = () => {
+        sound.touch();
         gotoNext(scannedCode)
     }
-
+    
     const resetCapture = () => {
+        sound.touch();
         setScannedCode('')
         setScanned(false)
+    }
+
+    const handleSend = () => {
+        gotoPhoto()
     }
 
     if (hasPermission === null) {
@@ -75,6 +71,8 @@ const CaptureCodebarView = (props: any) => {
                     style={controlsStyles.codebarInput}
                     onChangeText={setScannedCode}
                     value={scannedCode}
+                    onSubmitEditing={handleSend}
+                    keyboardType="number-pad"
                 />
             </View>
             <View style={controlsStyles.containerControls}>
@@ -104,13 +102,13 @@ const CaptureCodebarView = (props: any) => {
                         <Ionicons name="arrow-forward" size={26} style={[controlsStyles.buttonIconWhite, {marginLeft: 4}]} />
                     </TouchableOpacity>
                         :
-                        <TouchableOpacity
+                        <View
                             style={[controlsStyles.button, controlsStyles.buttonPrimaryDisabled, { borderRadius:10, flex: 1, flexDirection: 'row' }]}>
                             <Text style={[controlsStyles.textButtonMutted, { fontSize: 20 }]}>
                                 Continuar
                             </Text>
                             <Ionicons name="arrow-forward" size={26} style={[[controlsStyles.buttonIconWhiteMutted], {marginLeft: 4}]} />   
-                        </TouchableOpacity>
+                        </View>
                 }
             </View>
         </View>

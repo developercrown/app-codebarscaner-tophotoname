@@ -1,6 +1,8 @@
 import { BlurView } from "expo-blur"
 import { ScrollView, StyleSheet, Text, TouchableOpacity ,View } from "react-native"
 import Ionicons from '@expo/vector-icons/Ionicons';
+import useSound from "../hooks/useSound";
+import { useEffect } from "react";
 
 const InfoRow = (props: any) => {
     const { value, label } = props
@@ -13,8 +15,33 @@ const InfoRow = (props: any) => {
 }
 
 const EquipmentInformationComponent = (props: any) => {
-    const {data, codebar, gotoInit, gotoContinue} = props
-    const { alignCenter, textSm, textMd, textWhite, textBold } = GlobalStyles
+    const {data, codebar, gotoInit, gotoContinue, gotoNext} = props
+    const { alignCenter, textSm, textXl, textWhite, textBold } = GlobalStyles;
+    const sound = useSound();
+
+    const gotoNextView = () => {
+        sound.touch()
+        gotoNext()
+    }
+    
+    const continueView = () => {
+        sound.touch()
+        gotoContinue()
+    }
+
+    const goBack = () => {
+        // sound.cancel()
+        gotoInit()
+    }
+
+    useEffect(() => {
+        if(data){
+            if(data.review_status){
+                sound.reviewed();
+            }
+        }
+    }, [data])
+
     return <>
         <BlurView intensity={10} style={headerStyles.container} tint="light">
             <Text style={headerStyles.title}>Información del equipo</Text>
@@ -24,7 +51,16 @@ const EquipmentInformationComponent = (props: any) => {
                 <View style={BodyStyles.informationContainer}>
                     <View style={[{alignItems: 'center', marginBottom: 18}]}>
                         <Text style={[textSm, textWhite, textBold]}>Código Solicitado: </Text>
-                        <Text style={[textSm, textWhite, {color: 'aqua'}]}>{codebar}</Text>
+                        <Text style={[textSm, textWhite, {color: 'yellow'}]}>{codebar}</Text>
+                    </View>
+                    <View style={[{alignItems: 'center', marginBottom: 18}]}>
+                        {
+                            data.review_status ? 
+                                <Text style={[textXl, {color: 'yellow'}, textBold]}>REVISADO</Text>
+                                :
+                                <Text style={[textXl, {color: 'red'}, textBold]}>SIN REVISIÓN PREVIA</Text>
+                            }
+                        
                     </View>
                     <ScrollView style={{padding: 10}}>
                         <Text style={[textSm, textWhite, textBold, {marginBottom: 18, textAlign: 'center'}]}>Información del sistema</Text>
@@ -38,7 +74,6 @@ const EquipmentInformationComponent = (props: any) => {
                         <InfoRow label="Responsable resguardante" value={data.safeguard_person} />
                         <InfoRow label="Ubicación actual" value={data.location ? data.location : 'No localizado'} />
                         <InfoRow label="Estado general del equipo" value={data.status} />
-                        <InfoRow label="Estado de revisión" value={data.review_status ? 'Revisado' : 'Sin Revisión'} />
                         <InfoRow label="Fecha de registro" value={data.created_at ? data.created_at : 'Inicial'} />
                         <InfoRow label="Ultima actualización" value={data.updated_at ? data.updated_at : 'No actualizado recientemente'} />
                     </ScrollView>
@@ -50,15 +85,24 @@ const EquipmentInformationComponent = (props: any) => {
                 {
                     data && <>
                         <TouchableOpacity
-                            onPress={gotoInit}
+                            onPress={goBack}
                             style={[controlsStyles.buttonCycled, controlsStyles.buttonDanger]}>
                             <Ionicons name="close" size={40} style={{ color: 'white' }} />
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={gotoContinue}
-                            style={[controlsStyles.buttonCycled, {backgroundColor: 'orange'}]}>
-                            <Ionicons name="push" size={40} style={{ color: 'white' }} />
-                        </TouchableOpacity>
+                        {
+                            data.review_status ?
+                            <TouchableOpacity
+                                onPress={gotoNextView}
+                                style={[controlsStyles.buttonCycled, {backgroundColor: 'orange'}]}>
+                                <Ionicons name="checkmark-done-circle" size={40} style={{ color: 'black' }} />
+                            </TouchableOpacity>
+                            :
+                            <TouchableOpacity
+                                onPress={continueView}
+                                style={[controlsStyles.buttonCycled, {backgroundColor: 'purple'}]}>
+                                <Ionicons name="file-tray-full" size={40} style={{ color: 'white' }} />
+                            </TouchableOpacity>
+                        }
                     </>
                 }
             </View>
@@ -76,6 +120,9 @@ const GlobalStyles = StyleSheet.create({
     },
     textMd: {
         fontSize: 20
+    },
+    textXl: {
+        fontSize: 28
     },
     textWhite: {
         color: 'white'

@@ -18,7 +18,8 @@ export default function App() {
   }
 
   const gotoCapturePhoto = (props: any) => {
-    setView(3);
+    setCurrentCodebar(props);
+    setView(4);
   }
 
   const gotoInit = (props: any) => {
@@ -40,7 +41,7 @@ export default function App() {
         <ImageBackground source={bg} style={styles.backgroundStyle}>
           { view == 1 && <CaptureCodebarView gotoNext={gotoSearchEquipment} codebar={currentCodebar}/> }
           { view == 2 && <EquipmentInformationView gotoInit={gotoInit} gotoCreate={gotoCreateRow} gotoNext={gotoCapturePhoto} codebar={currentCodebar}/> }
-          { view == 3 && <CreateEquipmentView gotoInit={gotoInit} codebar={currentCodebar}/> }
+          { view == 3 && <CreateEquipmentView gotoInit={gotoInit} codebar={currentCodebar} gotoNext={gotoCapturePhoto}/> }
           { view == 4 && <CapturePhotoView gotoInit={gotoInit} codebar={currentCodebar}/> }
         </ImageBackground>
       

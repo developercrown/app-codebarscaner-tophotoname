@@ -1,43 +1,216 @@
-import { BlurView } from "expo-blur"
-import { StyleSheet, Text, TouchableOpacity ,View } from "react-native"
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { Picker } from '@react-native-picker/picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { InfoRow } from "./EquipmentInformationComponent";
+import { useState } from "react";
+import axios from "axios";
+import useSound from "../hooks/useSound";
+
+const locations = [
+    'Oficina Subdirección Administrativa',
+    'Dpto.Recursos Humanos',
+    'Dpto.Finanzas',
+    'Dpto.Servicios Escolares',
+    'Dpto.Apoyo a estudiantes',
+    'Dpto.Prevención y Salud',
+    'Recepción',
+    'Dirección',
+    'Sala de juntas',
+    'Cocina Académicos',
+    'Oficinas Académicos',
+    'Dpto.Sistemas y Tecnologias',
+    'Dpto.Aula Invertida',
+    'Biblioteca',
+    'Prefectura',
+    'Dpto.Titulación',
+    'Área.Jardineros',
+    'Sala de profesores',
+    'Terraza',
+    'Domo',
+    'Cabina de seguridad',
+
+    'Edificio B. Salon-1[B1]',
+    'Edificio B. Salon-2[B2]',
+    'Edificio B. Salon-3[B3]',
+    'Edificio B. Salon-4[B4]',
+    'Edificio B. Salon-5[B5]',
+
+    'Edificio C. Salon-1[C1]',
+    'Edificio C. Salon-2[C2]',
+    'Edificio C. Salon-3[C3]',
+    'Edificio C. Salon-4[C4]',
+
+    'Edificio D. Salon-4[D4]',
+    'Edificio D. Salon-5[D5]',
+    'Edificio D. Salon-6[D6]',
+    'Edificio D. Salon-7[D7]',
+
+    'Edificio E. Salon-1[E1]',
+    'Edificio E. Salon-2[E2]',
+
+    'Edificio F. Salon-3[F3]',
+    'Edificio F. Salon-4[F4]',
+    'Edificio F. Salon-5[F5]',
+    'Edificio F. Salon-6[F6]',
+    'DESCONOCIDO',
+]
 
 const EquipmentReviewComponent = (props: any) => {
-    const {data} = props
+    const { data, gotoInit, gotoContinue } = props
+    const sound = useSound(); 
+    const [notesValue, setNotesValue] = useState<any>(data.notes ? data.notes : 'Sin notas');
+    const [locationValue, setLocationValue] = useState<any>(data.location ? data.location : 'DESCONOCIDO');
+    const [statusEquipment, setStatusEquipment] = useState<any>(data.status ? data.status : 'ACTIVO');
     const { alignCenter, textSm, textMd, textWhite, textBold } = GlobalStyles
+    const [wait, setWait] = useState<boolean>(false);
 
     let description = [data.equipment_name, data.trademark, data.model].join(" - ");
     let safeguard = [data.safeguard_apartment, data.safeguard_person].join(", ");
-    console.log(description, safeguard);
-    return <>
+
+    const gotoCancel = () => {
+        sound.cancel()
+        gotoInit()
+    }
+
+    const storeReview = () => {
+        const payload = {
+            notes: notesValue,
+            location: locationValue,
+            status: statusEquipment
+        }
+        setWait(true)
+        const uri = 'https://api-inventario-minify.upn164.edu.mx/api/v1/rows/' + data.codebar;
+        axios({
+            method: 'put',
+            url: uri,
+            data: payload
+        }).then(({status, data}) => {            
+            if(status === 200){
+                alert("Registrado correctamente")
+            }
+            sound.success();
+            gotoContinue(data.codebar)            
+        }).catch(err => {
+            alert("no se pudo registrar la información")
+            sound.cancel()
+            setWait(false)
+        });
+    }
+
+    return <ScrollView >
         {
-            data && <BlurView intensity={10} style={BodyStyles.container} tint="light">
-                <View style={{ marginTop: 10, padding: 10, justifyContent: 'center', alignItems: 'center'}}>
-                    {/* <Text style={[textSm, textWhite, textBold, {textAlign: 'center'}]}>Revisión del equipo</Text> */}
+            wait && <View
+                        style={{
+                            flex: 1,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            top: 0,
+                            width: '100%',
+                            height: '100%',
+                            position: 'absolute',
+                            backgroundColor: 'rgba(0, 0, 0, .5)',
+                            zIndex: 2
+                        }}
+                    >
+                        <Text style={{ color: '#eee' }}>Cargando la información...</Text>
+                    </View>
+        }
+        {
+            data && <View style={BodyStyles.container}>
+                <View style={{ marginTop: 10, padding: 10, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={[textMd, textWhite, textBold, { textAlign: 'center' }]}>Revisión del equipo</Text>
                 </View>
                 <View style={BodyStyles.informationContainer}>
-                    <View style={{padding: 10}}>  {/*TODO: create card unique for text content */}
-                        {/* <InfoRow label="Código" value={data.codebar} /> */}
-                        {/* <InfoRow label="Descripción" value={description} />
+                    <View style={{ backgroundColor: 'rgba(20, 20, 20, 0.6)', padding: 10, borderRadius: 10, marginTop: 4 }}>
+                        <InfoRow label="Código" value={data.codebar} />
+                        <InfoRow label="Descripción" value={description} />
                         <InfoRow label="Series registradas" value={data.series} />
-                        <InfoRow label="Información Resguardo actual" value={safeguard} /> */}
+                        <InfoRow label="Información Resguardo actual" value={safeguard} />
+                        <InfoRow label="Estado actual" value={data.status} />
+                    </View>
+
+                    <View style={{ padding: 10, marginTop: 4 }}>
+                        <Text style={{ color: 'white', fontWeight: 'bold', marginBottom: 10 }}>Notas:</Text>
+                        <TextInput
+                            style={[
+                                BodyStyles.input,
+                                {
+                                    backgroundColor: 'rgba(0, 0, 0, .5)',
+                                    color: '#eee',
+                                    height: 80,
+                                    padding: 10,
+                                    justifyContent: 'center',
+                                    textAlignVertical: 'top',
+                                    borderWidth: 1,
+                                    borderColor: 'rgba(255, 255, 255, .2)'
+                                }
+                            ]}
+                            multiline={true}
+                            value={notesValue}
+                            placeholder="Ingresa tus observaciones aquí"
+                            onChangeText={setNotesValue}
+                        />
+                    </View>
+                    <View style={{ padding: 10, marginTop: 4 }}>
+                        <Text style={{ color: 'white', fontWeight: 'bold', marginBottom: 10 }}>Ubicación Actual:</Text>
+                        <Picker
+                            style={{
+                                backgroundColor: 'rgba(3, 102, 181, .5)',
+                                color: '#eee',
+                                fontWeight: 'bold',
+                                borderWidth: 1,
+                                borderColor: 'rgba(255, 255, 255, .4)'
+                            }}
+                            selectedValue={locationValue}
+                            onValueChange={(itemValue, itemIndex) =>
+                                setLocationValue(itemValue)
+                            }>
+                            {
+                                locations.map((e, key) => <Picker.Item key={key} label={e} value={e} />)
+                            }
+                        </Picker>
+                    </View>
+                    <View style={{ padding: 10, marginTop: 4 }}>
+                        <Text style={{ color: 'white', fontWeight: 'bold', marginBottom: 10 }}>Estado Actual:</Text>
+                        <Picker
+                            style={{
+                                backgroundColor: 'rgba(3, 102, 181, .5)',
+                                color: '#eee',
+                                fontWeight: 'bold',
+                                borderWidth: 1,
+                                borderColor: 'rgba(255, 255, 255, .4)'
+                            }}
+                            selectedValue={statusEquipment}
+                            onValueChange={(itemValue, itemIndex) =>
+                                setStatusEquipment(itemValue)
+                            }>
+                            <Picker.Item label="ACTIVO" value="ACTIVO" />
+                            <Picker.Item label="BAJA" value="BAJA" />
+                        </Picker>
+                    </View>
+                    <View style={{ padding: 10, marginTop: 4, flex: 1, flexDirection: 'row' }}>
+                        <TouchableOpacity
+                            onPress={gotoCancel}
+                            style={[controlsStyles.button, controlsStyles.buttonDanger, { borderRadius: 2, flex: 1}]}>
+                            <Ionicons name="close" size={40} style={{ color: 'white' }} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={storeReview}
+                            style={[
+                                controlsStyles.button,
+                                {
+                                    backgroundColor: 'green',
+                                    flex: 3,
+                                    flexDirection: 'row'
+                                }]}>
+                            <Text style={{color: 'white', marginRight: 10}}>Registrar Revisión</Text>
+                            <Ionicons name="save-outline" size={28} style={{ color: 'white' }} />
+                        </TouchableOpacity>
                     </View>
                 </View>
-            </BlurView>
-        }
-    </>;
+            </View>}
+    </ScrollView>
 }
-
-/**
- * 
- *  { <InfoRow label="Notas" value={data.notes ? data.notes : 'Sin Notas'} /> TODO: set textarea}
-                        { <InfoRow label="Ubicación actual" value={data.location ? data.location : 'No localizado'} /> TODO: to make selector}
-                        { <InfoRow label="Estado general del equipo" value={data.status} />  TODO: to make selector}
-                        { <InfoRow label="Estado de revisión" value={data.review_status ? 'Revisado' : 'Sin Revisión'} />  TODO: to set true in backend}
-    
- * 
- */
 
 const GlobalStyles = StyleSheet.create({
     alignCenter: {
@@ -57,34 +230,9 @@ const GlobalStyles = StyleSheet.create({
     },
 });
 
-const containerStyles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'transparent',
-    },
-});
-
-const headerStyles = StyleSheet.create({
-    container: {
-        flex: 1,
-        height: 100,
-        backgroundColor: 'rgba(187, 50, 203, 0.2)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderColor: 'rgba(71, 21, 159, .6)',
-        borderLeftWidth: 1,
-        borderRightWidth: 1
-    },
-    title: {
-        color: '#eee',
-        fontSize: 20,
-        fontWeight: 'normal'
-    }
-});
 
 const BodyStyles = StyleSheet.create({
     container: {
-        flex: 14,
         backgroundColor: 'rgba(59, 0, 153, 0.2)',
         padding: 20,
         justifyContent: 'center',
@@ -109,6 +257,13 @@ const BodyStyles = StyleSheet.create({
         color: 'white',
         fontSize: 14,
         fontWeight: 'bold'
+    },
+    input: {
+        width: '100%',
+        height: 44,
+        backgroundColor: '#f1f3f6',
+        borderRadius: 6,
+        paddingHorizontal: 10
     }
 });
 
@@ -198,4 +353,5 @@ const controlsStyles = StyleSheet.create({
     }
 });
 
+export {locations}
 export default EquipmentReviewComponent;

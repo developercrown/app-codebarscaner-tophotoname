@@ -3,8 +3,10 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 import axios from 'axios';
 import EquipmentInformationComponent from './EquipmentInformationComponent';
 import EquipmentReviewComponent from './EquipmentReviewComponent';
+import useSound from '../hooks/useSound';
 
 const EquipmentInformationView = (props: any) => {
+    const sound = useSound(); 
     const { codebar, gotoInit, gotoNext, gotoCreate } = props;
     const [view, setView] = useState<number>(0);
     const [wait, setWait] = useState<boolean>(false);
@@ -19,23 +21,28 @@ const EquipmentInformationView = (props: any) => {
         }).then(({status, data}) => {
             if(status === 200){
                 setData(data.data);
-            } else {
-                console.log(status, data);
-                
             }
+            // else {
+            //     console.log(status, data);
+                
+            // }
             setWait(false);
         }).catch(err => {
+            sound.error()
             Alert.alert('Atención!', 'No se encontro el equipo, ¿Desea registrarlo?', [
                 {
                     text: 'OK', onPress: () => gotoCreate(codebar)
                 },
                 {
                     text: 'Cancel',
-                    onPress: () => {},
+                    onPress: () => {
+                        sound.touch()
+                        gotoInit()
+                    },
                     style: 'cancel',
                 },
             ])
-            gotoInit()
+            
         });
     }
 
@@ -70,7 +77,7 @@ const EquipmentInformationView = (props: any) => {
         }
         {
             view == 0 ? 
-                <EquipmentInformationComponent codebar={codebar} data={data} gotoInit={gotoInit} gotoContinue={gotoContinue}/>
+                <EquipmentInformationComponent codebar={codebar} data={data} gotoInit={gotoInit} gotoContinue={gotoContinue} gotoNext={gotoPhoto}/>
             :
                 <EquipmentReviewComponent codebar={codebar} data={data} gotoInit={gotoInit} gotoContinue={gotoPhoto} />
         }

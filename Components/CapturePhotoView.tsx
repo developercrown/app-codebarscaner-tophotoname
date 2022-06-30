@@ -4,9 +4,10 @@ import { Camera, CameraType, FlashMode } from 'expo-camera';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
+import useSound from '../hooks/useSound';
 
 const CapturePhotoView = (props: any) => {
-    //TODO: permanent permission to update content
+    const sound = useSound(); 
     const { codebar, gotoInit } = props;
     const cameraRef = useRef<any>();
     const [hasPermission, setHasPermission] = useState<boolean | undefined>(false);
@@ -45,7 +46,7 @@ const CapturePhotoView = (props: any) => {
         setWait(true);
         if (cameraRef) {
             const options = {
-                quality: 1,
+                quality: .5,
                 fixOrientation: true,
                 exif: true,
             };
@@ -53,6 +54,7 @@ const CapturePhotoView = (props: any) => {
             const photo = await cam.takePictureAsync(options);
             setPhoto(photo);
             setCaptured(true);
+            sound.msn3();
         }
         setWait(false);
     }
@@ -115,7 +117,7 @@ const CapturePhotoView = (props: any) => {
             </View>
         }
         <View style={headerStyles.container}>
-            <Text style={headerStyles.title}>Captura de Fotografia</Text>
+            <Text style={headerStyles.title}>Captura de Fotografia: {codebar}</Text>
         </View>
         <View style={bodyStyles.container}>
             {
