@@ -1,86 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Alert, TextInput, ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import axios from 'axios';
-import { BlurView } from 'expo-blur';
-import { InfoRow } from './EquipmentInformationComponent';
-import { locations } from './EquipmentReviewComponent';
-import { Picker } from '@react-native-picker/picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { BlurView } from 'expo-blur';
+import { BarCodeScanner } from 'expo-barcode-scanner';
+import { Input, Select, TextArea } from '../Components/FormComponents';
+import { locations } from './Equipment/Components/EquipmentReviewComponent';
 import useSound from '../hooks/useSound';
-
-
-const Input = (props: any) => {
-    const { label, value, onChange } = props;
-
-    return <View style={{ marginTop: 10 }}>
-        <Text style={{ color: '#eee', fontWeight: 'bold', fontSize: 18 }}>{label}</Text>
-        <TextInput value={value} onChangeText={onChange} style={
-            {
-                color: '#eee',
-                backgroundColor: "rgba(0,0,0,.5)",
-                paddingVertical: 10,
-                paddingHorizontal: 16,
-                marginTop: 10,
-                borderRadius: 4,
-                fontSize: 16
-            }
-        } />
-    </View>
-}
-
-const Select = (props: any) => {
-    const { items, onChange, value } = props
-    return <View style={{ padding: 10, marginTop: 4 }}>
-        <Text style={{ color: 'white', fontWeight: 'bold', marginBottom: 10 }}>Ubicación Actual:</Text>
-        <Picker
-            style={{
-                backgroundColor: 'rgba(3, 102, 181, .5)',
-                color: '#eee',
-                fontWeight: 'bold',
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, .4)'
-            }}
-            selectedValue={value}
-            onValueChange={(itemValue) =>
-                onChange(itemValue)
-            }>
-            {
-                items.map((e: any, key: number) => <Picker.Item key={key} label={e} value={e} />)
-            }
-        </Picker>
-    </View>
-}
-
-const TextArea = (props: any) => {
-    const { onChange, value, label, placeholder } = props
-    return <View style={{ padding: 10, marginTop: 4 }}>
-        <Text style={{ color: 'white', fontWeight: 'bold', marginBottom: 10 }}>{label}:</Text>
-        <TextInput
-            style={[
-                BodyStyles.input,
-                {
-                    backgroundColor: 'rgba(0, 0, 0, .5)',
-                    color: '#eee',
-                    height: 80,
-                    padding: 10,
-                    justifyContent: 'center',
-                    textAlignVertical: 'top',
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, .2)'
-                }
-            ]}
-            multiline={true}
-            value={value}
-            placeholder={placeholder}
-            onChangeText={onChange}
-        />
-    </View>
-}
 
 const CreateEquipmentView = (props: any) => {
     const { codebar, gotoInit, gotoNext } = props;
     const sound = useSound();
     const [wait, setWait] = useState<boolean>(false);
+    const [hasPermission, setHasPermission] = useState<any>(null);
+    const [captureMode, setCaptureMode] = useState<boolean>(false);
     const [name, setName] = useState('');
     const [series, setSeries] = useState('');
     const [trademark, setTrademark] = useState('');
@@ -90,6 +23,7 @@ const CreateEquipmentView = (props: any) => {
     const [safeguardPerson, setSafeguardPerson] = useState('');
     const [notes, setNotes] = useState('');
     const [location, setLocation] = useState('DESCONOCIDO');
+
 
     const gotoCancel = () => {
         gotoInit();
@@ -118,8 +52,8 @@ const CreateEquipmentView = (props: any) => {
             method: 'post',
             url: uri,
             data: payload
-        }).then(({status, data}) => {
-            if(status === 200){
+        }).then(({ status, data }) => {
+            if (status === 200) {
                 alert("Registrado correctamente")
             }
             sound.success();
@@ -129,6 +63,46 @@ const CreateEquipmentView = (props: any) => {
             sound.cancel()
             setWait(false)
         });
+    }
+
+    const gotoCaptureFromCamera = () => {
+        setWait(true);
+        setTimeout(() => {
+            setCaptureMode(true);
+            setWait(false);
+        }, 150);
+    }
+
+    const handleCapture = (props: any) => {
+        let { data } = props
+        data = data.trim()
+        const value = series === '' ? data : series + ' - ' + data;
+        setSeries(value.trim());
+        hadlerHideCapturer(false)
+        sound.msn1();
+    }
+
+    const hadlerHideCapturer = (withSound:boolean=true) => {
+        setCaptureMode(false);
+        setWait(false)
+        if(withSound){
+            sound.cancel();
+        }
+    }
+
+    useEffect(() => {
+        sound.start();
+        (async () => {
+            const { status } = await BarCodeScanner.requestPermissionsAsync();
+            setHasPermission(status === 'granted');
+        })();
+    }, []);
+
+    if (hasPermission === null) {
+        return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text style={{color: 'white'}}>Requesting for camera permission</Text></View>;
+    }
+    if (hasPermission === false) {
+        return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text style={{color: 'white'}}>No access to camera</Text></View>;
     }
 
     return <View style={containerStyles.container}>
@@ -143,19 +117,68 @@ const CreateEquipmentView = (props: any) => {
                     height: '100%',
                     position: 'absolute',
                     backgroundColor: 'rgba(0, 0, 0, .5)',
-                    zIndex: 2
+                    zIndex: 3
                 }}
             >
                 <Text style={{ color: '#eee' }}>Un momento por favor...</Text>
             </View>
         }
+        {
+            captureMode && <View
+                style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    top: 0,
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    backgroundColor: 'rgba(0, 0, 0, .9)',
+                    zIndex: 2
+                }}
+            >
+                <View style={{flex: 1, marginTop: 26}}>
+                    <Text style={{ color: '#eee', fontSize: 20 }}>Modo de captura de códigos</Text>
+                </View>
+                <BarCodeScanner
+                        onBarCodeScanned={handleCapture}
+                        style={StyleSheet.absoluteFillObject}
+                />
+                <TouchableOpacity
+                    onPress={()=>hadlerHideCapturer()}
+                    style={[controlsStyles.button, { borderColor: 'red', borderWidth: 2, flexDirection: 'row', borderRadius: 40, width: 160, top: -30}]}>
+                    <Text style={{color: 'white'}}>Cancelar</Text>
+                </TouchableOpacity>
+            </View>
+        }
         <BlurView intensity={10} style={headerStyles.container} tint="light">
             <Text style={headerStyles.title}>Registro de equipo</Text>
         </BlurView>
-        <ScrollView style={[BodyStyles.container, {paddingBottom: 100}]}>
-            <InfoRow value={codebar} label="Código de barras" />
+        <ScrollView style={[BodyStyles.container, { paddingBottom: 100 }]}>
+            <View style={BodyStyles.headerTitleContainer}>
+                <Text style={[controlsStyles.textButtonWhite, { fontSize: 20 }]}>Código de barras</Text>
+                <Text style={[controlsStyles.textButtonWhite, { fontSize: 16 }]}>{codebar}</Text>
+            </View>
             <Input label="Nombre del equipo" value={name} onChange={setName} />
-            <Input label="Series o códigos" value={series} onChange={setSeries} />
+            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+                <View style={{flex: 4}}>
+                    <TextArea label="Series o códigos" value={series} onChange={setSeries} />
+                </View>
+                <TouchableOpacity
+                    onPress={gotoCaptureFromCamera}
+                    style={[{
+                        width: 60,
+                        height: 60,
+                        marginLeft: 10,
+                        backgroundColor: 'purple',
+                        borderRadius: 10,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginTop: 36
+                    }]}>
+                    <Ionicons name="qr-code" size={32} style={{ color: 'white' }} />
+                </TouchableOpacity>
+            </View>
             <Input label="Marca" value={trademark} onChange={setTrademark} />
             <Input label="Modelo" value={model} onChange={setModel} />
             <Select label="Estado" items={['ACTIVO', 'BAJA']} value={status} onChange={setStatus} />
@@ -163,10 +186,10 @@ const CreateEquipmentView = (props: any) => {
             <Input label="Persona resguardante" value={safeguardPerson} onChange={setSafeguardPerson} />
             <TextArea label="Notas" placeholder="Ingresa tus observaciones aquí" value={notes} onChange={setNotes} />
             <Select label="Ubicación Actual" items={locations} value={location} onChange={setLocation} />
-            <View style={{ padding: 10, marginTop: 4, marginBottom:50, flex: 1, flexDirection: 'row' }}>
+            <View style={{ padding: 10, marginTop: 4, marginBottom: 50, flex: 1, flexDirection: 'row' }}>
                 <TouchableOpacity
                     onPress={gotoCancel}
-                    style={[controlsStyles.button, controlsStyles.buttonDanger, { borderRadius: 2, flex: 1}]}>
+                    style={[controlsStyles.button, controlsStyles.buttonDanger, { borderRadius: 2, flex: 1 }]}>
                     <Ionicons name="close" size={40} style={{ color: 'white' }} />
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -178,7 +201,7 @@ const CreateEquipmentView = (props: any) => {
                             flex: 3,
                             flexDirection: 'row'
                         }]}>
-                    <Text style={{color: 'white', marginRight: 10}}>Registrar Revisión</Text>
+                    <Text style={{ color: 'white', marginRight: 10 }}>Registrar Revisión</Text>
                     <Ionicons name="save-outline" size={28} style={{ color: 'white' }} />
                 </TouchableOpacity>
             </View>
@@ -242,6 +265,24 @@ const BodyStyles = StyleSheet.create({
         borderColor: 'rgba(71, 21, 159, .6)',
         borderWidth: 1
     },
+    headerTitleContainer: {
+        backgroundColor: 'rgba(10, 10, 10, .4)',
+        borderRadius: 4,
+        padding: 14,
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 14,
+        shadowColor: "#fff",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 2,
+
+    },
     informationContainer: {
         height: '100%',
         width: '100%',
@@ -260,13 +301,6 @@ const BodyStyles = StyleSheet.create({
         color: 'white',
         fontSize: 14,
         fontWeight: 'bold'
-    },
-    input: {
-        width: '100%',
-        height: 44,
-        backgroundColor: '#f1f3f6',
-        borderRadius: 6,
-        paddingHorizontal: 10
     }
 });
 

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import axios from 'axios';
-import EquipmentInformationComponent from './EquipmentInformationComponent';
-import EquipmentReviewComponent from './EquipmentReviewComponent';
-import useSound from '../hooks/useSound';
+import EquipmentInformationComponent from './Components/EquipmentInformationComponent';
+import EquipmentReviewComponent from './Components/EquipmentReviewComponent';
+import useSound from '../../hooks/useSound';
 
 const EquipmentInformationView = (props: any) => {
     const sound = useSound(); 

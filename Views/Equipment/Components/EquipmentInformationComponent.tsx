@@ -1,7 +1,7 @@
 import { BlurView } from "expo-blur"
 import { ScrollView, StyleSheet, Text, TouchableOpacity ,View } from "react-native"
 import Ionicons from '@expo/vector-icons/Ionicons';
-import useSound from "../hooks/useSound";
+import useSound from "../../../hooks/useSound";
 import { useEffect } from "react";
 
 const InfoRow = (props: any) => {

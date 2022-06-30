@@ -7,7 +7,7 @@ import useSound from '../hooks/useSound';
 
 const CaptureCodebarView = (props: any) => {
     const sound = useSound(); 
-    const {codebar, gotoNext} = props;
+    const {codebar, gotoNext, toggleFastMode, fastMode} = props;
     const [scannedCode, setScannedCode] = useState<string | undefined>(codebar ? codebar : '');
     const [hasPermission, setHasPermission] = useState<any>(null);
     const [scanned, setScanned] = useState<any>(false);
@@ -24,7 +24,13 @@ const CaptureCodebarView = (props: any) => {
         let { data } = props
         setScanned(true);
         setScannedCode(data);
-        sound.msn2()
+        sound.msn2();
+        setTimeout(() => {
+            if(fastMode){
+                sound.touch();
+                gotoNext(data)
+            }
+        }, 250);
     };
 
     const gotoPhoto = () => {
@@ -42,6 +48,11 @@ const CaptureCodebarView = (props: any) => {
         gotoPhoto()
     }
 
+    const handleToggleFastMode = () => {
+        sound.touch();
+        toggleFastMode();
+    }
+
     if (hasPermission === null) {
         return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text style={{color: 'white'}}>Requesting for camera permission</Text></View>;
     }
@@ -51,8 +62,19 @@ const CaptureCodebarView = (props: any) => {
 
 
     return <View style={containerStyles.container}>
-        <BlurView intensity={10} style={headerStyles.container} tint="light">
+        <BlurView intensity={10} style={[headerStyles.container, {flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around'}]} tint="light">
+            <View>
+                <Ionicons name="home" size={28} style={[controlsStyles.buttonIconWhite, {marginLeft: 4, opacity: .2}]} />
+            </View>
             <Text style={headerStyles.title}>Captura de código</Text>
+            <TouchableOpacity onPress={handleToggleFastMode}>
+                {
+                    fastMode ? 
+                        <Ionicons name="bicycle" size={26} style={[controlsStyles.buttonIconWhite, {marginLeft: 4, color: 'yellow'}]} />
+                    :
+                        <Ionicons name="bicycle" size={26} style={[controlsStyles.buttonIconWhite, {marginLeft: 4, opacity: .3}]} />
+                }
+            </TouchableOpacity>
         </BlurView>
         <BlurView intensity={10} style={BodyStyles.container} tint="light">
             <View style={BodyStyles.scanner}>

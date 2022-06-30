@@ -4,7 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { InfoRow } from "./EquipmentInformationComponent";
 import { useState } from "react";
 import axios from "axios";
-import useSound from "../hooks/useSound";
+import useSound from "../../../hooks/useSound";
 
 const locations = [
     'Oficina Subdirección Administrativa',
