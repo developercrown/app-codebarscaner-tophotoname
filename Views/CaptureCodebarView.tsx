@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, BackHandler, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BlurView } from 'expo-blur';
@@ -14,10 +14,26 @@ const CaptureCodebarView = (props: any) => {
 
     useEffect(() => {
         sound.start();
+
+        const backAction = () => {
+            Alert.alert('Confirmación', '¿Estas seguro de cerrar la aplicación?', [
+                {
+                    text: 'Cancelar',
+                    onPress: () => null,
+                    style: 'cancel',
+                },
+                { text: 'Cerrar', onPress: () => BackHandler.exitApp() },
+            ]);
+            return true;
+        };
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+
         (async () => {
             const { status } = await BarCodeScanner.requestPermissionsAsync();
             setHasPermission(status === 'granted');
         })();
+        
+        return () => backHandler.remove();
     }, []);
 
     const handleBarCodeScanned = async (props: any) => {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ImageBackground, BackHandler } from 'react-native';
 import { Camera, CameraType, FlashMode } from 'expo-camera';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as MediaLibrary from 'expo-media-library';
@@ -18,11 +18,13 @@ const CapturePhotoView = (props: any) => {
     const [wait, setWait] = useState<boolean>(false);
 
     useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', ()=>true);
         (async () => {
             const cameraPermission = await Camera.requestCameraPermissionsAsync();
             const mediaPermission = await MediaLibrary.requestPermissionsAsync();
             setHasPermission(cameraPermission.status === 'granted' && mediaPermission.status === 'granted');
         })();
+        return () => backHandler.remove();
     }, []);
 
     if (hasPermission === null) {
@@ -91,7 +93,7 @@ const CapturePhotoView = (props: any) => {
                 }, 500);
             }
         } catch (e) {
-            console.log('error', e);
+            //console.log('error', e);
             
         }
         setWait(false)

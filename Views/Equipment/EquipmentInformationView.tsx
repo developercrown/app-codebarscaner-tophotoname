@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, BackHandler, StyleSheet, Text, View } from 'react-native';
 import axios from 'axios';
 import EquipmentInformationComponent from './Components/EquipmentInformationComponent';
 import EquipmentReviewComponent from './Components/EquipmentReviewComponent';
@@ -7,7 +7,7 @@ import useSound from '../../hooks/useSound';
 
 const EquipmentInformationView = (props: any) => {
     const sound = useSound(); 
-    const { codebar, gotoInit, gotoNext, gotoCreate } = props;
+    const { codebar, fastMode, gotoInit, gotoNext, gotoCreate } = props;
     const [view, setView] = useState<number>(0);
     const [wait, setWait] = useState<boolean>(false);
     const [data, setData] = useState<any>(null);
@@ -21,6 +21,9 @@ const EquipmentInformationView = (props: any) => {
         }).then(({status, data}) => {
             if(status === 200){
                 setData(data.data);
+                if(fastMode && data.data.review_status == false){
+                    gotoContinue()
+                }
             }
             // else {
             //     console.log(status, data);
@@ -47,7 +50,9 @@ const EquipmentInformationView = (props: any) => {
     }
 
     useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', ()=>true);
         getInformation(codebar)
+        return () => backHandler.remove();
     }, []);
 
     const gotoContinue = () => {
@@ -77,9 +82,9 @@ const EquipmentInformationView = (props: any) => {
         }
         {
             view == 0 ? 
-                <EquipmentInformationComponent codebar={codebar} data={data} gotoInit={gotoInit} gotoContinue={gotoContinue} gotoNext={gotoPhoto}/>
+                <EquipmentInformationComponent codebar={codebar} data={data} gotoInit={gotoInit} gotoContinue={gotoContinue} gotoNext={gotoPhoto} fastMode={fastMode}/>
             :
-                <EquipmentReviewComponent codebar={codebar} data={data} gotoInit={gotoInit} gotoContinue={gotoPhoto} />
+                <EquipmentReviewComponent codebar={codebar} data={data} gotoInit={gotoInit} gotoContinue={gotoPhoto} fastMode={fastMode}/>
         }
     </View>
 }

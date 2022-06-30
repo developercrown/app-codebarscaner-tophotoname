@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity, BackHandler, Alert } from 'react-native';
 import axios from 'axios';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BlurView } from 'expo-blur';
@@ -66,6 +66,7 @@ const CreateEquipmentView = (props: any) => {
     }
 
     const gotoCaptureFromCamera = () => {
+        sound.touch()
         setWait(true);
         setTimeout(() => {
             setCaptureMode(true);
@@ -82,27 +83,30 @@ const CreateEquipmentView = (props: any) => {
         sound.msn1();
     }
 
-    const hadlerHideCapturer = (withSound:boolean=true) => {
+    const hadlerHideCapturer = (withSound: boolean = true) => {
         setCaptureMode(false);
         setWait(false)
-        if(withSound){
+        if (withSound) {
             sound.cancel();
         }
     }
 
     useEffect(() => {
-        sound.start();
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', ()=>true);
+
         (async () => {
             const { status } = await BarCodeScanner.requestPermissionsAsync();
             setHasPermission(status === 'granted');
         })();
+
+        return () => backHandler.remove();
     }, []);
 
     if (hasPermission === null) {
-        return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text style={{color: 'white'}}>Requesting for camera permission</Text></View>;
+        return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text style={{ color: 'white' }}>Requesting for camera permission</Text></View>;
     }
     if (hasPermission === false) {
-        return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text style={{color: 'white'}}>No access to camera</Text></View>;
+        return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text style={{ color: 'white' }}>No access to camera</Text></View>;
     }
 
     return <View style={containerStyles.container}>
@@ -137,17 +141,17 @@ const CreateEquipmentView = (props: any) => {
                     zIndex: 2
                 }}
             >
-                <View style={{flex: 1, marginTop: 26}}>
+                <View style={{ flex: 1, marginTop: 26 }}>
                     <Text style={{ color: '#eee', fontSize: 20 }}>Modo de captura de códigos</Text>
                 </View>
                 <BarCodeScanner
-                        onBarCodeScanned={handleCapture}
-                        style={StyleSheet.absoluteFillObject}
+                    onBarCodeScanned={handleCapture}
+                    style={StyleSheet.absoluteFillObject}
                 />
                 <TouchableOpacity
-                    onPress={()=>hadlerHideCapturer()}
-                    style={[controlsStyles.button, { borderColor: 'red', borderWidth: 2, flexDirection: 'row', borderRadius: 40, width: 160, top: -30}]}>
-                    <Text style={{color: 'white'}}>Cancelar</Text>
+                    onPress={() => hadlerHideCapturer()}
+                    style={[controlsStyles.button, { borderColor: 'red', borderWidth: 2, flexDirection: 'row', borderRadius: 40, width: 160, top: -30 }]}>
+                    <Text style={{ color: 'white' }}>Cancelar</Text>
                 </TouchableOpacity>
             </View>
         }
@@ -160,8 +164,8 @@ const CreateEquipmentView = (props: any) => {
                 <Text style={[controlsStyles.textButtonWhite, { fontSize: 16 }]}>{codebar}</Text>
             </View>
             <Input label="Nombre del equipo" value={name} onChange={setName} />
-            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-                <View style={{flex: 4}}>
+            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                <View style={{ flex: 4 }}>
                     <TextArea label="Series o códigos" value={series} onChange={setSeries} />
                 </View>
                 <TouchableOpacity

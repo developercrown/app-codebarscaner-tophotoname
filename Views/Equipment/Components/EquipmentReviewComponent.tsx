@@ -1,8 +1,8 @@
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { Alert, BackHandler, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { Picker } from '@react-native-picker/picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { InfoRow } from "./EquipmentInformationComponent";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import useSound from "../../../hooks/useSound";
 
@@ -56,7 +56,7 @@ const locations = [
 ]
 
 const EquipmentReviewComponent = (props: any) => {
-    const { data, gotoInit, gotoContinue } = props
+    const { data, fastMode, gotoInit, gotoContinue } = props
     const sound = useSound(); 
     const [notesValue, setNotesValue] = useState<any>(data.notes ? data.notes : 'Sin notas');
     const [locationValue, setLocationValue] = useState<any>(data.location ? data.location : 'DESCONOCIDO');
@@ -73,29 +73,48 @@ const EquipmentReviewComponent = (props: any) => {
     }
 
     const storeReview = () => {
-        const payload = {
-            notes: notesValue,
-            location: locationValue,
-            status: statusEquipment
-        }
-        setWait(true)
-        const uri = 'https://api-inventario-minify.upn164.edu.mx/api/v1/rows/' + data.codebar;
-        axios({
-            method: 'put',
-            url: uri,
-            data: payload
-        }).then(({status, data}) => {            
-            if(status === 200){
-                alert("Registrado correctamente")
-            }
-            sound.success();
-            gotoContinue(data.codebar)            
-        }).catch(err => {
-            alert("no se pudo registrar la información")
-            sound.cancel()
-            setWait(false)
-        });
+        Alert.alert('Confirmación', '¿Estas seguro de realizar este proceso?, esta acción no se puede revertir', [
+            {
+                text: 'Cancelar',
+                onPress: () => null,
+                style: 'cancel',
+            },
+            { text: 'Continuar',
+                onPress: () => {
+                    const payload = {
+                        notes: notesValue,
+                        location: locationValue,
+                        status: statusEquipment
+                    }
+                    setWait(true)
+                    const uri = 'https://api-inventario-minify.upn164.edu.mx/api/v1/rows/' + data.codebar;
+                    axios({
+                        method: 'put',
+                        url: uri,
+                        data: payload
+                    }).then(({status, data}) => {            
+                        if(status === 200){
+                            alert("Registrado correctamente")
+                        }
+                        sound.success();
+                        gotoContinue(data.codebar)            
+                    }).catch(err => {
+                        alert("no se pudo registrar la información")
+                        sound.cancel()
+                        setWait(false)
+                    });
+                }
+            },
+        ]);
     }
+
+    useEffect(()=>{
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+            gotoCancel()
+            return true;
+        });
+        return () => backHandler.remove();
+    })
 
     return <ScrollView >
         {
@@ -122,11 +141,30 @@ const EquipmentReviewComponent = (props: any) => {
                 </View>
                 <View style={BodyStyles.informationContainer}>
                     <View style={{ backgroundColor: 'rgba(20, 20, 20, 0.6)', padding: 10, borderRadius: 10, marginTop: 4 }}>
-                        <InfoRow label="Código" value={data.codebar} />
-                        <InfoRow label="Descripción" value={description} />
-                        <InfoRow label="Series registradas" value={data.series} />
-                        <InfoRow label="Información Resguardo actual" value={safeguard} />
-                        <InfoRow label="Estado actual" value={data.status} />
+                        {
+                            fastMode ? <>
+                                <Text style={{fontSize: 18, color: 'white', fontWeight: 'bold', textAlign: 'center', marginBottom: 8}}>
+                                    Código: {data.codebar}
+                                </Text>
+                                <Text style={{fontSize: 12, color: 'white', fontWeight: 'bold', textAlign: 'justify', marginBottom: 8}}>
+                                    Descripción: {description}
+                                    Series: {data.series}
+                                </Text>
+                                <Text style={{fontSize: 12, color: 'white', fontWeight: 'bold', textAlign: 'justify', marginBottom: 8}}>
+                                    Información de resguardo:
+                                    {safeguard}
+                                </Text>
+                                <Text style={{fontSize: 18, color: 'white', fontWeight: 'bold', textAlign: 'center', marginBottom: 8}}>
+                                    Estado Actual: {data.status}
+                                </Text>
+                            </> : <>
+                                <InfoRow label="Código" value={data.codebar} />
+                                <InfoRow label="Descripción" value={description} />
+                                <InfoRow label="Series registradas" value={data.series} />
+                                <InfoRow label="Información Resguardo actual" value={safeguard} />
+                                <InfoRow label="Estado actual" value={data.status} />
+                            </>
+                        }
                     </View>
 
                     <View style={{ padding: 10, marginTop: 4 }}>
