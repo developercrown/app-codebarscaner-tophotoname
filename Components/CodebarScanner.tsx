@@ -1,16 +1,15 @@
 import { Camera, CameraType, FlashMode } from "expo-camera"
-import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ToastAndroid } from 'react-native';
+import { forwardRef, useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ToastAndroid, CameraRoll } from 'react-native';
 import WaitFullScreen from './WaitFullScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 const CodebarScanner = (props: any) => {
-    const { codebar, onStartProcess } = props;
+    const cameraRef = useRef<any>();
+    const { codebar, onStartProcess, onScan } = props;
     const [hasPermission, setHasPermission] = useState<boolean | null>(null);
     const [torch, setTorch] = useState<boolean>(false);
     const [cameraSource, setCameraSource] = useState<CameraType>(CameraType.back);
-    const [scannedCode, setScannedCode] = useState<string | undefined>(codebar ? codebar : '');
-    const [scanned, setScanned] = useState<any>(false);
 
     useEffect(() => {
         (async () => {
@@ -22,9 +21,11 @@ const CodebarScanner = (props: any) => {
 
     const handleBarCodeScanned = async (props: any) => {
         let { data } = props
-        setScanned(true);
-        setScannedCode(data);
-        console.log('codebar received', data);
+        if(onScan){
+            onScan(data);
+        }
+        console.log("Code received", data);
+        cameraRef.current.pausePreview()
     };
 
     const toggleTorch = () => {
@@ -51,11 +52,10 @@ const CodebarScanner = (props: any) => {
         {
             hasPermission &&
             <Camera
+                ref={cameraRef}
                 type={cameraSource}
                 flashMode={torch ? FlashMode.torch : FlashMode.off}
-                onBarCodeScanned={
-                    scanned ? undefined : handleBarCodeScanned
-                }
+                onBarCodeScanned={handleBarCodeScanned}
                 style={StyleSheet.absoluteFillObject}
             />
         }
@@ -130,4 +130,4 @@ const controlsStyles = StyleSheet.create({
     },
 });
 
-export default CodebarScanner;
+export default forwardRef(CodebarScanner);
