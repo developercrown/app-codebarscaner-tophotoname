@@ -4,17 +4,17 @@ import { BarCodeScanner } from 'expo-barcode-scanner';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BlurView } from 'expo-blur';
 import useSound from '../hooks/useSound';
+import CodebarScanner from '../Components/CodebarScanner';
+import WaitFullScreen from './../Components/WaitFullScreen';
 
 const CaptureCodebarView = (props: any) => {
     const sound = useSound(); 
     const {codebar, gotoNext, toggleFastMode, fastMode} = props;
     const [scannedCode, setScannedCode] = useState<string | undefined>(codebar ? codebar : '');
-    const [hasPermission, setHasPermission] = useState<any>(null);
     const [scanned, setScanned] = useState<any>(false);
 
     useEffect(() => {
         sound.start();
-
         const backAction = () => {
             Alert.alert('Confirmación', '¿Estas seguro de cerrar la aplicación?', [
                 {
@@ -27,27 +27,21 @@ const CaptureCodebarView = (props: any) => {
             return true;
         };
         const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-
-        (async () => {
-            const { status } = await BarCodeScanner.requestPermissionsAsync();
-            setHasPermission(status === 'granted');
-        })();
-        
         return () => backHandler.remove();
     }, []);
 
-    const handleBarCodeScanned = async (props: any) => {
-        let { data } = props
-        setScanned(true);
-        setScannedCode(data);
-        sound.msn2();
-        setTimeout(() => {
-            if(fastMode){
-                sound.touch();
-                gotoNext(data)
-            }
-        }, 250);
-    };
+    // const handleBarCodeScanned = async (props: any) => {
+    //     let { data } = props
+    //     setScanned(true);
+    //     setScannedCode(data);
+    //     sound.msn2();
+    //     setTimeout(() => {
+    //         if(fastMode){
+    //             sound.touch();
+    //             gotoNext(data)
+    //         }
+    //     }, 250);
+    // };
 
     const gotoPhoto = () => {
         sound.touch();
@@ -69,94 +63,91 @@ const CaptureCodebarView = (props: any) => {
         toggleFastMode();
     }
 
-    if (hasPermission === null) {
-        return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text style={{color: 'white'}}>Requesting for camera permission</Text></View>;
-    }
-    if (hasPermission === false) {
-        return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text style={{color: 'white'}}>No access to camera</Text></View>;
+    const onReady = (status: any) => {
+        console.log("Estado", status);
     }
 
-
-    return <View style={containerStyles.container}>
-        <BlurView intensity={10} style={[headerStyles.container, {flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around'}]} tint="light">
-            <View>
-                <Ionicons name="home" size={28} style={[controlsStyles.buttonIconWhite, {marginLeft: 4, opacity: .2}]} />
-            </View>
-            <Text style={headerStyles.title}>Captura de código</Text>
-            <TouchableOpacity onPress={handleToggleFastMode}>
-                {
-                    fastMode ? 
-                        <Ionicons name="bicycle" size={26} style={[controlsStyles.buttonIconWhite, {marginLeft: 4, color: 'yellow'}]} />
-                    :
-                        <Ionicons name="bicycle" size={26} style={[controlsStyles.buttonIconWhite, {marginLeft: 4, opacity: .3}]} />
-                }
-            </TouchableOpacity>
-        </BlurView>
-        <BlurView intensity={10} style={BodyStyles.container} tint="light">
-            <View style={BodyStyles.scanner}>
-                <BarCodeScanner
-                    onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-                    style={StyleSheet.absoluteFillObject}
-                />
-            </View>
-            <View style={BodyStyles.legendContainer}>
-                <Text style={BodyStyles.legend}>Apunta la camara al código</Text>
-            </View>
-        </BlurView>
-        <View style={controlsStyles.container}>
-            <View style={controlsStyles.containerCodebarInput}>
-                <TextInput
-                    style={controlsStyles.codebarInput}
-                    onChangeText={setScannedCode}
-                    value={scannedCode}
-                    onSubmitEditing={handleSend}
-                    keyboardType="number-pad"
-                />
-            </View>
-            <View style={controlsStyles.containerControls}>
-                {
-                    scannedCode != "" ? <TouchableOpacity
-                        onPress={resetCapture}
-                        style={[controlsStyles.buttonCycled, controlsStyles.buttonDanger]}>
-                        <Text style={[controlsStyles.textButtonWhite, { fontSize: 20 }]}>
-                            <Ionicons name="trash" size={26} style={controlsStyles.buttonIconWhite} />
-                        </Text>
-                    </TouchableOpacity>
+    return <>
+        <View style={containerStyles.container}>
+            <BlurView intensity={10} style={[headerStyles.container, {flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around'}]} tint="light">
+                <View>
+                    <Ionicons name="home" size={28} style={[controlsStyles.buttonIconWhite, {marginLeft: 4, opacity: .2}]} />
+                </View>
+                <Text style={headerStyles.title}>Captura de código</Text>
+                <TouchableOpacity onPress={handleToggleFastMode}>
+                    {
+                        fastMode ? 
+                            <Ionicons name="bicycle" size={26} style={[controlsStyles.buttonIconWhite, {marginLeft: 4, color: 'yellow'}]} />
                         :
-                        <View
-                            style={[controlsStyles.buttonCycled, controlsStyles.buttonDarkDisabled]}>
-                            <Text style={[controlsStyles.textButtonMutted, { fontSize: 20 }]}>
-                                <Ionicons name="trash" size={26} style={controlsStyles.buttonIconWhiteMutted} />
+                            <Ionicons name="bicycle" size={26} style={[controlsStyles.buttonIconWhite, {marginLeft: 4, opacity: .3}]} />
+                    }
+                </TouchableOpacity>
+            </BlurView>
+            <BlurView intensity={10} style={BodyStyles.container} tint="light">
+                <View style={[BodyStyles.scanner, {backgroundColor: 'red'}]}>
+                    {/* <BarCodeScanner
+                        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+                        style={StyleSheet.absoluteFillObject}
+                    /> */}
+                    <CodebarScanner onReady={onReady}/>
+                </View>
+            </BlurView>
+            <View style={controlsStyles.container}>
+                <View style={controlsStyles.containerCodebarInput}>
+                    <TextInput
+                        style={controlsStyles.codebarInput}
+                        onChangeText={setScannedCode}
+                        value={scannedCode}
+                        onSubmitEditing={handleSend}
+                        keyboardType="number-pad"
+                    />
+                </View>
+                <View style={controlsStyles.containerControls}>
+                    {
+                        scannedCode != "" ? <TouchableOpacity
+                            onPress={resetCapture}
+                            style={[controlsStyles.buttonCycled, controlsStyles.buttonDanger]}>
+                            <Text style={[controlsStyles.textButtonWhite, { fontSize: 20 }]}>
+                                <Ionicons name="trash" size={26} style={controlsStyles.buttonIconWhite} />
                             </Text>
-                        </View>
-                }
-                {
-                    scannedCode != "" ? <TouchableOpacity
-                        onPress={gotoPhoto}
-                        style={[controlsStyles.button, controlsStyles.buttonPrimary, { borderRadius:10, flex: 1, flexDirection: 'row' }]}>
-                        <Text style={[controlsStyles.textButtonWhite, { fontSize: 20 }]}>
-                            Continuar
-                        </Text>
-                        <Ionicons name="arrow-forward" size={26} style={[controlsStyles.buttonIconWhite, {marginLeft: 4}]} />
-                    </TouchableOpacity>
-                        :
-                        <View
-                            style={[controlsStyles.button, controlsStyles.buttonPrimaryDisabled, { borderRadius:10, flex: 1, flexDirection: 'row' }]}>
-                            <Text style={[controlsStyles.textButtonMutted, { fontSize: 20 }]}>
+                        </TouchableOpacity>
+                            :
+                            <View
+                                style={[controlsStyles.buttonCycled, controlsStyles.buttonDarkDisabled]}>
+                                <Text style={[controlsStyles.textButtonMutted, { fontSize: 20 }]}>
+                                    <Ionicons name="trash" size={26} style={controlsStyles.buttonIconWhiteMutted} />
+                                </Text>
+                            </View>
+                    }
+                    {
+                        scannedCode != "" ? <TouchableOpacity
+                            onPress={gotoPhoto}
+                            style={[controlsStyles.button, controlsStyles.buttonPrimary, { borderRadius:10, flex: 1, flexDirection: 'row' }]}>
+                            <Text style={[controlsStyles.textButtonWhite, { fontSize: 20 }]}>
                                 Continuar
                             </Text>
-                            <Ionicons name="arrow-forward" size={26} style={[[controlsStyles.buttonIconWhiteMutted], {marginLeft: 4}]} />   
-                        </View>
-                }
+                            <Ionicons name="arrow-forward" size={26} style={[controlsStyles.buttonIconWhite, {marginLeft: 4}]} />
+                        </TouchableOpacity>
+                            :
+                            <View
+                                style={[controlsStyles.button, controlsStyles.buttonPrimaryDisabled, { borderRadius:10, flex: 1, flexDirection: 'row' }]}>
+                                <Text style={[controlsStyles.textButtonMutted, { fontSize: 20 }]}>
+                                    Continuar
+                                </Text>
+                                <Ionicons name="arrow-forward" size={26} style={[[controlsStyles.buttonIconWhiteMutted], {marginLeft: 4}]} />   
+                            </View>
+                    }
+                </View>
             </View>
         </View>
-    </View>
+    </>
 }
 
 const containerStyles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'transparent',
+        zIndex: 1
     },
 });
 
@@ -200,19 +191,6 @@ const BodyStyles = StyleSheet.create({
         marginBottom: 32,
         borderRadius: 0,
         overflow: 'hidden'
-    },
-    legendContainer: {
-        width: '93%',
-        position: 'absolute',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '10%',
-        bottom: 40
-    },
-    legend: {
-        color: 'white',
-        fontSize: 14,
-        fontWeight: 'bold'
     }
 });
 
