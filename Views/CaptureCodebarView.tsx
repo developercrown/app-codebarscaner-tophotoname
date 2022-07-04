@@ -4,6 +4,7 @@ import { BarCodeScanner } from 'expo-barcode-scanner';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BlurView } from 'expo-blur';
 import useSound from '../hooks/useSound';
+import CodebarScanner from '../Components/CodebarScanner';
 
 const CaptureCodebarView = (props: any) => {
     const sound = useSound(); 
@@ -94,14 +95,17 @@ const CaptureCodebarView = (props: any) => {
         </BlurView>
         <BlurView intensity={10} style={BodyStyles.container} tint="light">
             <View style={BodyStyles.scanner}>
-                <BarCodeScanner
+                {/* <BarCodeScanner
                     onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
                     style={StyleSheet.absoluteFillObject}
+                /> */}
+                <CodebarScanner
+                    
                 />
             </View>
-            <View style={BodyStyles.legendContainer}>
+            {/* <View style={BodyStyles.legendContainer}>
                 <Text style={BodyStyles.legend}>Apunta la camara al código</Text>
-            </View>
+            </View> */}
         </BlurView>
         <View style={controlsStyles.container}>
             <View style={controlsStyles.containerCodebarInput}>
