@@ -1,5 +1,7 @@
 import { Picker } from "@react-native-picker/picker";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { textStyles } from "./Styles";
 
 const Input = (props: any) => {
     const { label, value, onChange } = props;
@@ -69,6 +71,27 @@ const TextArea = (props: any) => {
     </View>
 }
 
+const GradientButton = (props: any) => {
+    const {label, onTouch} = props;
+
+    const handleTouch = () => {
+        if(onTouch) {
+            onTouch()
+        }
+    }
+
+    return <TouchableOpacity onPress={handleTouch}>
+        <LinearGradient
+            colors={['#4064ae', '#545da9', '#7756a3']}
+            style={{ width: 200, height: 50, borderRadius: 30, justifyContent: 'center', alignItems: 'center' }}
+            start={{ x: 0.7, y: 0 }}
+        >
+            {props.children ? props.children : (label ? <Text style={[textStyles.md, textStyles.bold, {color: 'white'}]}>{label}</Text> : '')}
+        </LinearGradient>
+    </TouchableOpacity>
+}
+
+
 const BodyStyles = StyleSheet.create({
     input: {
         width: '100%',
@@ -80,6 +103,7 @@ const BodyStyles = StyleSheet.create({
 });
 
 export {
+    GradientButton,
     Input,
     Select,
     TextArea
