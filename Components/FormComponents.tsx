@@ -1,24 +1,49 @@
 import { Picker } from "@react-native-picker/picker";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { textStyles } from "./Styles";
+import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { formStyles, textStyles } from "./Styles";
+import Ionicons from '@expo/vector-icons/Ionicons';
+import Constants from 'expo-constants'
+
+// const Input = (props: any) => {
+//     const { label, value, onChange } = props;
+
+//     return <View style={{ marginTop: 10 }}>
+//         <Text style={{ color: '#eee', fontWeight: 'bold', fontSize: 18 }}>{label}</Text>
+//         <TextInput value={value} onChangeText={onChange} style={
+//             {
+//                 color: '#eee',
+//                 backgroundColor: "rgba(0,0,0,.5)",
+//                 paddingVertical: 10,
+//                 paddingHorizontal: 16,
+//                 marginTop: 10,
+//                 borderRadius: 4,
+//                 fontSize: 16
+//             }
+//         } />
+//     </View>
+// }
+
+const FormContainer = (props: any) => {
+    return <KeyboardAvoidingView style={{ flex: 1 }} behavior={"padding"} enabled><View style={{ flex: 1, marginTop: 10 }}>
+            {props.children}
+        </View>
+    </KeyboardAvoidingView>
+}
 
 const Input = (props: any) => {
     const { label, value, onChange } = props;
-
-    return <View style={{ marginTop: 10 }}>
-        <Text style={{ color: '#eee', fontWeight: 'bold', fontSize: 18 }}>{label}</Text>
-        <TextInput value={value} onChangeText={onChange} style={
+    return <View style={formStyles.inputContainer}>
+        <Text style={[
+            textStyles.alignLeft,
+            textStyles.colorDark,
+            textStyles.xs,
+            textStyles.bold,
             {
-                color: '#eee',
-                backgroundColor: "rgba(0,0,0,.5)",
-                paddingVertical: 10,
-                paddingHorizontal: 16,
-                marginTop: 10,
-                borderRadius: 4,
-                fontSize: 16
+                marginTop: 10
             }
-        } />
+        ]}>{label}:</Text>
+        <TextInput value={value} onChangeText={onChange} style={formStyles.input} />
     </View>
 }
 
@@ -72,10 +97,10 @@ const TextArea = (props: any) => {
 }
 
 const GradientButton = (props: any) => {
-    const {label, onTouch} = props;
+    const { label, onTouch } = props;
 
     const handleTouch = () => {
-        if(onTouch) {
+        if (onTouch) {
             onTouch()
         }
     }
@@ -86,10 +111,30 @@ const GradientButton = (props: any) => {
             style={{ width: 200, height: 50, borderRadius: 30, justifyContent: 'center', alignItems: 'center' }}
             start={{ x: 0.7, y: 0 }}
         >
-            {props.children ? props.children : (label ? <Text style={[textStyles.md, textStyles.bold, {color: 'white'}]}>{label}</Text> : '')}
+            {props.children ? props.children : (label ? <Text style={[textStyles.md, textStyles.bold, { color: 'white' }]}>{label}</Text> : '')}
         </LinearGradient>
     </TouchableOpacity>
 }
+
+const IconButton = (props: any) => {
+    const { icon, color, size, onTouch } = props;
+
+    const handleTouch = () => {
+        if (onTouch) {
+            onTouch()
+        }
+    }
+
+    return <TouchableOpacity onPress={handleTouch} style={[{
+        paddingVertical: 4,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center'
+    }, { marginTop: Constants.statusBarHeight }]}>
+        <Ionicons name={icon} size={size ? size : 32} style={{ color: color ? color : '#333' }} />
+    </TouchableOpacity>
+}
+
 
 
 const BodyStyles = StyleSheet.create({
@@ -103,7 +148,9 @@ const BodyStyles = StyleSheet.create({
 });
 
 export {
+    FormContainer,
     GradientButton,
+    IconButton,
     Input,
     Select,
     TextArea
