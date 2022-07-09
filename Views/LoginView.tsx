@@ -1,35 +1,27 @@
-import { useLayoutEffect, useState } from "react";
+import { useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native"
 import { FormContainer, GradientButton, IconButton, Input } from "../Components/FormComponents";
-
 import { textStyles } from "../Components/Styles";
-
 import {LogoText} from '../assets/images';
-
-import LogoTitle from "../Components/LogoTitleHeader";
 import ScreenView from '../Components/ScreenView';
+import useHeaderbar from "../hooks/useHeaderbar";
 
 const LoginView = (props: any) => {
     const { navigation } = props;
     const [username, setUsername] = useState<string>();
     const [password, setPassword] = useState<string>();
-
-    useLayoutEffect(() => {
-        navigation.setOptions(options);
-    }, [navigation]);
+    useHeaderbar({
+        hiddeShadow: false,
+        navigation,
+        rightSection: <IconButton icon="cog" color="#333" size={32} onTouch={() => navigation.navigate('Configuration')}/>,
+        style: {
+            backgroundColor: 'rgba(255, 255, 255, .8)',
+        }
+    });
 
     const handleLogin = () => {
-        alert("Login")
+        navigation.replace('Dashboard')
     }
-
-    const options = {
-        // headerStyle: {
-        //     backgroundColor: 'rgba(255, 255, 255, .8)',
-        // },
-        // headerShadowVisible: false,
-        headerTitle: (props: any) => <LogoTitle {...props} />,
-        headerRight: () => <IconButton icon="cog" color="#333" size={32} onTouch={() => navigation.navigate('Configuration')}/>
-    };
 
     return <ScreenView style={{backgroundColor: 'rgba(255, 255, 255, .75)'}}>
             <View style={styles.containerTop}>

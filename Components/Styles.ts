@@ -14,6 +14,19 @@ const formStyles = StyleSheet.create({
         fontSize: 14,
         borderBottomWidth: 1,
         borderBottomColor: 'rgba(100, 150, 255, .5)'
+    },
+    inputTextArea: {
+        color: '#333',
+        backgroundColor: "transparent",
+        padding: 10,
+        marginTop: 10,
+        borderRadius: 4,
+        justifyContent: 'center',
+        textAlignVertical: 'top',
+        borderWidth: 1,
+        fontSize: 14,
+        lineHeight:24,
+        borderColor: 'rgba(100, 150, 255, .5)'
     }
 });
 

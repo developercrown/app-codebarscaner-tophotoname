@@ -5,6 +5,7 @@ import { StyleSheet, SafeAreaView, ImageBackground } from 'react-native';
 import LoginView from './Views/LoginView';
 import background from "./assets/images/background.jpg";
 import ConfigurationView from './Views/ConfigurationView';
+import DashboardView from './Views/DashboardView';
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -34,7 +35,8 @@ export default function App() {
             backgroundColor: 'red',
           }}>
             <Stack.Screen name="Login" component={LoginView}/>
-            <Stack.Screen name="Configuration" component={ConfigurationView}/>
+            <Stack.Screen name="Configuration" component={ConfigurationView} options={{ title: 'Configuracion General',  }}/>
+            <Stack.Screen name="Dashboard" component={DashboardView} options={{ title: 'Bienvenido' }}/>
           </Stack.Navigator>
         </NavigationContainer>
       </ImageBackground>

@@ -72,22 +72,18 @@ const Select = (props: any) => {
 
 const TextArea = (props: any) => {
     const { onChange, value, label, placeholder } = props
-    return <View style={{ padding: 10, marginTop: 4 }}>
-        <Text style={{ color: 'white', fontWeight: 'bold', marginBottom: 10 }}>{label}:</Text>
+    return <View style={formStyles.inputContainer}>
+        <Text style={[
+            textStyles.alignLeft,
+            textStyles.colorDark,
+            textStyles.xs,
+            textStyles.bold,
+            {
+                marginTop: 10
+            }
+        ]}>{label}:</Text>
         <TextInput
-            style={[
-                BodyStyles.input,
-                {
-                    backgroundColor: 'rgba(0, 0, 0, .5)',
-                    color: '#eee',
-                    height: 80,
-                    padding: 10,
-                    justifyContent: 'center',
-                    textAlignVertical: 'top',
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, .2)'
-                }
-            ]}
+            style={formStyles.inputTextArea}
             multiline={true}
             value={value}
             placeholder={placeholder}
@@ -97,7 +93,7 @@ const TextArea = (props: any) => {
 }
 
 const GradientButton = (props: any) => {
-    const { label, onTouch } = props;
+    const { borderRadius, colors, label, onTouch, width, height, x , y } = props;
 
     const handleTouch = () => {
         if (onTouch) {
@@ -107,9 +103,9 @@ const GradientButton = (props: any) => {
 
     return <TouchableOpacity onPress={handleTouch}>
         <LinearGradient
-            colors={['#4064ae', '#545da9', '#7756a3']}
-            style={{ width: 200, height: 50, borderRadius: 30, justifyContent: 'center', alignItems: 'center' }}
-            start={{ x: 0.7, y: 0 }}
+            colors={colors ? colors : ['#4064ae', '#545da9', '#7756a3']}
+            style={{ width: width ? width : 200, height: height ? height : 50, borderRadius: borderRadius ? borderRadius : 30, justifyContent: 'center', alignItems: 'center' }}
+            start={{ x: x ? x : 0.7, y: y ? y : 0 }}
         >
             {props.children ? props.children : (label ? <Text style={[textStyles.md, textStyles.bold, { color: 'white' }]}>{label}</Text> : '')}
         </LinearGradient>
