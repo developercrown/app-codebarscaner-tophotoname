@@ -3,7 +3,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { formStyles, textStyles } from "./Styles";
 import Ionicons from '@expo/vector-icons/Ionicons';
-import Constants from 'expo-constants'
 
 // const Input = (props: any) => {
 //     const { label, value, onChange } = props;
@@ -112,8 +111,20 @@ const GradientButton = (props: any) => {
     </TouchableOpacity>
 }
 
+const GradientContainer = (props: any) => {
+    const { style, colors, width, height, start , end } = props;
+    return <LinearGradient
+            colors={colors ? colors : ['#4064ae', '#545da9', '#7756a3']}
+            style={[{ width: width ? width : '100%', height: height ? height : 50 }, style]}
+            start={start}
+            end={end}
+        >
+            {props.children}
+        </LinearGradient>
+}
+
 const IconButton = (props: any) => {
-    const { icon, color, size, onTouch } = props;
+    const { icon, color, size, onTouch, style } = props;
 
     const handleTouch = () => {
         if (onTouch) {
@@ -126,7 +137,7 @@ const IconButton = (props: any) => {
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'center'
-    }, { marginTop: Constants.statusBarHeight }]}>
+    }, style]}>
         <Ionicons name={icon} size={size ? size : 32} style={{ color: color ? color : '#333' }} />
     </TouchableOpacity>
 }
@@ -146,6 +157,7 @@ const BodyStyles = StyleSheet.create({
 export {
     FormContainer,
     GradientButton,
+    GradientContainer,
     IconButton,
     Input,
     Select,

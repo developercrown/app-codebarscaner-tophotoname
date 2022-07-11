@@ -3,8 +3,9 @@ import { Alert, BackHandler, StyleSheet, Text, TextInput, TouchableOpacity, View
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BlurView } from 'expo-blur';
-import useSound from '../hooks/useSound';
-import CodebarScanner from '../Components/CodebarScanner';
+import CodebarScanner from '../../../../Components/CodebarScanner';
+import useSound from '../../../../hooks/useSound';
+import { colors } from '../../../../Components/Styles';
 
 const CaptureCodebarView = (props: any) => {
     const sound = useSound(); 
@@ -95,13 +96,13 @@ const CaptureCodebarView = (props: any) => {
         </BlurView>
         <BlurView intensity={10} style={BodyStyles.container} tint="light">
             <View style={BodyStyles.scanner}>
-                {/* <BarCodeScanner
+                <BarCodeScanner
                     onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
                     style={StyleSheet.absoluteFillObject}
-                /> */}
-                <CodebarScanner
-                    
                 />
+                {/* <CodebarScanner
+                    
+                /> */}
             </View>
             {/* <View style={BodyStyles.legendContainer}>
                 <Text style={BodyStyles.legend}>Apunta la camara al código</Text>
@@ -160,7 +161,8 @@ const CaptureCodebarView = (props: any) => {
 const containerStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'transparent',
+        width: '100%',
+        height: 700
     },
 });
 
@@ -176,7 +178,7 @@ const headerStyles = StyleSheet.create({
         borderRightWidth: 1
     },
     title: {
-        color: '#eee',
+        color: colors.royalblue.color,
         fontSize: 20,
         fontWeight: 'normal'
     }
@@ -185,7 +187,7 @@ const headerStyles = StyleSheet.create({
 const BodyStyles = StyleSheet.create({
     container: {
         flex: 6,
-        backgroundColor: 'rgba(59, 0, 153, 0.2)',
+        // backgroundColor: 'rgba(59, 0, 153, 0.2)',
         padding: 20,
         justifyContent: 'center',
         alignItems: 'center',
@@ -223,7 +225,7 @@ const BodyStyles = StyleSheet.create({
 const controlsStyles = StyleSheet.create({
     container: {
         flex: 3,
-        backgroundColor: 'rgba(0, 0, 0, .4)'
+        // backgroundColor: 'rgba(0, 0, 0, .4)'
     },
     containerCodebarInput: {
 

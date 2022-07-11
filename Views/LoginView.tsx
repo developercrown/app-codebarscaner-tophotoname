@@ -5,15 +5,16 @@ import { textStyles } from "../Components/Styles";
 import {LogoText} from '../assets/images';
 import ScreenView from '../Components/ScreenView';
 import useHeaderbar from "../hooks/useHeaderbar";
+import Constants from 'expo-constants'
 
 const LoginView = (props: any) => {
     const { navigation } = props;
     const [username, setUsername] = useState<string>();
     const [password, setPassword] = useState<string>();
     useHeaderbar({
-        hiddeShadow: false,
+        hideShadow: false,
         navigation,
-        rightSection: <IconButton icon="cog" color="#333" size={32} onTouch={() => navigation.navigate('Configuration')}/>,
+        rightSection: <IconButton icon="cog" color="#333" size={32} onTouch={() => navigation.navigate('Configuration')} style={{ marginTop: Constants.statusBarHeight }}/>,
         style: {
             backgroundColor: 'rgba(255, 255, 255, .8)',
         }

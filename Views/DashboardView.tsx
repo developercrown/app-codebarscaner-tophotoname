@@ -1,34 +1,22 @@
-import { Image, StyleSheet, Text, View } from "react-native"
-import {LogoText} from '../assets/images';
-import ScreenView from '../Components/ScreenView';
-import useHeaderbar from "../hooks/useHeaderbar";
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useEffect } from 'react';
+import HomeView from './Pages/HomeView';
+import ReviewInventory from './Pages/ReviewInventory';
 
 const DashboardView = (props: any) => {
     const {navigation} = props;
-    useHeaderbar({
-        navigation,
-        hideShadow: false,
-        leftSection: null,
-        rightSection: null
-    })
-    return <ScreenView style={{backgroundColor: 'rgba(255, 255, 255, .75)'}}>
-            
-        </ScreenView>
+    const DashboardStack = createNativeStackNavigator();
+
+    useEffect(() => {
+        console.log('started');
+        navigation.setOptions({
+            headerShown: false
+        });
+    });
+
+    return <DashboardStack.Navigator initialRouteName="Home">
+        <DashboardStack.Screen name="Home" component={HomeView} />
+        <DashboardStack.Screen name="ReviewInventory" component={ReviewInventory} />
+    </DashboardStack.Navigator>
 }
-
-const styles = StyleSheet.create({
-    containerTop: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 10
-    },
-    logo: {
-        width: 300,
-        height: 300,
-    },
-    bodyContainer: {
-        flex: 1
-    }
-});
-
 export default DashboardView;
