@@ -30,7 +30,7 @@ const HomeView = (props: any) => {
     });
     
     return <View style={{flex: 1}}>
-        <ScreenView style={{backgroundColor: 'rgba(255, 255, 255, .4)'}} styleContainer={{paddingVertical: 0}}>
+        <ScreenView style={{backgroundColor: 'transparent'}} styleContainer={{paddingVertical: 0}}>
 
         <GradientContainer
                 height={100}

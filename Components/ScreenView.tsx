@@ -12,11 +12,13 @@ const screenViewStyles = StyleSheet.create({
 
 const ScreenView = (props: any) => {
     const {children, style, styleContainer} = props;
-    return <ScrollView style={[screenViewStyles.scrollview, style ? style : {}]}>
-        <View style={[screenViewStyles.container, styleContainer]}>
-            {children}
-        </View>
-    </ScrollView>
+    return <View style={[screenViewStyles.scrollview, style]}>
+        <ScrollView>
+            <View style={[screenViewStyles.container, styleContainer]}>
+                {children}
+            </View>
+        </ScrollView>
+    </View>
 }
 
 export default ScreenView;

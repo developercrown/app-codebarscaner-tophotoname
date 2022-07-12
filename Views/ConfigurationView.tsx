@@ -3,8 +3,10 @@ import {LogoText} from '../assets/images';
 import { FormContainer, GradientButton, TextArea } from "../Components/FormComponents";
 import ScreenView from '../Components/ScreenView';
 import { useState } from 'react';
+import useHeaderbar from "../hooks/useHeaderbar";
 
 const ConfigurationView = (props: any) => {
+    const { navigation } = props;
     const [server, setServer] = useState('https://api-inventario-minify.upn164.edu.mx/api/v1/');
 
     const handleStoreServer = () => {
@@ -15,13 +17,21 @@ const ConfigurationView = (props: any) => {
         alert('reset app configuration')
     }
 
-    return <ScreenView style={{backgroundColor: 'rgba(255, 255, 255, .75)'}}>
+    useHeaderbar({
+        hideShadow: false,
+        navigation,
+        style: {
+            backgroundColor: 'rgba(255, 255, 255, .5)',
+        }
+    });
+
+    return <ScreenView style={{backgroundColor: 'rgba(255, 255, 255, .5)'}}>
             <View style={styles.containerTop}>
                 <Image source={LogoText} style={styles.logo} />
             </View>
             <View style={styles.bodyContainer}>
                 <FormContainer>
-                    <TextArea value={server} onChange={setServer} label="URL del servidor"/>
+                    <TextArea fontSize={18} value={server} onChange={setServer} label="URL del servidor"/>
                     <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 26 }}>
                         <GradientButton label="Guardar Cambios" onTouch={handleStoreServer} />
                     </View>

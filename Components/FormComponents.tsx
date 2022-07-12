@@ -1,8 +1,9 @@
 import { Picker } from "@react-native-picker/picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { formStyles, textStyles } from "./Styles";
+import { colors, formStyles, textStyles } from "./Styles";
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 
 // const Input = (props: any) => {
 //     const { label, value, onChange } = props;
@@ -30,21 +31,79 @@ const FormContainer = (props: any) => {
     </KeyboardAvoidingView>
 }
 
-const Input = (props: any) => {
-    const { label, value, onChange } = props;
+const Input = forwardRef((props: any, ref: any) => {
+    const inputRef = useRef<any>();
+    const [visible, setVisible] = useState<boolean>(false);
+    const { icon, label, keyboardType, placeholder, value, onChange, type, onSubmit } = props;
+
+    const toggleVisible = () => {
+        setVisible(!visible)
+    }
+
+    const handleFocus = () => {
+        inputRef.current.focus()
+    }
+
+    const handleSubmit = () => {
+        if(onSubmit){
+            onSubmit()
+        }
+    }
+
+    useImperativeHandle(ref, () => ({
+        focus: () => {
+            handleFocus()
+        }
+    }));
+
     return <View style={formStyles.inputContainer}>
-        <Text style={[
-            textStyles.alignLeft,
-            textStyles.colorDark,
-            textStyles.xs,
-            textStyles.bold,
-            {
-                marginTop: 10
-            }
-        ]}>{label}:</Text>
-        <TextInput value={value} onChangeText={onChange} style={formStyles.input} />
+
+        {
+            !icon && <>
+                <Text style={[
+                textStyles.alignLeft,
+                textStyles.colorDark,
+                textStyles.xs,
+                textStyles.bold,
+                    {
+                        marginTop: 10
+                    }
+                ]}>{label}:</Text>
+                <TextInput
+                    onChangeText={onChange}
+                    onSubmitEditing={handleSubmit}
+                    placeholder={placeholder}
+                    ref={inputRef}
+                    returnKeyType="done"
+                    style={[formStyles.input, formStyles.inputBackground]}
+                    value={value}
+                    />
+            </>
+
+        }
+
+
+        {
+            icon && <View style={[formStyles.input, formStyles.inputBackground, {flexDirection: 'row', overflow: 'hidden', marginVertical: 10}]}>
+                <IconButton icon={icon} color={colors.dark.color} size={24}/>
+                <TextInput
+                    keyboardType={keyboardType}
+                    onChangeText={onChange}
+                    onSubmitEditing={handleSubmit}
+                    placeholder={placeholder}
+                    ref={inputRef}
+                    returnKeyType="done"
+                    secureTextEntry={type === "password" && !visible}
+                    style={[{marginLeft: 6, width: type === "password" ? "82%" : "90%"}]}
+                    value={value}
+                    />
+                {
+                    type === "password" && <IconButton icon={visible ? "eye" : "eye-off"} color={colors.dark.color} size={24} onTouch={toggleVisible}/>
+                }
+            </View>
+        }
     </View>
-}
+})
 
 const Select = (props: any) => {
     const { items, label, onChange, value } = props
@@ -70,7 +129,7 @@ const Select = (props: any) => {
 }
 
 const TextArea = (props: any) => {
-    const { onChange, value, label, placeholder } = props
+    const { fontSize, onChange, value, label, placeholder } = props
     return <View style={formStyles.inputContainer}>
         <Text style={[
             textStyles.alignLeft,
@@ -82,7 +141,7 @@ const TextArea = (props: any) => {
             }
         ]}>{label}:</Text>
         <TextInput
-            style={formStyles.inputTextArea}
+            style={[formStyles.inputTextArea, formStyles.inputBackground, {fontSize: fontSize ? fontSize : 14}]}
             multiline={true}
             value={value}
             placeholder={placeholder}
@@ -92,7 +151,7 @@ const TextArea = (props: any) => {
 }
 
 const GradientButton = (props: any) => {
-    const { borderRadius, colors, label, onTouch, width, height, x , y } = props;
+    const { borderRadius, colors, label, onTouch, width, height, x , y, style } = props;
 
     const handleTouch = () => {
         if (onTouch) {
@@ -103,7 +162,7 @@ const GradientButton = (props: any) => {
     return <TouchableOpacity onPress={handleTouch}>
         <LinearGradient
             colors={colors ? colors : ['#4064ae', '#545da9', '#7756a3']}
-            style={{ width: width ? width : 200, height: height ? height : 50, borderRadius: borderRadius ? borderRadius : 30, justifyContent: 'center', alignItems: 'center' }}
+            style={[{ width: width ? width : 200, height: height ? height : 50, borderRadius: borderRadius ? borderRadius : 30, justifyContent: 'center', alignItems: 'center' }, style]}
             start={{ x: x ? x : 0.7, y: y ? y : 0 }}
         >
             {props.children ? props.children : (label ? <Text style={[textStyles.md, textStyles.bold, { color: 'white' }]}>{label}</Text> : '')}

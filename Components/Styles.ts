@@ -4,6 +4,12 @@ const colors = StyleSheet.create({
     white: {
         color: "#fff"
     },
+    black: {
+        color: 'rgba(0, 0, 0, 1)'
+    },
+    dark: {
+        color: 'rgba(90, 90, 90, 1)'
+    },
     silver: {
         color: '#c0c0c0'
     },
@@ -157,6 +163,9 @@ const colors = StyleSheet.create({
     mediumblue: {
         color: '#0000CD'
     },
+    blue: {
+        color: 'rgba(4, 100, 236, 1)'
+    },
     snow: {
         color: '#FFFAFA'
     },
@@ -246,6 +255,9 @@ const background = StyleSheet.create({
     },
     navy: {
         backgroundColor: '#000080'
+    },
+    blue: {
+        backgroundColor: 'rgba(4, 100, 236, 1)'
     },
     fuchsia: {
         backgroundColor: '#ff00ff'
@@ -448,23 +460,30 @@ const formStyles = StyleSheet.create({
         paddingVertical: 4,
         paddingHorizontal: 12,
         marginTop: 10,
-        borderRadius: 0,
+        borderRadius: 100,
+        height: 42,
         fontSize: 14,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(100, 150, 255, .5)'
+        width: '100%'
+        // borderBottomWidth: 1,
+        // borderBottomColor: 'rgba(100, 150, 255, .5)'
     },
     inputTextArea: {
         color: '#333',
         backgroundColor: "transparent",
-        padding: 10,
+        padding: 8,
+        minHeight: 100,
         marginTop: 10,
-        borderRadius: 4,
+        borderRadius: 10,
         justifyContent: 'center',
         textAlignVertical: 'top',
         borderWidth: 1,
         fontSize: 14,
-        lineHeight:24,
-        borderColor: 'rgba(100, 150, 255, .5)'
+        lineHeight:26,
+        borderColor: 'rgba(0, 0, 0, 0.1)',
+        elevation: 0
+    },
+    inputBackground: {
+        backgroundColor: "rgba(255, 255, 255, .8)",
     }
 });
 

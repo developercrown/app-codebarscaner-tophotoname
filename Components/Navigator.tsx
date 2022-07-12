@@ -61,8 +61,6 @@ const Navigator = (props: any) => {
     }, [navigation])
 
     useEffect(() => {
-        console.log('current', current);
-        
     }, [current])
 
     return <View style={styles.navigator}>

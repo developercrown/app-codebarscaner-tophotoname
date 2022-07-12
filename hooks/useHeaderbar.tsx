@@ -4,6 +4,7 @@ import LogoTitle from "../Components/LogoTitleHeader";
 const useHeaderbar = (props: any) => {
     const { hideShadow, navigation, rightSection, leftSection, style } = props;
     const options = {
+        // headerTransparent: true,
         headerStyle: style,
         headerShadowVisible: hideShadow,
         headerTitle: (props: any) => leftSection ? leftSection : <LogoTitle {...props} />,

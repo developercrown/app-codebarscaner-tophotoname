@@ -8,7 +8,6 @@ const DashboardView = (props: any) => {
     const DashboardStack = createNativeStackNavigator();
 
     useEffect(() => {
-        console.log('started');
         navigation.setOptions({
             headerShown: false
         });
