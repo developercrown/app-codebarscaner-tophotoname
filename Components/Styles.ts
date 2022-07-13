@@ -500,6 +500,15 @@ const textStyles = StyleSheet.create({
     colorDark: {
         color: '#333',
     },
+    micro: {
+        fontSize: 8
+    },
+    nano: {
+        fontSize: 10
+    },
+    pico: {
+        fontSize: 12
+    },
     xs: {
         fontSize: 14
     },
@@ -530,10 +539,46 @@ const alignStyles = StyleSheet.create({
     }
 });
 
+const marginStyles = StyleSheet.create({
+    top1: { marginTop: 1 },
+    top2: { marginTop: 2 },
+    top3: { marginTop: 3 },
+    top4: { marginTop: 4 },
+    topSm: { marginTop: 6 },
+    topMd: { marginTop: 10 },
+    topLg: { marginTop: 16 },
+    topXl: { marginTop: 20 },
+    left1: { marginLeft: 1 },
+    left3: { marginLeft: 3 },
+    left2: { marginLeft: 2 },
+    left4: { marginLeft: 4 },
+    leftSm: { marginLeft: 6 },
+    leftMd: { marginLeft: 10 },
+    leftLg: { marginLeft: 16 },
+    leftXl: { marginLeft: 20 },
+    bottom1: { marginBottom: 1 },
+    bottom2: { marginBottom: 2 },
+    bottom3: { marginBottom: 3 },
+    bottom4: { marginBottom: 4 },
+    bottomSm: { marginBottom: 6 },
+    bottomMd: { marginBottom: 10 },
+    bottomLg: { marginBottom: 16 },
+    bottomXl: { marginBottom: 20 },
+    right1: { marginRight: 1 },
+    right2: { marginRight: 2 },
+    right3: { marginRight: 3 },
+    right4: { marginRight: 4 },
+    rightSm: { marginRight: 6 },
+    rightMd: { marginRight: 10 },
+    rightLg: { marginRight: 16 },
+    rightXl: { marginRight: 20 },
+});
+
 export {
     alignStyles,
     background,
     colors,
     formStyles,
+    marginStyles,
     textStyles
 }

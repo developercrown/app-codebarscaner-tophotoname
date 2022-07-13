@@ -25,7 +25,9 @@ import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 // }
 
 const FormContainer = (props: any) => {
-    return <KeyboardAvoidingView style={{ flex: 1 }} behavior={"padding"} enabled><View style={{ flex: 1, marginTop: 10 }}>
+    const {style} = props;
+    return <KeyboardAvoidingView style={{ flex: 1 }} behavior={"padding"} enabled>
+        <View style={[{ flex: 1, marginTop: 10 }, style]}>
             {props.children}
         </View>
     </KeyboardAvoidingView>
@@ -34,7 +36,18 @@ const FormContainer = (props: any) => {
 const Input = forwardRef((props: any, ref: any) => {
     const inputRef = useRef<any>();
     const [visible, setVisible] = useState<boolean>(false);
-    const { icon, label, keyboardType, placeholder, value, onChange, type, onSubmit } = props;
+    const {
+            icon,
+            label,
+            keyboardType,
+            onChange,
+            onSubmit,
+            placeholder,
+            style,
+            styleInput,
+            type,
+            value,
+        } = props;
 
     const toggleVisible = () => {
         setVisible(!visible)
@@ -75,7 +88,7 @@ const Input = forwardRef((props: any, ref: any) => {
                     placeholder={placeholder}
                     ref={inputRef}
                     returnKeyType="done"
-                    style={[formStyles.input, formStyles.inputBackground]}
+                    style={[formStyles.input, formStyles.inputBackground, styleInput]}
                     value={value}
                     />
             </>
@@ -84,7 +97,18 @@ const Input = forwardRef((props: any, ref: any) => {
 
 
         {
-            icon && <View style={[formStyles.input, formStyles.inputBackground, {flexDirection: 'row', overflow: 'hidden', marginVertical: 10}]}>
+            icon && <View style={
+                [
+                    formStyles.input,
+                    formStyles.inputBackground,
+                    {
+                        flexDirection: 'row',
+                        overflow: 'hidden',
+                        marginVertical: 10
+                    },
+                    style
+                ]
+            }>
                 <IconButton icon={icon} color={colors.dark.color} size={24}/>
                 <TextInput
                     keyboardType={keyboardType}
@@ -94,7 +118,13 @@ const Input = forwardRef((props: any, ref: any) => {
                     ref={inputRef}
                     returnKeyType="done"
                     secureTextEntry={type === "password" && !visible}
-                    style={[{marginLeft: 6, width: type === "password" ? "82%" : "90%"}]}
+                    style={[
+                        {
+                            marginLeft: 6,
+                            width: type === "password" ? "82%" : "90%"
+                        },
+                        styleInput
+                    ]}
                     value={value}
                     />
                 {

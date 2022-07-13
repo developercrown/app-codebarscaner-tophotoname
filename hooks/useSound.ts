@@ -1,13 +1,13 @@
 import { Audio } from 'expo-av';
 
 const useSound = () => {
-    const unload = (sound: any) => {
+    const unload = (sound: any, timeout: number = 1000) => {
         setTimeout(() => {
             if(sound){
                 sound.stopAsync()
                 sound.unloadAsync();
             }
-        }, 1000);
+        }, timeout);
     }
     const cancel = async () => {
         const { sound } = await Audio.Sound.createAsync(
@@ -19,6 +19,13 @@ const useSound = () => {
     const error = async () => {
         const { sound } = await Audio.Sound.createAsync(
             require('../assets/audio/error.mp3')
+        );
+        await sound.playAsync();
+        unload(sound);
+    };
+    const deny = async () => {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/audio/deny.mp3')
         );
         await sound.playAsync();
         unload(sound);
@@ -65,23 +72,80 @@ const useSound = () => {
         await sound.playAsync();
         unload(sound);
     };
-    const start = async () => {
+    const echo = async () => {
         const { sound } = await Audio.Sound.createAsync(
-            require('../assets/audio/start.mp3')
+            require('../assets/audio/echo.mp3')
         );
         await sound.playAsync();
         unload(sound);
     };
+    const hello = async () => {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/audio/hello.mp3')
+        );
+        await sound.playAsync();
+        unload(sound);
+    };
+    const toggle = async () => {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/audio/toggle.mp3')
+        );
+        await sound.playAsync();
+        unload(sound);
+    };
+    const drop = async () => {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/audio/drop.mp3')
+        );
+        await sound.playAsync();
+        unload(sound);
+    };
+    const notification = async () => {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/audio/notification.mp3')
+        );
+        await sound.playAsync();
+        unload(sound);
+    };
+    const base = async () => {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/audio/base.mp3')
+        );
+        await sound.playAsync();
+        unload(sound);
+    };
+    const back = async () => {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/audio/back.mp3')
+        );
+        await sound.playAsync();
+        unload(sound);
+    };
+    const start = async () => {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/audio/welcome.mp3')
+        );
+        await sound.playAsync();
+        unload(sound, 2000);
+    };
 
     return {
+        back,
+        base,
         cancel,
+        deny,
+        drop,
         error,
+        echo,
+        hello,
         msn1,
         msn2,
         msn3,
+        notification,
         reviewed,
         start,
         success,
+        toggle,
         touch
     }
 }

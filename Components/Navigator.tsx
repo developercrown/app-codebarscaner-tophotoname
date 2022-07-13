@@ -1,7 +1,8 @@
-import { StyleSheet, TouchableOpacity, View } from "react-native"
+import { Keyboard, StyleSheet, TouchableOpacity, View } from "react-native"
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from "./Styles";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
+import useSound from "../hooks/useSound";
 
 const MenuOption = (props: any) => {
     const {icon, path, action, current} = props;
@@ -14,44 +15,48 @@ const MenuOption = (props: any) => {
 
 const Navigator = (props: any) => {
     const {navigation} = props;
+    const sound = useSound(); 
     const [current, setCurrent] = useState<any>("");
+    const [visible, setVisible] = useState<boolean>(true);
 
-    const handleSearch = () => {
-        navigation.navigate("Search")
+    const handleNavigate = (target: string) => {
+        sound.drop();
+        navigation.navigate(target)
     }
-    
-    const handleHome = () => {
-        navigation.navigate("Home")
-    }
-    
-    const handleInventoryChecking = () => {
-        navigation.navigate("ReviewInventory")
-    }
-    
-    const handleConfig = () => {
-        navigation.navigate("Configuration")
-    }
+
+    useLayoutEffect(() =>{
+
+        const listenerShow = Keyboard.addListener('keyboardDidShow', () => {
+                setVisible(false)
+        });
+        const listenerHide = Keyboard.addListener('keyboardDidHide', () => {
+            setTimeout(() => {
+                setVisible(true)
+            }, 50);
+        })
+
+        return () => {
+            listenerShow.remove()
+            listenerHide.remove()
+        }
+    }, []);
 
     const items = [
         {
             icon: "home",
-            path: "Home",
-            action: handleHome
+            path: "Home"
         },
         {
             icon: "search",
-            path: "Search",
-            action: handleSearch
+            path: "Search"
         },
         {
             icon: "qr-code-outline",
-            path: "ReviewInventory",
-            action: handleInventoryChecking
+            path: "ReviewInventory"
         },
         {
             icon: "cog",
-            path: "Configuration",
-            action: handleConfig
+            path: "Configuration"
         }
     ]
 
@@ -63,23 +68,23 @@ const Navigator = (props: any) => {
     useEffect(() => {
     }, [current])
 
-    return <View style={styles.navigator}>
-    <View style={styles.navigatorContainer}>
-
-        {
-            items && items.map((item, key)=>{
-                return <MenuOption
-                            action={item.action}
-                            current={current}
-                            icon={item.icon}
-                            key={key}
-                            path={item.path}
-                            />
-            })
-        }
-
+    return visible ? <View style={styles.navigator}>
+        <View style={styles.navigatorContainer}>
+            {
+                items && items.map((item: any, key)=>{
+                    return <MenuOption
+                                action={()=>handleNavigate(item.path)}
+                                current={current}
+                                icon={item.icon}
+                                key={key}
+                                path={item.path}
+                                />
+                })
+            }
+        </View>
     </View>
-</View>
+    :
+    null
 }
 
 const styles = StyleSheet.create({
@@ -104,10 +109,11 @@ const styles = StyleSheet.create({
         bottom: -10,
         justifyContent: 'center',
         alignItems: 'center',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        zIndex: 1
     },
     navigatorContainer: {
-        backgroundColor: 'rgba(255, 255, 255, .4)',
+        backgroundColor: 'rgba(151, 199, 249, 1)',
         width: '100%',
         height: 70,
         borderTopLeftRadius: 28,
