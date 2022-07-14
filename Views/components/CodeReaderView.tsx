@@ -3,14 +3,14 @@ import { BackHandler, Dimensions, Image, StyleSheet, Text, TouchableOpacity, Vie
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BarCodeScanner } from "expo-barcode-scanner";
 import Constants from 'expo-constants'
-import ScreenView from '../../../Components/ScreenView';
-import Navigator from "../../../Components/Navigator";
-import useSound from "../../../hooks/useSound";
-import { FormContainer, GradientButton, GradientContainer, Input } from "../../../Components/FormComponents";
-import { colors, marginStyles, textStyles } from "../../../Components/Styles";
-import { CameraLine } from "../../../assets/images";
+import ScreenView from '../../components/ScreenView';
+import Navigator from "../../components/Navigator";
+import useSound from "../../hooks/useSound";
+import { FormContainer, GradientButton, GradientContainer, Input } from "../../components/FormComponents";
+import { colors, marginStyles, textStyles } from "../../components/Styles";
+import { CameraLine } from "../../assets/images";
 
-const ReviewInventoryView = (props: any) => {
+const CodeReaderView = (props: any) => {
     const [autoMode, setAutoMode] = useState<boolean>(false)
     const [soundsMode, setSoundsMode] = useState<boolean>(true)
     const [scanned, setScanned] = useState<any>(false);
@@ -63,7 +63,16 @@ const ReviewInventoryView = (props: any) => {
         const code = data ? data : scannedCode
         if(code && code !== ""){
             executeSound(sound.notification);
-            console.log("GOTO: ", code);
+
+            const payload = {
+                code,
+                sourcePath: "CodebarReader"
+            };
+
+            navigation.navigate(
+                "EquipmentInformation",
+                payload
+            );
             return
         }
         executeSound(sound.base);
@@ -369,4 +378,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default ReviewInventoryView
+export default CodeReaderView

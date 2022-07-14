@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState } from "react";
-import LogoTitle from "../Components/LogoTitleHeader";
+import LogoTitle from "../components/LogoTitleHeader";
 
 const useHeaderbar = (props: any) => {
     const { hideShadow, navigation, rightSection, leftSection, style } = props;

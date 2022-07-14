@@ -1,12 +1,12 @@
 import { Image, StyleSheet, Text, View } from "react-native"
-import { alignStyles, colors, textStyles } from "../../Components/Styles";
-import { GradientContainer } from "../../Components/FormComponents";
+import { alignStyles, colors, textStyles } from "../../components/Styles";
+import { GradientContainer } from "../../components/FormComponents";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LogoText } from "../../assets/images";
 import useHeaderbar from "../../hooks/useHeaderbar";
-import { IconButton } from "../../Components/FormComponents";
-import ScreenView from '../../Components/ScreenView';
-import Navigator from "../../Components/Navigator";
+import { IconButton } from "../../components/FormComponents";
+import ScreenView from '../../components/ScreenView';
+import Navigator from "../../components/Navigator";
 
 const HomeView = (props: any) => {
     const {navigation} = props;

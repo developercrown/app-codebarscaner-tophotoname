@@ -1,8 +1,11 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
+
+import HomeView from './modules/HomeView';
+import ReviewInventoryView from './modules/ReviewInventoryView';
+
 import useSound from '../hooks/useSound';
-import HomeView from './Pages/HomeView';
-import ReviewInventory from './Pages/ReviewInventory';
+
 
 const DashboardView = (props: any) => {
     const {navigation} = props;
@@ -25,7 +28,7 @@ const DashboardView = (props: any) => {
 
     return <DashboardStack.Navigator initialRouteName="Home">
         <DashboardStack.Screen name="Home" component={HomeView} />
-        <DashboardStack.Screen name="ReviewInventory" component={ReviewInventory} />
+        <DashboardStack.Screen name="ReviewInventory" component={ReviewInventoryView} />
     </DashboardStack.Navigator>
 }
 export default DashboardView;

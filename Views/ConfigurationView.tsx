@@ -1,7 +1,7 @@
 import { Image, StyleSheet, View } from "react-native"
 import {LogoText} from '../assets/images';
-import { FormContainer, GradientButton, TextArea } from "../Components/FormComponents";
-import ScreenView from '../Components/ScreenView';
+import { FormContainer, GradientButton, TextArea } from "../components/FormComponents";
+import ScreenView from '../components/ScreenView';
 import { useState } from 'react';
 import useHeaderbar from "../hooks/useHeaderbar";
 

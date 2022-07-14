@@ -1,9 +1,9 @@
 import { useRef, useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native"
-import { FormContainer, GradientButton, IconButton, Input } from "../Components/FormComponents";
-import { colors, textStyles } from "../Components/Styles";
+import { FormContainer, GradientButton, IconButton, Input } from "../components/FormComponents";
+import { colors, textStyles } from "../components/Styles";
 import {LogoText} from '../assets/images';
-import ScreenView from '../Components/ScreenView';
+import ScreenView from '../components/ScreenView';
 import useHeaderbar from "../hooks/useHeaderbar";
 import Constants from 'expo-constants'
 
