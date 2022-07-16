@@ -11,9 +11,9 @@ const screenViewStyles = StyleSheet.create({
 });
 
 const ScreenView = (props: any) => {
-    const {children, style, styleContainer} = props;
+    const {children, style, styleContainer, refreshControl} = props;
     return <View style={[screenViewStyles.scrollview, style]}>
-        <ScrollView>
+        <ScrollView refreshControl={refreshControl ? refreshControl : null}>
             <View style={[screenViewStyles.container, styleContainer]}>
                 {children}
             </View>
