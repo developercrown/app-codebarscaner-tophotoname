@@ -42,7 +42,7 @@ const EquipmentInformationView = (props: any) => {
             sound.error()
             Alert.alert('Atención!', 'No se encontro el equipo, ¿Desea registrarlo?', [
                 {
-                    text: 'OK', onPress: () => navigation.navigate('RegisterEquipment')
+                    text: 'OK', onPress: () => navigation.replace('RegisterEquipment', {code})
                 },
                 {
                     text: 'Cancel',
@@ -83,6 +83,7 @@ const EquipmentInformationView = (props: any) => {
     }
 
     const handleCloseFullscreenImage = () => {
+        sound.back()
         setShowImage(false);
     }
 
@@ -150,6 +151,7 @@ const EquipmentInformationView = (props: any) => {
                             :
                                         <TouchableHighlight
                                             onPress={() => {
+                                                sound.echo()
                                                 setShowImage(true)
                                             }}
                                         >
@@ -191,7 +193,7 @@ const EquipmentInformationView = (props: any) => {
                             ]}><Text style={textStyles.bold}>Estado Actual: </Text>{data.status}</Text>
                         
                         {
-                            !data.review_status ? 
+                            data.review_status ? 
                                 <View style={[
                                     {
                                         alignItems: 'center',

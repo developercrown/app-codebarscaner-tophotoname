@@ -136,17 +136,22 @@ const Input = forwardRef((props: any, ref: any) => {
 })
 
 const Select = (props: any) => {
-    const { items, label, onChange, value } = props
-    return <View style={{ padding: 10, marginTop: 4 }}>
-        <Text style={{ color: 'white', fontWeight: 'bold', marginBottom: 10 }}>{label}:</Text>
+    const { items, label, onChange, style, styleLabel, styleContainer, value } = props
+    return <View style={[{ padding: 10, marginTop: 4 }, styleContainer]}>
+        <Text style={[{ color: '#111', fontWeight: 'bold', marginBottom: 10 }, styleLabel]}>{label}:</Text>
         <Picker
-            style={{
-                backgroundColor: 'rgba(3, 102, 181, .5)',
-                color: '#eee',
-                fontWeight: 'bold',
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, .4)'
-            }}
+            style={
+                [
+                    {
+                        backgroundColor: 'rgba(3, 102, 181, .5)',
+                        color: '#eee',
+                        fontWeight: 'bold',
+                        borderWidth: 1,
+                        borderColor: 'rgba(255, 255, 255, .4)'
+                    },
+                    style
+                ]
+            }
             selectedValue={value}
             onValueChange={(itemValue) =>
                 onChange(itemValue)
@@ -159,8 +164,8 @@ const Select = (props: any) => {
 }
 
 const TextArea = (props: any) => {
-    const { fontSize, onChange, value, label, placeholder } = props
-    return <View style={formStyles.inputContainer}>
+    const { fontSize, onChange, value, label, placeholder, style, styleContainer } = props
+    return <View style={[formStyles.inputContainer, styleContainer]}>
         <Text style={[
             textStyles.alignLeft,
             textStyles.colorDark,
@@ -171,7 +176,14 @@ const TextArea = (props: any) => {
             }
         ]}>{label}:</Text>
         <TextInput
-            style={[formStyles.inputTextArea, formStyles.inputBackground, {fontSize: fontSize ? fontSize : 14}]}
+            style={[
+                formStyles.inputTextArea,
+                formStyles.inputBackground,
+                {
+                    fontSize: fontSize ? fontSize : 14
+                },
+                style
+            ]}
             multiline={true}
             value={value}
             placeholder={placeholder}

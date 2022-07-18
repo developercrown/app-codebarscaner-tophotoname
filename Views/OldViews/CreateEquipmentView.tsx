@@ -14,6 +14,7 @@ const CreateEquipmentView = (props: any) => {
     const [wait, setWait] = useState<boolean>(false);
     const [hasPermission, setHasPermission] = useState<any>(null);
     const [captureMode, setCaptureMode] = useState<boolean>(false);
+
     const [name, setName] = useState('');
     const [series, setSeries] = useState('');
     const [trademark, setTrademark] = useState('');
@@ -185,9 +186,12 @@ const CreateEquipmentView = (props: any) => {
             </View>
             <Input label="Marca" value={trademark} onChange={setTrademark} />
             <Input label="Modelo" value={model} onChange={setModel} />
+
             <Select label="Estado" items={['ACTIVO', 'BAJA']} value={status} onChange={setStatus} />
+
             <Input label="Departamento resguardante" value={safeguardApartment} onChange={setSafeguardApartment} />
             <Input label="Persona resguardante" value={safeguardPerson} onChange={setSafeguardPerson} />
+            
             <TextArea label="Notas" placeholder="Ingresa tus observaciones aquí" value={notes} onChange={setNotes} />
             <Select label="Ubicación Actual" items={locations} value={location} onChange={setLocation} />
             <View style={{ padding: 10, marginTop: 4, marginBottom: 50, flex: 1, flexDirection: 'row' }}>

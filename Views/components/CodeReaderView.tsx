@@ -101,7 +101,7 @@ const CodeReaderView = (props: any) => {
     }, []);
 
     useEffect(() => { //TODO: delete in production
-        gotoSearchEquipment('201704250032')
+        gotoSearchEquipment('10650149')
     });
 
     const scaleValue = .7;
