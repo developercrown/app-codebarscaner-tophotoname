@@ -121,6 +121,13 @@ const useSound = () => {
         await sound.playAsync();
         unload(sound);
     };
+    const photo = async () => {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/audio/photo.mp3')
+        );
+        await sound.playAsync();
+        unload(sound);
+    };
     const start = async () => {
         const { sound } = await Audio.Sound.createAsync(
             require('../assets/audio/welcome.mp3')
@@ -142,6 +149,7 @@ const useSound = () => {
         msn2,
         msn3,
         notification,
+        photo,
         reviewed,
         start,
         success,

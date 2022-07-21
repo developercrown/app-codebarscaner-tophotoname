@@ -4,7 +4,7 @@ import { Camera, CameraType, FlashMode } from 'expo-camera';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
-import useSound from '../hooks/useSound';
+import useSound from '../../hooks/useSound';
 
 const CapturePhotoView = (props: any) => {
     const sound = useSound(); 

@@ -1,21 +1,24 @@
 import React, { useRef, useState } from 'react';
-import { View, RefreshControl, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity } from 'react-native';
-import Navigator from '../../components/Navigator';
+import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Modal } from 'react-native';
 import ScreenView from '../../components/ScreenView';
 import { background, colors, textStyles } from '../../components/Styles';
 import useHeaderbar from '../../hooks/useHeaderbar';
 
-import { Image404, LoadingPicture } from '../../assets/images';
+import { Image404 } from '../../assets/images';
 import useSound from '../../hooks/useSound';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Input, Select, TextArea } from '../../components/FormComponents';
 import { estadosEquipo, locations } from '../../components/Constants';
+import CameraPhotoCapturer from '../../components/CameraPhotoCapturer';
+import FullScreenImage from '../../components/FullScreenImage';
 
 
 const RegisterEquipmentView = (props: any) => {
     const { navigation, route } = props;
     const { code } = route.params;
-    const [imageSelected, setImageSelected] = useState<boolean>();
+    const [photo, setPhoto] = useState<any>(null);
+    const [viewPhotoMode, setViewPhotoMode] = useState<boolean>(false);
+    const [takePhotoMode, setTakePhotoMode] = useState<boolean>(false);
 
     // Form data states
     const [name, setName] = useState('');
@@ -48,29 +51,76 @@ const RegisterEquipmentView = (props: any) => {
         }
     });
 
+    const handlePhotoTaken = (photo: any) => {
+        console.log('photo here', photo);
+        setPhoto(photo);
+        setTakePhotoMode(false)
+        setViewPhotoMode(false)
+    }
+
     const save = () => {
         alert('to save')
     }
 
     return <View style={[styles.container]}>
+        {
+            !takePhotoMode && viewPhotoMode &&  <Modal
+                animationType="slide"
+                statusBarTranslucent={true}
+                hardwareAccelerated={true}
+                transparent={false}
+                visible={viewPhotoMode}
+                onRequestClose={() => {
+                    setViewPhotoMode(false)
+                }}
+            > 
+                <TouchableOpacity onPress={()=> {
+                    console.log('action');
+                    
+                    setViewPhotoMode(false)
+                }}>
+                    <FullScreenImage image={photo}/>
+                </TouchableOpacity>
+            </Modal>
+        }
+        {
+            !viewPhotoMode && takePhotoMode &&  <Modal
+                animationType="slide"
+                statusBarTranslucent={true}
+                hardwareAccelerated={true}
+                transparent={false}
+                visible={takePhotoMode}
+                onRequestClose={() => {
+                    setTakePhotoMode(false)
+                }}
+            > 
+                <CameraPhotoCapturer handleBack={() => setTakePhotoMode(false)} handleSuccess={handlePhotoTaken}/>
+            </Modal>
+        }
         <ScreenView
             style={[styles.container]}
             styleContainer={styles.screenViewContainer}
         >
             <View style={[styles.photoCardComponent]}>
                 {
-                    imageSelected ? <TouchableHighlight
+                    photo ? <TouchableHighlight
                         onPress={() => {
                             sound.echo()
-                            alert("Action to see photo on fullscreen")
+                            setViewPhotoMode(true)
                         }}
                     >
-                        <Image
-                            resizeMethod="resize"
-                            resizeMode="stretch"
-                            source={LoadingPicture}
-                            style={[{ width: "100%" }]}
-                        />
+                        <View style={[{
+                            backgroundColor: 'pink',
+                            width: '100%',
+                            height: '100%'
+                        }]}>
+                            <Image
+                                source={{ uri: photo && photo.uri }}
+                                style={{
+                                    flex: 1
+                                }}
+                            />
+                        </View>
                     </TouchableHighlight>
                         :
                         <Image
@@ -85,7 +135,7 @@ const RegisterEquipmentView = (props: any) => {
             <TouchableOpacity
                 onPress={() => {
                     sound.echo()
-                    alert("Action to take photo on fullscreen")
+                    setTakePhotoMode(true)
                 }}
             >
                 <View style={styles.takePhotoButton}>
@@ -238,8 +288,8 @@ const RegisterEquipmentView = (props: any) => {
                             placeholder="Ingresa los detalles adicionales, notas de resguardo o estado del equipo"
                             styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}
                             styleContainer={{ padding: 0, margin: 0, paddingRight: 0 }}
-                            onChange={setSeries}
-                            value={series}
+                            onChange={setNotes}
+                            value={notes}
                         />
                     </View>
                 </View>
