@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Modal } from 'react-native';
+import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Modal, Alert, Platform } from 'react-native';
 import ScreenView from '../../components/ScreenView';
 import { background, colors, textStyles } from '../../components/Styles';
 import useHeaderbar from '../../hooks/useHeaderbar';
+import axios from 'axios';
 
 import { Image404 } from '../../assets/images';
 import useSound from '../../hooks/useSound';
@@ -11,6 +12,7 @@ import { Input, Select, TextArea } from '../../components/FormComponents';
 import { estadosEquipo, locations } from '../../components/Constants';
 import CameraPhotoCapturer from '../../components/CameraPhotoCapturer';
 import FullScreenImage from '../../components/FullScreenImage';
+import CodebarReader from '../../components/CodebarReader';
 
 
 const RegisterEquipmentView = (props: any) => {
@@ -19,6 +21,7 @@ const RegisterEquipmentView = (props: any) => {
     const [photo, setPhoto] = useState<any>(null);
     const [viewPhotoMode, setViewPhotoMode] = useState<boolean>(false);
     const [takePhotoMode, setTakePhotoMode] = useState<boolean>(false);
+    const [readCodebarsMode, setReadCodebarsMode] = useState<boolean>(false);
 
     // Form data states
     const [name, setName] = useState('');
@@ -26,10 +29,10 @@ const RegisterEquipmentView = (props: any) => {
     const [trademark, setTrademark] = useState('');
     const [model, setModel] = useState('');
     const [status, setStatus] = useState('ACTIVO');
-    const [safeguardApartment, setSafeguardApartment] = useState('');
+    const [safeguardApartment, setSafeguardApartment] = useState('Desconocido');
     const [safeguardPerson, setSafeguardPerson] = useState('');
     const [notes, setNotes] = useState('');
-    const [location, setLocation] = useState('DESCONOCIDO');
+    const [location, setLocation] = useState('Desconocido');
 
     // Form References
 
@@ -51,32 +54,122 @@ const RegisterEquipmentView = (props: any) => {
         }
     });
 
-    const handlePhotoTaken = (photo: any) => {
-        console.log('photo here', photo);
-        setPhoto(photo);
+    const disableAllFullscreenElements = () => {
         setTakePhotoMode(false)
         setViewPhotoMode(false)
+        setReadCodebarsMode(false)
+    }
+
+    const handlePhotoTaken = (photo: any) => {
+        // console.log('photo here', photo); // data => height, width, uri
+        setPhoto(photo);
+        disableAllFullscreenElements()
+    }
+
+    const handleCodebarReaded = (code: string) => {
+        code = code.trim()
+        const value = series === '' ? code : series + ' - ' + code;
+        setSeries(value.trim())
+        disableAllFullscreenElements()
+    }
+
+    const validateValue = (value: any) => {
+        value = (value+'').trim()
+        return (
+            value !== undefined &&
+            value !== null &&
+            value !== '' &&
+            value.length > 0
+        )
+    }
+
+    const uploadImage = async (image: any) => {
+        let payload = new FormData();
+        let uriParts = image.uri.split('.');
+        let fileType = uriParts[uriParts.length - 1];
+        const dataImage: any = {
+            uri: Platform.OS === 'android' ? image.uri : image.uri.replace('file://', ''),
+            name: `app-image.${fileType}`,
+            type: `image/${fileType}`,
+        };
+        payload.append('photo', dataImage);
+        const server = 'https://api-inventario-minify.upn164.edu.mx/api/v1/rows/'+code;
+        axios({
+            method: 'post',
+            url: server,
+            data: payload,
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'multipart/form-data',
+            },
+        }).then((response: any) => {
+            const { data, status } = response
+            console.log('response', data, status);
+        }).catch((err: any) => {
+            console.log('err', err);
+        });
     }
 
     const save = () => {
-        alert('to save')
+        if(photo){
+            uploadImage(photo)
+            return
+            if(
+                validateValue(name) &&
+                validateValue(trademark) &&
+                validateValue(model) &&
+                validateValue(status) &&
+                validateValue(safeguardApartment) &&
+                validateValue(safeguardPerson) &&
+                validateValue(location)
+            ){
+                const payloadData = {
+                    name,
+                    series,
+                    trademark,
+                    model,
+                    status,
+                    safeguardApartment,
+                    safeguardPerson,
+                    notes,
+                    location,
+                }
+                uploadImage(photo)
+                console.log(payloadData);
+                return
+            }
+            Alert.alert('Información incompleta', 'Por favor verifique que ha ingresado todos los elementos requeridos')
+            return
+        }
+        Alert.alert('Atención', 'Es necesario que captures la fotografía del equipo a registrar')
     }
 
     return <View style={[styles.container]}>
         {
-            !takePhotoMode && viewPhotoMode &&  <Modal
+            readCodebarsMode && !takePhotoMode && !viewPhotoMode &&  <Modal
+                animationType="slide"
+                statusBarTranslucent={true}
+                hardwareAccelerated={true}
+                transparent={false}
+                visible={readCodebarsMode}
+                onRequestClose={disableAllFullscreenElements}
+            > 
+                <CodebarReader
+                    onCallback={handleCodebarReaded}
+                    onGoBack={disableAllFullscreenElements}
+                    />
+            </Modal>
+        }
+        {
+            !takePhotoMode && !readCodebarsMode && viewPhotoMode &&  <Modal
                 animationType="slide"
                 statusBarTranslucent={true}
                 hardwareAccelerated={true}
                 transparent={false}
                 visible={viewPhotoMode}
-                onRequestClose={() => {
-                    setViewPhotoMode(false)
-                }}
+                onRequestClose={disableAllFullscreenElements}
             > 
                 <TouchableOpacity onPress={()=> {
-                    console.log('action');
-                    
                     setViewPhotoMode(false)
                 }}>
                     <FullScreenImage image={photo}/>
@@ -84,17 +177,18 @@ const RegisterEquipmentView = (props: any) => {
             </Modal>
         }
         {
-            !viewPhotoMode && takePhotoMode &&  <Modal
+            !viewPhotoMode && !readCodebarsMode && takePhotoMode &&  <Modal
                 animationType="slide"
                 statusBarTranslucent={true}
                 hardwareAccelerated={true}
                 transparent={false}
                 visible={takePhotoMode}
-                onRequestClose={() => {
-                    setTakePhotoMode(false)
-                }}
+                onRequestClose={disableAllFullscreenElements}
             > 
-                <CameraPhotoCapturer handleBack={() => setTakePhotoMode(false)} handleSuccess={handlePhotoTaken}/>
+                <CameraPhotoCapturer
+                    base64
+                    handleBack={disableAllFullscreenElements}
+                    handleSuccess={handlePhotoTaken}/>
             </Modal>
         }
         <ScreenView
@@ -110,7 +204,6 @@ const RegisterEquipmentView = (props: any) => {
                         }}
                     >
                         <View style={[{
-                            backgroundColor: 'pink',
                             width: '100%',
                             height: '100%'
                         }]}>
@@ -137,11 +230,9 @@ const RegisterEquipmentView = (props: any) => {
                     sound.echo()
                     setTakePhotoMode(true)
                 }}
+                style={styles.takePhotoButton}
             >
-                <View style={styles.takePhotoButton}>
-
-                    <Ionicons name="camera" size={24} style={[colors.dark]} />
-                </View>
+                <Ionicons name="camera" size={24} style={[colors.dark]} />
             </TouchableOpacity>
             <View style={[styles.codebarContainer, styles.cardStyle]}>
                 <View style={[{ flexDirection: 'row', alignItems: 'center', }]}>
@@ -207,7 +298,7 @@ const RegisterEquipmentView = (props: any) => {
                         <View style={{ width: '20%', justifyContent: 'center', alignItems: 'center' }}>
                             <TouchableOpacity
                                 onPress={()=>{
-                                    alert("action to get codes from scancode fullscreen")
+                                    setReadCodebarsMode(true)
                                 }}
                                 style={[{
                                     width: 60,
@@ -241,13 +332,16 @@ const RegisterEquipmentView = (props: any) => {
                             colors.black
                         ]}>Detalles del resguardo:</Text>
                     </View>
-                    <Input
+
+                    <Select
                         label="Departamento resguardante"
+                        items={locations}
                         onChange={setSafeguardApartment}
-                        placeholder="Nombre del departamento resguardante"
-                        styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}
+                        styleContainer={[{
+                            paddingHorizontal: 30
+                        }]}
                         value={safeguardApartment}
-                    />
+                        />      
 
                     <Input
                         label="Persona resguardante"
@@ -315,7 +409,6 @@ const RegisterEquipmentView = (props: any) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        // backgroundColor: 'green',
         backgroundColor: 'rgba(0, 0, 0, 0.02)',
     },
     screenViewContainer: {
@@ -343,9 +436,9 @@ const styles = StyleSheet.create({
         top: -32
     },
     photoCardComponent: {
-        backgroundColor: 'red',
+        backgroundColor: 'black',
         width: '100%',
-        height: 200,
+        height: 240,
         padding: 0,
         margin: 0,
         top: -10,

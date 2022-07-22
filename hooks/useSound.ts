@@ -121,6 +121,13 @@ const useSound = () => {
         await sound.playAsync();
         unload(sound);
     };
+    const beep = async () => {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/audio/beep.mp3')
+        );
+        await sound.playAsync();
+        unload(sound);
+    };
     const photo = async () => {
         const { sound } = await Audio.Sound.createAsync(
             require('../assets/audio/photo.mp3')
@@ -139,6 +146,7 @@ const useSound = () => {
     return {
         back,
         base,
+        beep,
         cancel,
         deny,
         drop,

@@ -47,7 +47,7 @@ const whiteBalanceOptions = [
 ]
 
 const CameraPhotoCapturer = (props: any) => {
-    const {handleBack, handleSuccess} = props;
+    const {base64, handleBack, handleSuccess} = props;
     const iconSize = 32;
 
     const [wait, setWait] = useState<boolean>(false);
@@ -132,15 +132,16 @@ const CameraPhotoCapturer = (props: any) => {
         if(cameraStatus){
             if (cameraRef) {
                 setWait(true);
-                sound.photo();
                 const options = {
-                    quality: cameraQualityOptions[qualityLevelIndex].value, 
-                    fixOrientation: false,
+                    base64,
                     exif: false,
+                    fixOrientation: false,
+                    quality: cameraQualityOptions[qualityLevelIndex].value
                 };
                 const cam = (cameraRef as any).current;
                 const photo = await cam.takePictureAsync(options);
                 setPhoto(photo);
+                sound.photo();
                 setWait(false);
             }
             
