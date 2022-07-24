@@ -10,6 +10,10 @@ import FullScreenImage from "./FullScreenImage";
 
 const cameraQualityOptions = [
     {
+        value: .2,
+        label:'MIN',
+    },
+    {
         value: .5,
         label:'SD',
     },

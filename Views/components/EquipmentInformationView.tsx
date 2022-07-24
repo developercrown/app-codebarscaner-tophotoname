@@ -59,7 +59,7 @@ const EquipmentInformationView = (props: any) => {
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            return true;
+            return wait;
         });
 
         getInformation(code);
@@ -114,7 +114,7 @@ const EquipmentInformationView = (props: any) => {
                         <View style={[styles.fullScreenImageContainer, {width: windowWidth, height: windowHeight}]}>
                             <Image
                                 source={{
-                                    uri: `${serverURI}/pictures/picture_${code}.jpg`,
+                                    uri: `${serverURI}/pictures/full/${data.picture}`,
                                     width: 400,
                                     height: 400,
                                     scale: 1
@@ -157,7 +157,7 @@ const EquipmentInformationView = (props: any) => {
                                         >
                                             <Image
                                                 source={{
-                                                    uri: `${serverURI}/pictures/picture_${code}.jpg`,
+                                                    uri: `${serverURI}/pictures/full/${data.picture}`,
                                                     width: 400,
                                                     height: 400,
                                                     scale: 1

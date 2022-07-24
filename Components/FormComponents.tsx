@@ -53,9 +53,8 @@ const Input = forwardRef((props: any, ref: any) => {
         setVisible(!visible)
     }
 
-    const handleFocus = () => {
-        inputRef.current.focus()
-    }
+    const handleFocus = () => inputRef.current.focus();
+    const handleBlur = () => inputRef.current.blur();
 
     const handleSubmit = () => {
         if(onSubmit){
@@ -66,6 +65,9 @@ const Input = forwardRef((props: any, ref: any) => {
     useImperativeHandle(ref, () => ({
         focus: () => {
             handleFocus()
+        },
+        blur: () => {
+            handleBlur()
         }
     }));
 
@@ -143,8 +145,8 @@ const Select = (props: any) => {
             style={
                 [
                     {
-                        backgroundColor: 'rgba(3, 102, 181, .5)',
-                        color: '#eee',
+                        backgroundColor: 'rgba(255, 255, 255, .8)',
+                        color: '#333',
                         fontWeight: 'bold',
                         borderWidth: 1,
                         borderColor: 'rgba(255, 255, 255, .4)'
@@ -163,8 +165,28 @@ const Select = (props: any) => {
     </View>
 }
 
-const TextArea = (props: any) => {
-    const { fontSize, onChange, value, label, placeholder, style, styleContainer } = props
+const TextArea = forwardRef((props: any, ref: any) => {
+    const { fontSize, onChange, value, label, onSubmit, placeholder, style, styleContainer } = props
+    const inputRef = useRef<any>();
+
+    const handleFocus = () => inputRef.current.focus();
+    const handleBlur = () => inputRef.current.blur();
+
+    const handleSubmit = () => {
+        if(onSubmit){
+            onSubmit()
+        }
+    }
+
+    useImperativeHandle(ref, () => ({
+        focus: () => {
+            handleFocus()
+        },
+        blur: () => {
+            handleBlur()
+        }
+    }));
+
     return <View style={[formStyles.inputContainer, styleContainer]}>
         <Text style={[
             textStyles.alignLeft,
@@ -186,11 +208,13 @@ const TextArea = (props: any) => {
             ]}
             multiline={true}
             value={value}
+            ref={inputRef}
             placeholder={placeholder}
             onChangeText={onChange}
+            onSubmitEditing={handleSubmit}
         />
     </View>
-}
+});
 
 const GradientButton = (props: any) => {
     const { borderRadius, colors, label, onTouch, width, height, x , y, style } = props;
@@ -242,8 +266,6 @@ const IconButton = (props: any) => {
         <Ionicons name={icon} size={size ? size : 32} style={{ color: color ? color : '#333' }} />
     </TouchableOpacity>
 }
-
-
 
 const BodyStyles = StyleSheet.create({
     input: {

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Modal, Alert, Platform } from 'react-native';
+import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Modal, Alert, Platform, ActivityIndicator } from 'react-native';
 import ScreenView from '../../components/ScreenView';
 import { background, colors, textStyles } from '../../components/Styles';
 import useHeaderbar from '../../hooks/useHeaderbar';
@@ -22,6 +22,8 @@ const RegisterEquipmentView = (props: any) => {
     const [viewPhotoMode, setViewPhotoMode] = useState<boolean>(false);
     const [takePhotoMode, setTakePhotoMode] = useState<boolean>(false);
     const [readCodebarsMode, setReadCodebarsMode] = useState<boolean>(false);
+    const [processMode, setProcessMode] = useState<boolean>(false);
+    const [step, setStep] = useState<number>(0);
 
     // Form data states
     const [name, setName] = useState('');
@@ -39,6 +41,7 @@ const RegisterEquipmentView = (props: any) => {
     const equipmentNameRef = useRef<any>();
     const equipmentTrademarkRef = useRef<any>();
     const equipmentModelRef = useRef<any>();
+    const equipmentSeriesRef = useRef<any>();
 
     const sound = useSound();
 
@@ -83,37 +86,85 @@ const RegisterEquipmentView = (props: any) => {
         )
     }
 
-    const uploadImage = async (image: any) => {
-        let payload = new FormData();
-        let uriParts = image.uri.split('.');
-        let fileType = uriParts[uriParts.length - 1];
-        const dataImage: any = {
-            uri: Platform.OS === 'android' ? image.uri : image.uri.replace('file://', ''),
-            name: `app-image.${fileType}`,
-            type: `image/${fileType}`,
-        };
-        payload.append('photo', dataImage);
-        const server = 'https://api-inventario-minify.upn164.edu.mx/api/v1/rows/'+code;
-        axios({
-            method: 'post',
-            url: server,
-            data: payload,
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'multipart/form-data',
-            },
-        }).then((response: any) => {
-            const { data, status } = response
-            console.log('response', data, status);
-        }).catch((err: any) => {
-            console.log('err', err);
-        });
+    const uploadImage = async () => {
+        return new Promise((resolve, reject) => {
+            let payload = new FormData();
+            let uriParts = photo.uri.split('.');
+            let fileType = uriParts[uriParts.length - 1];
+            const dataImage: any = {
+                uri: Platform.OS === 'android' ? photo.uri : photo.uri.replace('file://', ''),
+                name: `app-image.${fileType}`,
+                type: `image/${fileType}`,
+            };
+            payload.append('photo', dataImage);
+            const server = 'https://api-inventario-minify.upn164.edu.mx/api/v1/rows/photo/'+code;
+            axios({
+                method: 'post',
+                url: server,
+                data: payload,
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'multipart/form-data',
+                },
+            }).then((response: any) => {
+                const { data, status } = response
+                resolve({data, status})
+            }).catch((err: any) => {
+                reject({data: err})
+            });
+        })
+    }
+
+    const saveRow = (payload: any) => {
+        return new Promise((resolve, reject) => {
+            const uri = 'https://api-inventario-minify.upn164.edu.mx/api/v1/rows/';
+            axios({
+                method: 'post',
+                url: uri,
+                data: payload
+            }).then(({ status, data }) => {
+                if (status >= 200 && status <= 300) {
+                    resolve({data, status})
+                } else {
+                    reject({data, status})
+                }
+            }).catch(err => {
+                reject({data: err})
+            });
+        })
+    }
+
+    const saveQueue = (payload: any) => {
+        setProcessMode(true)
+        setTimeout(() => {
+            setStep(1)
+            saveRow(payload).then(()=>{
+                setStep(2)
+                uploadImage().then(()=>{
+                    Alert.alert('Exito!', 'Se ha registrado correctamente el equipo', [
+                        {
+                            text: 'Continuar', onPress: () => {
+                                sound.touch()
+                                navigation.replace(
+                                    "EquipmentInformation",
+                                    { code }
+                                );
+                            },
+                        }
+                    ]);
+                }).catch((err)=>{
+                    console.log('err', err);
+                    Alert.alert('Error', 'Ocurrio un error al guardar la imagen en el servidor')
+                });
+            }).catch((err)=>{
+                console.log('err', err);
+                Alert.alert('Error', 'Ocurrio un error al registrar la información')
+            })
+        }, 250);
     }
 
     const save = () => {
         if(photo){
-            uploadImage(photo)
-            return
             if(
                 validateValue(name) &&
                 validateValue(trademark) &&
@@ -123,25 +174,97 @@ const RegisterEquipmentView = (props: any) => {
                 validateValue(safeguardPerson) &&
                 validateValue(location)
             ){
+                
                 const payloadData = {
-                    name,
-                    series,
-                    trademark,
-                    model,
-                    status,
-                    safeguardApartment,
-                    safeguardPerson,
-                    notes,
-                    location,
+                        "codebar": code,
+                        location,
+                        model,
+                        name,
+                        notes,
+                        safeguardApartment,
+                        safeguardPerson,
+                        series,
+                        status,
+                        trademark,
                 }
-                uploadImage(photo)
-                console.log(payloadData);
+                
+                Alert.alert('Confirmación!', '¿Esta seguro de continuar con el registro del equipo?', [
+                    {
+                        text: 'Continuar', onPress: () => saveQueue(payloadData)
+                    },
+                    {
+                        text: 'Cancel',
+                        onPress: () => {
+                            sound.touch()
+                        },
+                        style: 'cancel',
+                    },
+                ])
+
+                
                 return
             }
             Alert.alert('Información incompleta', 'Por favor verifique que ha ingresado todos los elementos requeridos')
             return
         }
         Alert.alert('Atención', 'Es necesario que captures la fotografía del equipo a registrar')
+    }
+
+    if(processMode){
+        return <View style={[styles.container]}>
+                <ScreenView
+                    style={[styles.container]}
+                    styleContainer={styles.screenViewContainer}
+                >
+                    <View style={[styles.photoCardComponent]}>
+                        <View style={[{
+                            width: '100%',
+                            height: '100%'
+                        }]}>
+                            <Image
+                                source={{ uri: photo && photo.uri }}
+                                style={{
+                                    flex: 1
+                                }}
+                            />
+                        </View>
+                    </View>
+
+                    <View style={{
+                        backgroundColor: 'white',
+                        flex: 1,
+                        width: 350,
+                        height: 350,
+                        borderRadius: 175,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        elevation: 2
+                    }}>
+                        <ActivityIndicator size="large" color="green" style={{marginVertical: 20, transform: [{scale: 1.6}]}}/>
+
+                        {
+                            step === 0 && <View style={{marginVertical: 20, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+                                <Text style={[textStyles.sm, textStyles.bold, colors.black]}>Procesando la información...</Text>
+                            </View>
+                        }
+
+                        {
+                            step === 1 && <View style={{marginVertical: 20, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+                                <Text style={[textStyles.md, textStyles.bold, colors.black]}>Registrando información</Text>
+                                <Text style={[textStyles.md]}>{code}</Text>
+                            </View>
+                        }
+
+                        {
+                            step === 2 && <View style={{marginVertical: 20, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+                                <Text style={[textStyles.md, textStyles.bold, colors.black]}>Subiendo Fotografía</Text>
+                            </View>
+                        }
+
+                        
+                    </View>
+                </ScreenView>
+        </View>; 
     }
 
     return <View style={[styles.container]}>
@@ -266,6 +389,7 @@ const RegisterEquipmentView = (props: any) => {
                         placeholder="Ingresa el nombre del equipo"
                         ref={equipmentNameRef}
                         onChange={setName}
+                        onSubmit={() => equipmentTrademarkRef.current.focus()}
                         value={name}
                     />
                     <Input
@@ -274,6 +398,7 @@ const RegisterEquipmentView = (props: any) => {
                         placeholder="Ingresa la marca del equipo"
                         ref={equipmentTrademarkRef}
                         onChange={setTrademark}
+                        onSubmit={() => equipmentModelRef.current.focus()}
                         value={trademark}
                     />
                     <Input
@@ -282,6 +407,9 @@ const RegisterEquipmentView = (props: any) => {
                         placeholder="Ingresa el modelo del equipo"
                         ref={equipmentModelRef}
                         onChange={setModel}
+                        onSubmit={() => {
+                            equipmentSeriesRef.current.focus()
+                        }}
                         value={model}
                     />
                     <View style={{ flexDirection: 'row' }}>
@@ -292,6 +420,7 @@ const RegisterEquipmentView = (props: any) => {
                                 styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}
                                 styleContainer={{ padding: 0, margin: 0, paddingRight: 0 }}
                                 onChange={setSeries}
+                                ref={equipmentSeriesRef}
                                 value={series}
                             />
                         </View>
