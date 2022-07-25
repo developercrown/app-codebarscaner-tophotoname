@@ -9,6 +9,7 @@ import { colors, textStyles } from '../../components/Styles';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { GradientButton } from '../../components/FormComponents';
 import useHeaderbar from '../../hooks/useHeaderbar';
+import FullScreenImage from '../../components/FullScreenImage';
 
 const EquipmentInformationView = (props: any) => {
     const {navigation, route} = props;
@@ -109,22 +110,11 @@ const EquipmentInformationView = (props: any) => {
                         }}
                     >
                         <View style={[styles.fullScreenImageContainer, {width: windowWidth, height: windowHeight}]}>
-                            <Image
-                                source={{
-                                    uri: `${serverURI}/pictures/full/${data.picture}`,
-                                    width: 400,
-                                    height: 400,
-                                    scale: 1
-                                }}
-                                resizeMethod="resize" 
-                                resizeMode="cover"
-                                defaultSource={LoadingPicture}
-                                style={styles.pictureFullscreen}
-                                onError={handleErrorImage}
+                            <FullScreenImage
+                                image={`${serverURI}/pictures/full/${data.picture}`}
+                                onBack={handleCloseFullscreenImage}
+                                title={'Prevista de fotografía'}
                             />
-                            <TouchableHighlight onPress={() =>handleCloseFullscreenImage()} style={[styles.fullScreenCloseButton]}>
-                                <Ionicons name="close" size={40} style={[colors.white]} />
-                            </TouchableHighlight>
                         </View>
                     </Modal>
 
@@ -380,17 +370,6 @@ const styles = StyleSheet.create({
     pictureFullscreen: {
         width: '100%',
         height: '100%',
-    },
-    fullScreenCloseButton: {
-        backgroundColor: 'rgba(255, 255, 255, .2)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 50,
-        height: 50,
-        position: 'absolute',
-        top: 40,
-        right: 10,
-        borderRadius: 30
     }
 });
 
