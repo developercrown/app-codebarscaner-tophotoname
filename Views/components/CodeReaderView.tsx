@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center',
         backgroundColor: colors.blue.color,
-        marginTop: Constants.statusBarHeight+20,
+        marginTop: 20,
         height: 80,
         borderRadius: 10
     },

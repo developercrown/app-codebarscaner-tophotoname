@@ -162,7 +162,7 @@ const CameraPhotoCapturer = (props: any) => {
 
     if(photo){
         return  <View style={[styles.container, {justifyContent: 'center', alignItems: 'center'}]}>
-            <FullScreenImage image={photo}/>
+            <FullScreenImage image={photo} onBack={gotoDiscartPicture}/>
             <View style={styles.controlsContainerBottom}>
                 <TouchableOpacity
                     onPress={gotoDiscartPicture}

@@ -52,8 +52,12 @@ const RegisterEquipmentView = (props: any) => {
 
     useEffect(() => {
         const backAction = () => {
-            sound.deny();
-            return true;
+            if(processMode){
+                sound.deny();
+                return true;
+            }
+            sound.back();
+            return false;
         };
         const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
         return () => backHandler.remove();
@@ -327,11 +331,7 @@ const RegisterEquipmentView = (props: any) => {
                 visible={viewPhotoMode}
                 onRequestClose={disableAllFullscreenElements}
             > 
-                <TouchableOpacity onPress={()=> {
-                    setViewPhotoMode(false)
-                }}>
-                    <FullScreenImage image={photo}/>
-                </TouchableOpacity>
+                <FullScreenImage image={photo} onBack={()=> setViewPhotoMode(false)}/>
             </Modal>
         }
         {

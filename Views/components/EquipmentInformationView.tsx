@@ -12,10 +12,10 @@ import useHeaderbar from '../../hooks/useHeaderbar';
 import FullScreenImage from '../../components/FullScreenImage';
 
 const EquipmentInformationView = (props: any) => {
-    const {navigation, route} = props;
-    const {code} = route.params;
+    const { navigation, route } = props;
+    const { code } = route.params;
 
-    const sound = useSound(); 
+    const sound = useSound();
     const [wait, setWait] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [errorImage, setErrorImage] = useState<boolean>(false);
@@ -36,8 +36,8 @@ const EquipmentInformationView = (props: any) => {
         axios({
             method: 'get',
             url: uri,
-        }).then(({status, data}) => {
-            if(status === 200){
+        }).then(({ status, data }) => {
+            if (status === 200) {
                 setData(data.data);
             }
             setWait(false);
@@ -46,7 +46,7 @@ const EquipmentInformationView = (props: any) => {
             sound.error()
             Alert.alert('Atención!', 'No se encontro el equipo, ¿Desea registrarlo?', [
                 {
-                    text: 'OK', onPress: () => navigation.replace('RegisterEquipment', {code})
+                    text: 'OK', onPress: () => navigation.replace('RegisterEquipment', { code })
                 },
                 {
                     text: 'Cancel',
@@ -57,7 +57,7 @@ const EquipmentInformationView = (props: any) => {
                     style: 'cancel',
                 },
             ])
-            
+
         });
     }
 
@@ -94,29 +94,29 @@ const EquipmentInformationView = (props: any) => {
                         <Text style={[
                             textStyles.alignCenter,
                             colors.white,
-                            {paddingTop: 10}
+                            { paddingTop: 10 }
                         ]}>Actualizando la información</Text>
                     </View>
                 }
 
-                    <Modal
-                        animationType="fade"
-                        statusBarTranslucent={true}
-                        hardwareAccelerated={true}
-                        transparent={false}
-                        visible={showImage}
-                        onRequestClose={() => {
-                            handleCloseFullscreenImage()
-                        }}
-                    >
-                        <View style={[styles.fullScreenImageContainer, {width: windowWidth, height: windowHeight}]}>
-                            <FullScreenImage
-                                image={`${serverURI}/pictures/full/${data.picture}`}
-                                onBack={handleCloseFullscreenImage}
-                                title={'Prevista de fotografía'}
-                            />
-                        </View>
-                    </Modal>
+                <Modal
+                    animationType="fade"
+                    statusBarTranslucent={true}
+                    hardwareAccelerated={true}
+                    transparent={false}
+                    visible={showImage}
+                    onRequestClose={() => {
+                        handleCloseFullscreenImage()
+                    }}
+                >
+                    <View style={[styles.fullScreenImageContainer, { width: windowWidth, height: windowHeight }]}>
+                        <FullScreenImage
+                            image={`${serverURI}/pictures/full/${data.picture}`}
+                            onBack={handleCloseFullscreenImage}
+                            title={'Prevista de fotografía'}
+                        />
+                    </View>
+                </Modal>
 
                 <ScreenView
                     style={[styles.container]}
@@ -127,38 +127,38 @@ const EquipmentInformationView = (props: any) => {
                             onRefresh={onRefresh} />
                     }
                 >
-                    <View style={[styles.pictureContainer, {width: windowWidth}]}>
+                    <View style={[styles.pictureContainer, { width: windowWidth }]}>
                         {
                             errorImage ? <Image
-                                                resizeMethod="resize" 
-                                                resizeMode="stretch" 
-                                                source={Image404}
-                                                style={[styles.picture, { width: "100%" }]}
-                                            />
-                            :
-                                        <TouchableHighlight
-                                            onPress={() => {
-                                                sound.echo()
-                                                setShowImage(true)
-                                            }}
-                                        >
-                                            <Image
-                                                source={{
-                                                    uri: `${serverURI}/pictures/full/${data.picture}`,
-                                                    width: 400,
-                                                    height: 400,
-                                                    scale: 1
-                                                }}
-                                                resizeMethod="resize" 
-                                                resizeMode="cover"
-                                                defaultSource={LoadingPicture}
-                                                style={styles.picture}
-                                                onError={handleErrorImage}
-                                            />
-                                        </TouchableHighlight>
+                                resizeMethod="resize"
+                                resizeMode="stretch"
+                                source={Image404}
+                                style={[styles.picture, { width: "100%" }]}
+                            />
+                                :
+                                <TouchableHighlight
+                                    onPress={() => {
+                                        sound.echo()
+                                        setShowImage(true)
+                                    }}
+                                >
+                                    <Image
+                                        source={{
+                                            uri: `${serverURI}/pictures/full/${data.picture}`,
+                                            width: 400,
+                                            height: 400,
+                                            scale: 1
+                                        }}
+                                        resizeMethod="resize"
+                                        resizeMode="cover"
+                                        defaultSource={LoadingPicture}
+                                        style={styles.picture}
+                                        onError={handleErrorImage}
+                                    />
+                                </TouchableHighlight>
                         }
                     </View>
-                    <View style={[styles.card, {width: windowWidth-40}]}>
+                    <View style={[styles.card, { width: windowWidth - 40 }]}>
                         <Text style={[
                             styles.textPadding,
                             textStyles.alignCenter,
@@ -166,21 +166,21 @@ const EquipmentInformationView = (props: any) => {
                             textStyles.bold
                         ]}>{data.codebar}</Text>
                         <Text style={[
-                            {paddingTop: 10},
+                            { paddingTop: 10 },
                             styles.textPadding,
                             textStyles.alignCenter,
                             textStyles.sm
                         ]}>{data.equipment_name}</Text>
 
                         <Text style={[
-                                {paddingTop: 6},
-                                styles.textPadding,
-                                textStyles.alignCenter,
-                                textStyles.sm
-                            ]}><Text style={textStyles.bold}>Estado Actual: </Text>{data.status}</Text>
-                        
+                            { paddingTop: 6 },
+                            styles.textPadding,
+                            textStyles.alignCenter,
+                            textStyles.sm
+                        ]}><Text style={textStyles.bold}>Estado Actual: </Text>{data.status}</Text>
+
                         {
-                            data.review_status ? 
+                            data.review_status ?
                                 <View style={[
                                     {
                                         alignItems: 'center',
@@ -191,117 +191,117 @@ const EquipmentInformationView = (props: any) => {
                                     <Ionicons name="checkmark" size={40} style={[colors.forestgreen]} />
                                     <Text
                                         style={[
-                                        textStyles.sm,
-                                        textStyles.bold,
-                                        colors.forestgreen
-                                    ]}>REVISADO</Text>
+                                            textStyles.sm,
+                                            textStyles.bold,
+                                            colors.forestgreen
+                                        ]}>REVISADO</Text>
                                 </View>
-                            :
-                            <View style={[{alignItems: 'center', paddingVertical: 10}]}>
-                                <GradientButton
-                                    colors={
-                                        [
-                                            colors.firebrick.color,
-                                            colors.firebrick.color
-                                        ]
-                                    }
-                                    onTouch={()=>navigation.navigate("EquipmentReview", {code})}
-                                    style={{
-                                        elevation: 1,
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        flexDirection: 'row'
-                                    }}
-                                >
-                                    <Ionicons name="close" size={40} style={[colors.white]} />
-                                    <Text
-                                        style={[
-                                        textStyles.sm,
-                                        textStyles.bold,
-                                        colors.white
-                                    ]}>Sin Revisión Previa</Text>
-                                </GradientButton>
-                            </View>
+                                :
+                                <View style={[{ alignItems: 'center', paddingVertical: 10 }]}>
+                                    <GradientButton
+                                        colors={
+                                            [
+                                                colors.firebrick.color,
+                                                colors.firebrick.color
+                                            ]
+                                        }
+                                        onTouch={() => navigation.navigate("EquipmentReview", { code })}
+                                        style={{
+                                            elevation: 1,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            flexDirection: 'row'
+                                        }}
+                                    >
+                                        <Ionicons name="close" size={40} style={[colors.white]} />
+                                        <Text
+                                            style={[
+                                                textStyles.sm,
+                                                textStyles.bold,
+                                                colors.white
+                                            ]}>Sin Revisión Previa</Text>
+                                    </GradientButton>
+                                </View>
                         }
-                        
+
                     </View>
-                    <View style={[styles.body, {width: windowWidth-40}]}>
+                    <View style={[styles.body, { width: windowWidth - 40 }]}>
 
-                            <Text style={[
-                                {paddingTop: 2},
-                                styles.textPadding,
-                                textStyles.alignLeft,
-                                textStyles.sm
-                            ]}><Text style={textStyles.bold}>Departamento Resguardante: </Text>{data.safeguard_apartment}</Text>
-                            <Text style={[
-                                {paddingTop: 2},
-                                styles.textPadding,
-                                textStyles.alignLeft,
-                                textStyles.sm
-                            ]}><Text style={textStyles.bold}>Responsable Resguardante: </Text>{data.safeguard_person}</Text>
+                        <Text style={[
+                            { paddingTop: 2 },
+                            styles.textPadding,
+                            textStyles.alignLeft,
+                            textStyles.sm
+                        ]}><Text style={textStyles.bold}>Departamento Resguardante: </Text>{data.safeguard_apartment}</Text>
+                        <Text style={[
+                            { paddingTop: 2 },
+                            styles.textPadding,
+                            textStyles.alignLeft,
+                            textStyles.sm
+                        ]}><Text style={textStyles.bold}>Responsable Resguardante: </Text>{data.safeguard_person}</Text>
 
-                            <Text style={[
-                                {paddingTop: 10},
-                                styles.textPadding,
-                                textStyles.alignLeft,
-                                textStyles.sm
-                            ]}><Text style={textStyles.bold}>Ubicación actual: </Text>{data.location ? data.location : 'No localizado'}</Text>
-                            <Text style={[
-                                {paddingTop: 2},
-                                styles.textPadding,
-                                textStyles.alignLeft,
-                                textStyles.sm
-                            ]}><Text style={textStyles.bold}>Marca: </Text>{data.trademark}</Text>
-                            <Text style={[
-                                {paddingTop: 2},
-                                styles.textPadding,
-                                textStyles.alignLeft,
-                                textStyles.sm
-                            ]}><Text style={textStyles.bold}>Modelo: </Text>{data.model}</Text>
-                            <Text style={[
-                                {paddingTop: 2},
-                                styles.textPadding,
-                                textStyles.alignLeft,
-                                textStyles.sm
-                            ]}><Text style={textStyles.bold}>Series: </Text>{data.series}</Text>
-                            <Text style={[
-                                {paddingTop: 2},
-                                styles.textPadding,
-                                textStyles.alignLeft,
-                                textStyles.sm
-                            ]}><Text style={textStyles.bold}>Notas Adicionales: </Text>{data.notes}</Text>
+                        <Text style={[
+                            { paddingTop: 10 },
+                            styles.textPadding,
+                            textStyles.alignLeft,
+                            textStyles.sm
+                        ]}><Text style={textStyles.bold}>Ubicación actual: </Text>{data.location ? data.location : 'No localizado'}</Text>
+                        <Text style={[
+                            { paddingTop: 2 },
+                            styles.textPadding,
+                            textStyles.alignLeft,
+                            textStyles.sm
+                        ]}><Text style={textStyles.bold}>Marca: </Text>{data.trademark}</Text>
+                        <Text style={[
+                            { paddingTop: 2 },
+                            styles.textPadding,
+                            textStyles.alignLeft,
+                            textStyles.sm
+                        ]}><Text style={textStyles.bold}>Modelo: </Text>{data.model}</Text>
+                        <Text style={[
+                            { paddingTop: 2 },
+                            styles.textPadding,
+                            textStyles.alignLeft,
+                            textStyles.sm
+                        ]}><Text style={textStyles.bold}>Series: </Text>{data.series}</Text>
+                        <Text style={[
+                            { paddingTop: 2 },
+                            styles.textPadding,
+                            textStyles.alignLeft,
+                            textStyles.sm
+                        ]}><Text style={textStyles.bold}>Notas Adicionales: </Text>{data.notes}</Text>
 
 
-                            <Text style={[
-                                {paddingTop: 10},
-                                styles.textPadding,
-                                textStyles.alignLeft,
-                                textStyles.sm
-                            ]}><Text style={textStyles.bold}>Fecha de registro: </Text>{data.created_at}</Text>
-                            <Text style={[
-                                {paddingTop: 10},
-                                styles.textPadding,
-                                textStyles.alignLeft,
-                                textStyles.sm
-                            ]}><Text style={textStyles.bold}>Ultima Actualización: </Text>{data.updated_at}</Text>
+                        <Text style={[
+                            { paddingTop: 10 },
+                            styles.textPadding,
+                            textStyles.alignLeft,
+                            textStyles.sm
+                        ]}><Text style={textStyles.bold}>Fecha de registro: </Text>{data.created_at}</Text>
+                        <Text style={[
+                            { paddingTop: 10 },
+                            styles.textPadding,
+                            textStyles.alignLeft,
+                            textStyles.sm
+                        ]}><Text style={textStyles.bold}>Ultima Actualización: </Text>{data.updated_at}</Text>
                     </View>
                 </ScreenView>
-                <Navigator navigation={navigation}/>
-            </> 
-        :
-            <View style={[styles.container, {
-                width: windowWidth,
-                height: windowHeight,
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0, 0, 0, 0.6)'
-            }]}>
-                <ActivityIndicator size="large" color="#fff" />
-                <Text style={[
-                    textStyles.alignCenter,
-                    colors.white,
-                    {paddingTop: 10}
-                ]}>Cargando la información...</Text>
-            </View>
+                <Navigator navigation={navigation} />
+            </>
+                :
+                <View style={[styles.container, {
+                    width: windowWidth,
+                    height: windowHeight,
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)'
+                }]}>
+                    <ActivityIndicator size="large" color="#fff" />
+                    <Text style={[
+                        textStyles.alignCenter,
+                        colors.white,
+                        { paddingTop: 10 }
+                    ]}>Cargando la información...</Text>
+                </View>
         }
     </View>;
 }
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
         zIndex: 1
     },
     picture: {
-        
+
     },
     card: {
         borderColor: 'rgba(255, 255, 255, .05)',
