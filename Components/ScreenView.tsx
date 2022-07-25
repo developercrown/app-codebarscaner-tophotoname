@@ -6,7 +6,7 @@ const screenViewStyles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        paddingVertical: 10,
+        padding: 0,
     },
 });
 

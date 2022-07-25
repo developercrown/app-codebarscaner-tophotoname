@@ -2,17 +2,28 @@ import { useLayoutEffect, useState } from "react";
 import LogoTitle from "../components/LogoTitleHeader";
 
 const useHeaderbar = (props: any) => {
-    const { hideShadow, navigation, rightSection, leftSection, style } = props;
-    const options = {
-        // headerTransparent: true,
-        headerStyle: style,
-        headerShadowVisible: hideShadow,
-        headerTitle: (props: any) => leftSection ? leftSection : <LogoTitle {...props} />,
-        headerRight: () => rightSection ? rightSection : null
-    };
-
+    const {
+        hide,
+        hideShadow,
+        leftSection,
+        navigation,
+        rightSection,
+        transparent,
+        style
+    } = props;
     useLayoutEffect(() => {
-        navigation.setOptions(options);
+        if(!hide){
+            const options = {
+                headerTransparent: transparent,
+                headerStyle: style,
+                headerShadowVisible: hideShadow,
+                headerTitle: (props: any) => leftSection ? leftSection : <LogoTitle {...props} />,
+                headerRight: () => rightSection ? rightSection : null
+            };
+            navigation.setOptions(options);
+        } else {
+            navigation.setOptions({ headerShown: false });
+        }
     }, [navigation]);
 }
 

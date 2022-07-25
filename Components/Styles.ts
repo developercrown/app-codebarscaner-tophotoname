@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import Constants from 'expo-constants'
 
 const colors = StyleSheet.create({
     white: {
@@ -225,7 +226,7 @@ const colors = StyleSheet.create({
     },
     brown: {
         color: '#A52A2A'
-    },    
+    },
 });
 
 const background = StyleSheet.create({
@@ -447,7 +448,7 @@ const background = StyleSheet.create({
     },
     brown: {
         backgroundColor: '#A52A2A'
-    },    
+    },
 });
 
 const formStyles = StyleSheet.create({
@@ -478,7 +479,7 @@ const formStyles = StyleSheet.create({
         textAlignVertical: 'top',
         borderWidth: 1,
         fontSize: 14,
-        lineHeight:26,
+        lineHeight: 26,
         borderColor: 'rgba(0, 0, 0, 0.1)',
         elevation: 0
     },
@@ -539,6 +540,21 @@ const alignStyles = StyleSheet.create({
     }
 });
 
+const positionStyles = StyleSheet.create({
+    absoluteTopRight: {
+        position: 'absolute',
+        top: 14,
+        right: 14,
+        marginTop: Constants.statusBarHeight
+    },
+    absoluteTopLeft: {
+        position: 'absolute',
+        top: 14,
+        left: 14,
+        marginTop: Constants.statusBarHeight
+    }
+});
+
 const marginStyles = StyleSheet.create({
     top1: { marginTop: 1 },
     top2: { marginTop: 2 },
@@ -580,5 +596,6 @@ export {
     colors,
     formStyles,
     marginStyles,
+    positionStyles,
     textStyles
 }

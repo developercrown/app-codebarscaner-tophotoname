@@ -20,12 +20,13 @@ const DashboardView = (props: any) => {
             setWelcomeState(true)
         }
     }, [welcomeState]);
+
     useEffect(() => {
         navigation.setOptions({
             headerShown: false
         });
     });
-
+    
     return <DashboardStack.Navigator initialRouteName="Home">
         <DashboardStack.Screen name="Home" component={HomeView} />
         <DashboardStack.Screen name="ReviewInventory" component={ReviewInventoryView} />

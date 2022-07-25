@@ -1,9 +1,9 @@
-import React, { useRef, useState } from 'react';
-import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Modal, Alert, Platform, ActivityIndicator } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Modal, Alert, Platform, ActivityIndicator, BackHandler } from 'react-native';
 import ScreenView from '../../components/ScreenView';
 import { background, colors, textStyles } from '../../components/Styles';
 import useHeaderbar from '../../hooks/useHeaderbar';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 import { Image404 } from '../../assets/images';
 import useSound from '../../hooks/useSound';
@@ -24,6 +24,7 @@ const RegisterEquipmentView = (props: any) => {
     const [readCodebarsMode, setReadCodebarsMode] = useState<boolean>(false);
     const [processMode, setProcessMode] = useState<boolean>(false);
     const [step, setStep] = useState<number>(0);
+    const [uploadProgres, setUploadProgres] = useState<number>(0);
 
     // Form data states
     const [name, setName] = useState('');
@@ -46,16 +47,17 @@ const RegisterEquipmentView = (props: any) => {
     const sound = useSound();
 
     useHeaderbar({
-        hideShadow: false,
-        navigation,
-        leftSection: <View style={{}}>
-            <Text style={[textStyles.md, textStyles.bold]}>Registro de equipo</Text>
-        </View>,
-        rightSection: <View></View>,
-        style: {
-            backgroundColor: 'rgba(255, 255, 255, .4)',
-        }
+        hide: true, navigation
     });
+
+    useEffect(() => {
+        const backAction = () => {
+            sound.deny();
+            return true;
+        };
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+        return () => backHandler.remove();
+    })
 
     const disableAllFullscreenElements = () => {
         setTakePhotoMode(false)
@@ -98,6 +100,7 @@ const RegisterEquipmentView = (props: any) => {
             };
             payload.append('photo', dataImage);
             const server = 'https://api-inventario-minify.upn164.edu.mx/api/v1/rows/photo/'+code;
+            setUploadProgres(0);
             axios({
                 method: 'post',
                 url: server,
@@ -106,10 +109,21 @@ const RegisterEquipmentView = (props: any) => {
                     Accept: 'application/json',
                     'Content-Type': 'multipart/form-data',
                 },
+                onUploadProgress: (event: any) => {
+                    // console.log(event, Math.round((100 * event.loaded) / event.total));
+                    setUploadProgres(Math.round((100 * event.loaded) / event.total))
+                },
+                validateStatus: () => true
             }).then((response: any) => {
                 const { data, status } = response
-                resolve({data, status})
+                if (status == 200) {
+                    resolve({data, status})
+                } else {
+                    // console.log('sub-err', response);
+                    reject({data, status})
+                }
             }).catch((err: any) => {
+                console.log('err', err);
                 reject({data: err})
             });
         })
@@ -121,15 +135,16 @@ const RegisterEquipmentView = (props: any) => {
             axios({
                 method: 'post',
                 url: uri,
-                data: payload
+                data: payload,
+                validateStatus: () => true
             }).then(({ status, data }) => {
-                if (status >= 200 && status <= 300) {
+                if (status == 200) {
                     resolve({data, status})
                 } else {
                     reject({data, status})
                 }
-            }).catch(err => {
-                reject({data: err})
+            }).catch((reasonError: AxiosError) => {                
+                reject({data: reasonError})
             });
         })
     }
@@ -141,6 +156,8 @@ const RegisterEquipmentView = (props: any) => {
             saveRow(payload).then(()=>{
                 setStep(2)
                 uploadImage().then(()=>{
+                    setProcessMode(false)
+                    sound.success();
                     Alert.alert('Exito!', 'Se ha registrado correctamente el equipo', [
                         {
                             text: 'Continuar', onPress: () => {
@@ -153,17 +170,42 @@ const RegisterEquipmentView = (props: any) => {
                         }
                     ]);
                 }).catch((err)=>{
-                    console.log('err', err);
-                    Alert.alert('Error', 'Ocurrio un error al guardar la imagen en el servidor')
+                    sound.deny();
+                    if(err!.status){
+                        switch(err.status){
+                            case 400: 
+                                Alert.alert('Proceso denegado', 'La información ingresada es incorrecta o fue recibida en el servidor incompleta, intentelo nuevamente');
+                                break
+                            case 404: 
+                                Alert.alert('Proceso denegado', 'el código que ingreso no fue identificado en el sistema');
+                                break
+                            default:
+                                Alert.alert('Error', 'Ocurrio un error al registrar la información')
+                        }
+                    }
+                    setProcessMode(false)
                 });
             }).catch((err)=>{
-                console.log('err', err);
-                Alert.alert('Error', 'Ocurrio un error al registrar la información')
+                sound.deny();
+                if(err!.status){
+                    switch(err.status){
+                        case 400: 
+                            Alert.alert('Proceso denegado', 'La información ingresada es incorrecta o fue recibida en el servidor incompleta, intentelo nuevamente');
+                            break
+                        case 409: 
+                            Alert.alert('Proceso denegado', 'el código que intenta ingresar ya existe previamente en el sistema');
+                            break
+                        default:
+                            Alert.alert('Error', 'Ocurrio un error al registrar la información')
+                    }
+                }
+                setProcessMode(false)
             })
         }, 250);
     }
 
     const save = () => {
+        sound.touch()
         if(photo){
             if(
                 validateValue(name) &&
@@ -187,10 +229,13 @@ const RegisterEquipmentView = (props: any) => {
                         status,
                         trademark,
                 }
-                
+                sound.notification();
                 Alert.alert('Confirmación!', '¿Esta seguro de continuar con el registro del equipo?', [
                     {
-                        text: 'Continuar', onPress: () => saveQueue(payloadData)
+                        text: 'Continuar', onPress: () => {
+                            sound.touch();
+                            saveQueue(payloadData)
+                        }
                     },
                     {
                         text: 'Cancel',
@@ -205,9 +250,11 @@ const RegisterEquipmentView = (props: any) => {
                 return
             }
             Alert.alert('Información incompleta', 'Por favor verifique que ha ingresado todos los elementos requeridos')
+            sound.notification()
             return
         }
         Alert.alert('Atención', 'Es necesario que captures la fotografía del equipo a registrar')
+        sound.notification()
     }
 
     if(processMode){
@@ -216,23 +263,10 @@ const RegisterEquipmentView = (props: any) => {
                     style={[styles.container]}
                     styleContainer={styles.screenViewContainer}
                 >
-                    <View style={[styles.photoCardComponent]}>
-                        <View style={[{
-                            width: '100%',
-                            height: '100%'
-                        }]}>
-                            <Image
-                                source={{ uri: photo && photo.uri }}
-                                style={{
-                                    flex: 1
-                                }}
-                            />
-                        </View>
-                    </View>
-
                     <View style={{
                         backgroundColor: 'white',
                         flex: 1,
+                        marginTop: 40,
                         width: 350,
                         height: 350,
                         borderRadius: 175,
@@ -258,6 +292,7 @@ const RegisterEquipmentView = (props: any) => {
                         {
                             step === 2 && <View style={{marginVertical: 20, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
                                 <Text style={[textStyles.md, textStyles.bold, colors.black]}>Subiendo Fotografía</Text>
+                                <Text style={[textStyles.md, textStyles.bold, colors.black]}>{uploadProgres} %</Text>
                             </View>
                         }
 

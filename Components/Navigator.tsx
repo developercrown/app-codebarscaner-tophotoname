@@ -46,10 +46,10 @@ const Navigator = (props: any) => {
             icon: "home",
             path: "Home"
         },
-        {
-            icon: "search",
-            path: "Search"
-        },
+        // {
+        //     icon: "search",
+        //     path: "Search"
+        // },
         {
             icon: "qr-code-outline",
             path: "ReviewInventory"

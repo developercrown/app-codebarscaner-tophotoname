@@ -8,6 +8,7 @@ import Navigator from '../../components/Navigator';
 import { colors, textStyles } from '../../components/Styles';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { GradientButton } from '../../components/FormComponents';
+import useHeaderbar from '../../hooks/useHeaderbar';
 
 const EquipmentInformationView = (props: any) => {
     const {navigation, route} = props;
@@ -24,6 +25,8 @@ const EquipmentInformationView = (props: any) => {
     const windowHeight = Dimensions.get('window').height;
 
     const serverURI = "https://api-inventario-minify.upn164.edu.mx";
+
+    useHeaderbar({ hide: true, navigation });
 
     const getInformation = async (code: any) => {
         setErrorImage(false)
@@ -66,12 +69,6 @@ const EquipmentInformationView = (props: any) => {
 
         return () => backHandler.remove();
     }, []);
-
-    useEffect(() => {
-        navigation.setOptions({
-            headerShown: false
-        });
-    });
 
     const onRefresh = React.useCallback(() => {
         setRefreshing(true)

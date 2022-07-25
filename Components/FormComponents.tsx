@@ -5,29 +5,10 @@ import { colors, formStyles, textStyles } from "./Styles";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 
-// const Input = (props: any) => {
-//     const { label, value, onChange } = props;
-
-//     return <View style={{ marginTop: 10 }}>
-//         <Text style={{ color: '#eee', fontWeight: 'bold', fontSize: 18 }}>{label}</Text>
-//         <TextInput value={value} onChangeText={onChange} style={
-//             {
-//                 color: '#eee',
-//                 backgroundColor: "rgba(0,0,0,.5)",
-//                 paddingVertical: 10,
-//                 paddingHorizontal: 16,
-//                 marginTop: 10,
-//                 borderRadius: 4,
-//                 fontSize: 16
-//             }
-//         } />
-//     </View>
-// }
-
 const FormContainer = (props: any) => {
-    const {style} = props;
-    return <KeyboardAvoidingView style={{ flex: 1 }} behavior={"padding"} enabled>
-        <View style={[{ flex: 1, marginTop: 10 }, style]}>
+    const {style, containerStyle} = props;
+    return <KeyboardAvoidingView style={[{  }, containerStyle]} behavior={"padding"} enabled>
+        <View style={[{ marginTop: 10 }, style]}>
             {props.children}
         </View>
     </KeyboardAvoidingView>
@@ -217,7 +198,7 @@ const TextArea = forwardRef((props: any, ref: any) => {
 });
 
 const GradientButton = (props: any) => {
-    const { borderRadius, colors, label, onTouch, width, height, x , y, style } = props;
+    const { borderRadius, colors, label, labelStyle, onTouch, width, height, x , y, style } = props;
 
     const handleTouch = () => {
         if (onTouch) {
@@ -231,7 +212,7 @@ const GradientButton = (props: any) => {
             style={[{ width: width ? width : 200, height: height ? height : 50, borderRadius: borderRadius ? borderRadius : 30, justifyContent: 'center', alignItems: 'center' }, style]}
             start={{ x: x ? x : 0.7, y: y ? y : 0 }}
         >
-            {props.children ? props.children : (label ? <Text style={[textStyles.md, textStyles.bold, { color: 'white' }]}>{label}</Text> : '')}
+            {props.children ? props.children : (label ? <Text style={[textStyles.md, textStyles.bold, { color: 'white' }, labelStyle]}>{label}</Text> : '')}
         </LinearGradient>
     </TouchableOpacity>
 }
@@ -266,16 +247,6 @@ const IconButton = (props: any) => {
         <Ionicons name={icon} size={size ? size : 32} style={{ color: color ? color : '#333' }} />
     </TouchableOpacity>
 }
-
-const BodyStyles = StyleSheet.create({
-    input: {
-        width: '100%',
-        height: 44,
-        backgroundColor: '#f1f3f6',
-        borderRadius: 6,
-        paddingHorizontal: 10
-    }
-});
 
 export {
     FormContainer,

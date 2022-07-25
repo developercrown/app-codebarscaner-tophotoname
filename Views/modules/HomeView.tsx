@@ -7,6 +7,7 @@ import useHeaderbar from "../../hooks/useHeaderbar";
 import { IconButton } from "../../components/FormComponents";
 import ScreenView from '../../components/ScreenView';
 import Navigator from "../../components/Navigator";
+import { useEffect } from "react";
 
 const HomeView = (props: any) => {
     const {navigation} = props;
@@ -28,11 +29,15 @@ const HomeView = (props: any) => {
             backgroundColor: 'rgba(222, 237, 243, 1)',
         }
     });
+
+    useEffect(() => {
+        navigation.navigate("ReviewInventory"); //TODO: remove in production
+    }, [])
     
     return <View style={{flex: 1}}>
         <ScreenView style={{backgroundColor: 'transparent'}} styleContainer={{paddingVertical: 0}}>
 
-        <GradientContainer
+            <GradientContainer
                 height={100}
                 colors={['rgba(222, 237, 243, 1)', 'rgba(205, 235, 246, .6)', 'rgba(205, 235, 246, .2)']}
                 start={{ x: 0, y: 0.1 }}
