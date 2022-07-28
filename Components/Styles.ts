@@ -229,6 +229,24 @@ const colors = StyleSheet.create({
     },
 });
 
+const gradients: any = {
+    orange: {
+        array: ['#f17410', '#fc9b06', '#ffb504'],
+        start: { x: 0.3, y:  0 },
+        end: { x: 0, y:  0.3 },
+    },
+    red: {
+        array: ['#e3002b', '#f70059', '#f9015e'],
+        start: { x: 0.3, y:  0 },
+        end: { x: 0, y:  0.3 },
+    },
+    blue: {
+        array: ['#030fa9', '#020b72', '#010c78'],
+        start: { x: 0.3, y:  0 },
+        end: { x: 0, y:  0.3 },
+    }
+}
+
 const background = StyleSheet.create({
     white: {
         backgroundColor: "#ffffff"
@@ -457,7 +475,7 @@ const formStyles = StyleSheet.create({
     },
     input: {
         color: '#333',
-        backgroundColor: "transparent",
+        backgroundColor: "white",
         paddingVertical: 4,
         paddingHorizontal: 12,
         marginTop: 10,
@@ -530,7 +548,81 @@ const textStyles = StyleSheet.create({
     },
     bold: {
         fontWeight: 'bold'
+    },
+    shadowLight: {
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: {width: 1, height: 1},
+        textShadowRadius: 8
+    },
+    shadowLightStrong: {
+        textShadowColor: 'rgba(0, 0, 0, 0.6)',
+        textShadowOffset: {width: 1, height: 1},
+        textShadowRadius: 8
     }
+});
+
+const fontStyles = StyleSheet.create({
+    robotoThin: {
+        fontFamily: 'Roboto_100Thin'
+    },
+    robotoLight: {
+        fontFamily: 'Roboto_300Light'
+    },
+    roboto: {
+        fontFamily: 'Roboto_400Regular'
+    },
+    robotoMedium: {
+        fontFamily: 'Roboto_500Medium'
+    },
+    robotoBold: {
+        fontFamily: 'Roboto_700Bold'
+    },
+    robotoBlack: {
+        fontFamily: 'Roboto_900Black'
+    },
+
+    nunitoExtraLight: {
+        fontFamily: 'Nunito_200ExtraLight'
+    },
+    nunitoExtraLightItalic: {
+        fontFamily: 'Nunito_200ExtraLight_Italic'
+    },
+    nunitoLight: {
+        fontFamily: 'Nunito_300Light'
+    },
+    nunitoLightItalic: {
+        fontFamily: 'Nunito_300Light_Italic'
+    },
+    nunito: {
+        fontFamily: 'Nunito_400Regular'
+    },
+    nunitoRegularItalic: {
+        fontFamily: 'Nunito_400Regular_Italic'
+    },
+    nunitoSemiBold: {
+        fontFamily: 'Nunito_600SemiBold'
+    },
+    nunitoSemiBoldItalic: {
+        fontFamily: 'Nunito_600SemiBold_Italic'
+    },
+    nunitoBold: {
+        fontFamily: 'Nunito_700Bold'
+    },
+    nunitoBoldItalic: {
+        fontFamily: 'Nunito_700Bold_Italic'
+    },
+    nunitoExtraBold: {
+        fontFamily: 'Nunito_800ExtraBold'
+    },
+    nunitoExtraBoldItalic: {
+        fontFamily: 'Nunito_800ExtraBold_Italic'
+    },
+    nunitoBlack: {
+        fontFamily: 'Nunito_900Black'
+    },
+    nunitoBlackItalic: {
+        fontFamily: 'Nunito_900Black_Italic'
+    },
 });
 
 const alignStyles = StyleSheet.create({
@@ -594,7 +686,9 @@ export {
     alignStyles,
     background,
     colors,
+    fontStyles,
     formStyles,
+    gradients,
     marginStyles,
     positionStyles,
     textStyles

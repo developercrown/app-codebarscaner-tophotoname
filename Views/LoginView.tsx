@@ -11,6 +11,7 @@ import useHeaderbar from "../hooks/useHeaderbar";
 
 import {LogoText} from '../assets/images';
 import useSound from "../hooks/useSound";
+import Constants from 'expo-constants';
 
 const LoginView = (props: any) => {
     const { navigation } = props;
@@ -33,71 +34,69 @@ const LoginView = (props: any) => {
     const handleNextInput = () => {
         passwordRef.current.focus()  
     }
+    return <>
+        <IconButton
+            icon="cog"
+            color={colors.dark.color}
+            size={32}
+            onTouch={() => {
+                sound.touch()
+                navigation.navigate('Configuration')
+            }}
+            style={[positionStyles.absoluteTopRight, {zIndex: 10}]}/>
+        <ScreenView style={{backgroundColor: 'rgba(255, 255, 255, .75)', paddingTop: Constants.statusBarHeight, flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+            <View style={[{width: windowWidth, flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}]}>
 
-    useEffect(() => {
-        handleLogin() //TODO: remove in production
-    })
+                <View style={[styles.containerTop]}>
+                    <Image source={LogoText} style={styles.logo} />
+                </View>
 
-    return <ScreenView style={{backgroundColor: 'rgba(255, 255, 255, .1)', height: '100%' }}>
-            <View style={[{width: windowWidth}, alignStyles.centered]}>
-                <IconButton
-                    icon="cog"
-                    color={colors.dark.color}
-                    size={32}
-                    onTouch={() => {
-                        sound.touch()
-                        navigation.navigate('Configuration')
-                    }}
-                    style={positionStyles.absoluteTopRight}/>
-                <View style={[{width: windowWidth, height: 'auto'}, alignStyles.centered]}>
-                    <View style={[styles.containerTop]}>
-                        <Image source={LogoText} style={styles.logo} />
-                    </View>
-                    <View>
-                        <Text style={[ textStyles.alignCenter, colors.blue, textStyles.xl, textStyles.bold, { marginTop: 20 } ]}>
-                            Hola!
-                        </Text>
-                        <Text style={[ textStyles.alignCenter, colors.black, textStyles.xs, textStyles.bold, { paddingHorizontal: 20, marginBottom: 10 } ]}>
-                            Bienvenido a nuestra app de inventarios digitales
-                        </Text>
-                        <FormContainer>
-                            <Input
-                                icon="person"
-                                label="Usuario"
-                                onChange={setUsername}
-                                onSubmit={handleNextInput}
-                                placeholder="Ingresa tu nombre de usuario"
-                                ref={usernameRef}
-                                type="text"
-                                value={username}
-                                />
+                <View>
+                    <Text style={[ textStyles.alignCenter, colors.blue, textStyles.xl, textStyles.bold, { marginTop: 20 } ]}>
+                        Hola!
+                    </Text>
+                    <Text style={[ textStyles.alignCenter, colors.black, textStyles.xs, textStyles.bold, { paddingHorizontal: 20, marginBottom: 10 } ]}>
+                        Bienvenido a nuestra app de inventarios digitales
+                    </Text>
+                </View>
+                <FormContainer>
+                    <Input
+                        icon="person"
+                        label="Usuario"
+                        onChange={setUsername}
+                        onSubmit={handleNextInput}
+                        placeholder="Ingresa tu nombre de usuario"
+                        ref={usernameRef}
+                        type="text"
+                        value={username}
+                        style={{backgroundColor: 'white', elevation: 1}}
+                        />
 
-                            <Input
-                                icon="key"
-                                label="Password"
-                                onChange={setPassword}
-                                onSubmit={handleLogin}
-                                placeholder="Ingresa tu contraseña"
-                                ref={passwordRef}
-                                type="password"
-                                value={password}
-                                />
-                            <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 26 }}>
-                                <GradientButton label="Entrar" onTouch={handleLogin} style={{elevation: 1}}/>
-                            </View>
-                        </FormContainer>
-                    </View>
+                    <Input
+                        icon="key"
+                        label="Password"
+                        onChange={setPassword}
+                        onSubmit={handleLogin}
+                        placeholder="Ingresa tu contraseña"
+                        ref={passwordRef}
+                        type="password"
+                        value={password}
+                        style={{backgroundColor: 'white', elevation: 1}}
+                        />
+                </FormContainer>
+                <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 26 }}>
+                    <GradientButton label="Entrar" onTouch={handleLogin} style={{elevation: 1}}/>
                 </View>
             </View>
+            
         </ScreenView>
+    </>
 }
 
 const styles = StyleSheet.create({
     containerTop: {
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 60,
-        padding: 0
     },
     logo: {
         width: 240,

@@ -72,15 +72,22 @@ const FullScreenImage = (props: any) => {
         <View style={[
             styles.header,
             {
+                justifyContent: 'flex-end'
+            }
+        ]}>
+            <TouchableHighlight onPress={handleBack} style={styles.closeButton}>
+                <Ionicons name="close" size={40} style={styles.closeButtonIcon} />
+            </TouchableHighlight>
+        </View>
+        <View style={[
+            styles.footer,
+            {
                 backgroundColor: title ? 'rgba(0, 0, 0, .8)' : 'rgba(0, 0, 0, 0)',
-                justifyContent: title ? 'space-between' : 'flex-end',
+                justifyContent: 'center',
                 elevation: title ? 2 : 0
             }
         ]}>
             { title && <Text style={styles.title}>{title}</Text> }
-            <TouchableHighlight onPress={handleBack} style={styles.closeButton}>
-                <Ionicons name="close" size={40} style={styles.closeButtonIcon} />
-            </TouchableHighlight>
         </View>
     </View>
 }
@@ -91,7 +98,7 @@ const styles = StyleSheet.create({
         height: '100%',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'black'
+        backgroundColor: 'rgba(0, 0, 0, .9)',
     },
     image: {
         width: '100%',
@@ -107,13 +114,23 @@ const styles = StyleSheet.create({
         paddingHorizontal: 4,
         borderRadius: 200,
     },
+    footer: {
+        bottom: 40,
+        position: 'absolute',
+        width: '95%',
+        height: 60,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 4,
+        borderRadius: 200,
+    },
     title: {
         color: 'white',
-        paddingLeft: 20,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
     closeButton: {
-        backgroundColor: 'rgba(255, 255, 255, .2)',
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
         justifyContent: 'center',
         alignItems: 'center',
         width: 50,

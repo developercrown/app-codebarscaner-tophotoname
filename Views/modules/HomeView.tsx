@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View } from "react-native"
+import { Image, StatusBar, StyleSheet, Text, View } from "react-native"
 import { alignStyles, colors, textStyles } from "../../components/Styles";
 import { GradientContainer } from "../../components/FormComponents";
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -20,37 +20,30 @@ const HomeView = (props: any) => {
         navigation,
         hideShadow: false,
         leftSection: <View style={[{justifyContent: 'center', alignItems: 'center', height: 40}]}>
-            <Text style={[textStyles.bold, textStyles.md, colors.steelblue, {}]}>Bienvenido</Text>
+            <Text style={[textStyles.bold, textStyles.md, colors.white, {}]}>Bienvenido</Text>
         </View>,
         rightSection: <View style={[{justifyContent: 'flex-start', alignItems: 'flex-start', height: 60}]}>
-            <IconButton icon="exit" color={colors.steelblue.color} size={26}  style={{marginTop: 10}} onTouch={handleLogout} />
+            <IconButton icon="exit" color={colors.white.color} size={26}  style={{marginTop: 10}} onTouch={handleLogout} />
         </View>,
         style: {
-            backgroundColor: 'rgba(222, 237, 243, 1)',
+            backgroundColor: 'rgba(0, 0, 0, .5)',
         }
     });
-
-    useEffect(() => {
-        navigation.navigate("ReviewInventory"); //TODO: remove in production
-    }, [])
     
     return <View style={{flex: 1}}>
+        <StatusBar barStyle="light-content" backgroundColor='rgba(10, 10, 10, 1)'/>
         <ScreenView style={{backgroundColor: 'transparent'}} styleContainer={{paddingVertical: 0}}>
 
-            <GradientContainer
-                height={100}
-                colors={['rgba(222, 237, 243, 1)', 'rgba(205, 235, 246, .6)', 'rgba(205, 235, 246, .2)']}
-                start={{ x: 0, y: 0.1 }}
-                end={{ x: 0, y: 0.8 }}
-                locations={[0.5, 0.8]}
-            >
+            {/* <View style={{marginTop: 20}}>
                 <View style={[alignStyles.centered]}>
-                    <Ionicons name="person-circle" size={66} style={[colors.steelblue, {marginLeft: 4, opacity: .9}]} />
+                    <Ionicons name="person-circle" size={66} style={[colors.white, {marginLeft: 4, opacity: .9, elevation: 2}]} />
                 </View>
-                <Text style={[colors.steelblue, textStyles.bold, textStyles.lg, textStyles.alignCenter]}>Rene Corona Valdes</Text>
-            </GradientContainer>
+                <Text style={[colors.white, textStyles.bold, textStyles.lg, textStyles.alignCenter]}>Usuario</Text>
+            </View> */}
             <View style={styles.containerTop}>
-                <Image source={LogoText} style={styles.logo} />
+                <View style={[styles.logoContainer]}>
+                    <Image source={LogoText} style={styles.logo} />
+                </View>
             </View>
         </ScreenView>
         <Navigator navigation={navigation}/>
@@ -64,10 +57,19 @@ const styles = StyleSheet.create({
         marginTop: 20,
         padding: 20
     },
+    logoContainer: {
+        backgroundColor: 'rgba(255, 255, 255, 0.65)',
+        borderRadius: 200,
+        padding: 20,
+        width: 300,
+        height: 300,        
+        marginTop: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     logo: {
-        width: 200,
-        height: 200,
-        marginTop: 40,
+        width: 240,
+        height: 240,
     },
     bodyContainer: {
         flex: 1

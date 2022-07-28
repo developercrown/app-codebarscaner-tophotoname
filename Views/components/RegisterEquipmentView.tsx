@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Modal, Alert, Platform, ActivityIndicator, BackHandler } from 'react-native';
+import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Modal, Alert, Platform, ActivityIndicator, BackHandler, StatusBar } from 'react-native';
 import ScreenView from '../../components/ScreenView';
 import { background, colors, textStyles } from '../../components/Styles';
 import useHeaderbar from '../../hooks/useHeaderbar';
@@ -13,11 +13,12 @@ import { estadosEquipo, locations } from '../../components/Constants';
 import CameraPhotoCapturer from '../../components/CameraPhotoCapturer';
 import FullScreenImage from '../../components/FullScreenImage';
 import CodebarReader from '../../components/CodebarReader';
+import InternalHeader from '../../components/InternalHeader';
 
 
 const RegisterEquipmentView = (props: any) => {
     const { navigation, route } = props;
-    const { code } = route.params;
+    const { code, sourcePath } = route.params;
     const [photo, setPhoto] = useState<any>(null);
     const [viewPhotoMode, setViewPhotoMode] = useState<boolean>(false);
     const [takePhotoMode, setTakePhotoMode] = useState<boolean>(false);
@@ -52,16 +53,22 @@ const RegisterEquipmentView = (props: any) => {
 
     useEffect(() => {
         const backAction = () => {
-            if(processMode){
-                sound.deny();
-                return true;
-            }
-            sound.back();
-            return false;
+            handleBack()
+            
+            return true;
         };
         const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
         return () => backHandler.remove();
     })
+
+    const handleBack = () => {
+        if(!processMode) {
+            sound.back();
+            navigation.replace('CodebarReader', {code});
+            return
+        }
+        sound.deny();
+    }
 
     const disableAllFullscreenElements = () => {
         setTakePhotoMode(false)
@@ -261,8 +268,16 @@ const RegisterEquipmentView = (props: any) => {
         sound.notification()
     }
 
+    const header = <>
+        <StatusBar barStyle="light-content" backgroundColor='rgba(10, 10, 10, 1)'/>
+        {
+            !processMode && <InternalHeader title={"Registro de Equipo"} leftIcon="chevron-back" leftAction={handleBack} rightAction={handleBack} style={{backgroundColor: 'rgba(0, 0, 0, .5)'}}/>
+        }
+    </>
+
     if(processMode){
         return <View style={[styles.container]}>
+                { header }
                 <ScreenView
                     style={[styles.container]}
                     styleContainer={styles.screenViewContainer}
@@ -349,6 +364,7 @@ const RegisterEquipmentView = (props: any) => {
                     handleSuccess={handlePhotoTaken}/>
             </Modal>
         }
+        { header }
         <ScreenView
             style={[styles.container]}
             styleContainer={styles.screenViewContainer}
@@ -405,7 +421,7 @@ const RegisterEquipmentView = (props: any) => {
             >
                 <View style={[
                     {
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.35)',
                         width: '95%',
                         paddingHorizontal: 0,
                         paddingVertical: 20,
@@ -415,12 +431,14 @@ const RegisterEquipmentView = (props: any) => {
                         <Text style={[
                             textStyles.bold,
                             textStyles.md,
-                            colors.black
+                            textStyles.shadowLight,
+                            colors.white
                         ]}>Detalles del equipo:</Text>
                     </View>
                     <Input
                         label="Nombre del equipo"
-                        styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}
+                        styleLabel={[ textStyles.shadowLight, colors.white ]}
+                        styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
                         placeholder="Ingresa el nombre del equipo"
                         ref={equipmentNameRef}
                         onChange={setName}
@@ -429,7 +447,8 @@ const RegisterEquipmentView = (props: any) => {
                     />
                     <Input
                         label="Marca"
-                        styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}
+                        styleLabel={[ textStyles.shadowLight, colors.white ]}
+                        styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
                         placeholder="Ingresa la marca del equipo"
                         ref={equipmentTrademarkRef}
                         onChange={setTrademark}
@@ -438,7 +457,8 @@ const RegisterEquipmentView = (props: any) => {
                     />
                     <Input
                         label="Modelo"
-                        styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}
+                        styleLabel={[ textStyles.shadowLight, colors.white ]}
+                        styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
                         placeholder="Ingresa el modelo del equipo"
                         ref={equipmentModelRef}
                         onChange={setModel}
@@ -452,7 +472,8 @@ const RegisterEquipmentView = (props: any) => {
                             <TextArea
                                 label="Series o códigos"
                                 placeholder="Ingresa aquí todos los códigos o series en el equipo"
-                                styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}
+                                styleLabel={[ textStyles.shadowLight, colors.white ]}
+                                styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
                                 styleContainer={{ padding: 0, margin: 0, paddingRight: 0 }}
                                 onChange={setSeries}
                                 ref={equipmentSeriesRef}
@@ -482,7 +503,7 @@ const RegisterEquipmentView = (props: any) => {
                 </View>
                 <View style={[
                     {
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.35)',
                         width: '95%',
                         paddingHorizontal: 0,
                         paddingVertical: 20,
@@ -493,7 +514,8 @@ const RegisterEquipmentView = (props: any) => {
                         <Text style={[
                             textStyles.bold,
                             textStyles.md,
-                            colors.black
+                            textStyles.shadowLight,
+                            colors.white
                         ]}>Detalles del resguardo:</Text>
                     </View>
 
@@ -504,6 +526,7 @@ const RegisterEquipmentView = (props: any) => {
                         styleContainer={[{
                             paddingHorizontal: 30
                         }]}
+                        styleLabel={[ textStyles.shadowLight, colors.white ]}
                         value={safeguardApartment}
                         />      
 
@@ -511,7 +534,8 @@ const RegisterEquipmentView = (props: any) => {
                         label="Persona resguardante"
                         onChange={setSafeguardPerson}
                         placeholder="Nombre de la persona resguardante"
-                        styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}
+                        styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
+                        styleLabel={[ textStyles.shadowLight, colors.white ]}
                         value={safeguardPerson}
                     />
                     <Select
@@ -521,12 +545,13 @@ const RegisterEquipmentView = (props: any) => {
                         styleContainer={[{
                             paddingHorizontal: 30
                         }]}
+                        styleLabel={[ textStyles.shadowLight, colors.white ]}
                         value={location}
                         />
                 </View>
                 <View style={[
                     {
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.35)',
                         width: '95%',
                         paddingHorizontal: 0,
                         paddingVertical: 20,
@@ -535,6 +560,7 @@ const RegisterEquipmentView = (props: any) => {
                     }]}>
                     <Select
                         styleContainer={{ paddingHorizontal: 30 }}
+                        styleLabel={[ textStyles.shadowLight, colors.white ]}
                         label="Estado"
                         items={estadosEquipo}
                         value={status}
@@ -544,7 +570,8 @@ const RegisterEquipmentView = (props: any) => {
                         <TextArea
                             label="Notas adicionales"
                             placeholder="Ingresa los detalles adicionales, notas de resguardo o estado del equipo"
-                            styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.7)' }]}
+                            styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
+                            styleLabel={[ textStyles.shadowLight, colors.white ]}
                             styleContainer={{ padding: 0, margin: 0, paddingRight: 0 }}
                             onChange={setNotes}
                             value={notes}
@@ -554,11 +581,6 @@ const RegisterEquipmentView = (props: any) => {
             </View>
 
             <View style={[styles.controls]}>
-                <TouchableOpacity
-                    onPress={()=>navigation.goBack()}
-                    style={[styles.button, background.maroon]}>
-                    <Ionicons name="close" size={40} style={{ color: 'white' }} />
-                </TouchableOpacity>
                 <TouchableOpacity
                     onPress={save}
                     style={[styles.button, { flex: 3 }, background.darkgreen]}>
@@ -609,7 +631,8 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 200,
         borderBottomRightRadius: 200,
         overflow: 'hidden',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        elevation: 1
     },
     takePhotoButton: {
         backgroundColor: 'rgba(255, 255, 255, 1)',
@@ -631,7 +654,9 @@ const styles = StyleSheet.create({
     },
     controls: {
         flexDirection: 'row',
-        width: '90%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '70%',
     },
     button: {
         flex: 1,

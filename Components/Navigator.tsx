@@ -9,7 +9,7 @@ const MenuOption = (props: any) => {
     const isActive = current.name === path
 
     return <TouchableOpacity style={[styles.navigatorIcon, (isActive && styles.navigatorIconActive)] } onPress={action}>
-        <Ionicons name={icon} size={isActive ? 35 : 30} style={[ colors.steelblue, {opacity: isActive ? .3 : 1}]} />
+        <Ionicons name={icon} size={isActive ? 35 : 30} style={[ {color: isActive ? colors.white.color : colors.dark.color}]} />
     </TouchableOpacity>
 }
 
@@ -21,7 +21,7 @@ const Navigator = (props: any) => {
 
     const handleNavigate = (target: string) => {
         sound.drop();
-        navigation.navigate(target)
+        navigation.navigate(target, {sourcePath: 'Home'})
     }
 
     useLayoutEffect(() =>{
@@ -42,10 +42,7 @@ const Navigator = (props: any) => {
     }, []);
 
     const items = [
-        {
-            icon: "home",
-            path: "Home"
-        },
+        
         // {
         //     icon: "search",
         //     path: "Search"
@@ -53,6 +50,10 @@ const Navigator = (props: any) => {
         {
             icon: "qr-code-outline",
             path: "ReviewInventory"
+        },
+        {
+            icon: "home",
+            path: "Home"
         },
         {
             icon: "cog",
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
         zIndex: 1
     },
     navigatorContainer: {
-        backgroundColor: 'rgba(151, 199, 249, 1)',
+        backgroundColor: 'rgba(255, 255, 255, .3)',
         width: '100%',
         height: 70,
         borderTopLeftRadius: 28,
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
         position:'relative',
     },
     navigatorIconActive: {
-        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        backgroundColor: 'rgba(255, 255, 255, 0)',
         width: 50,
         height: 50,
         padding: 0,
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        elevation: 1,
+        elevation: 0,
         top: -1,
         position:'relative',
     }

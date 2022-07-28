@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
-import { BackHandler, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { BackHandler, Dimensions, Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BarCodeScanner } from "expo-barcode-scanner";
-import Constants from 'expo-constants'
 import ScreenView from '../../components/ScreenView';
-import Navigator from "../../components/Navigator";
 import useSound from "../../hooks/useSound";
 import { FormContainer, GradientButton, GradientContainer, Input } from "../../components/FormComponents";
 import { colors, marginStyles, textStyles } from "../../components/Styles";
 import { CameraLine } from "../../assets/images";
+import InternalHeader from "../../components/InternalHeader";
 
 const CodeReaderView = (props: any) => {
+    const { navigation } = props;
+
     const [autoMode, setAutoMode] = useState<boolean>(false)
     const [soundsMode, setSoundsMode] = useState<boolean>(true)
     const [scanned, setScanned] = useState<any>(false);
@@ -18,7 +19,6 @@ const CodeReaderView = (props: any) => {
     const [hasPermission, setHasPermission] = useState<any>(null);
     const sound = useSound(); 
 
-    const {navigation} = props;
     const windowWidth = Dimensions.get('window').width;
     const windowHeight = Dimensions.get('window').height;
 
@@ -78,14 +78,19 @@ const CodeReaderView = (props: any) => {
         executeSound(sound.base);
     }
 
+    const handleBack = () => {
+        sound.back();
+        navigation.goBack();
+    }
+
     useEffect(() => {
         navigation.setOptions({
             headerShown: false
         });
 
         const backAction = () => {
-            sound.back();
-            return false;
+            handleBack();
+            return true;
         };
         const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
         return () => backHandler.remove();
@@ -96,30 +101,26 @@ const CodeReaderView = (props: any) => {
             const { status } = await BarCodeScanner.requestPermissionsAsync();
             setHasPermission(status === 'granted');
         })();
-        
         return () => {};
     }, []);
-
-    // useEffect(() => { //TODO: delete in production
-    //     gotoSearchEquipment('10650149')
-    // });
 
     const scaleValue = .7;
     const translateValue = -28
     
     return <View style={[styles.container]}>
-        <ScreenView style={[styles.container, ]} styleContainer={{paddingVertical: 0}}>
+        <StatusBar barStyle="light-content" backgroundColor='rgba(10, 10, 10, 1)'/>
+        <InternalHeader title="Revisión del Equipo" leftIcon="chevron-back" leftAction={handleBack} rightAction={handleBack} style={{backgroundColor: 'rgba(0, 0, 0, .5)'}}/>
+        <ScreenView style={[styles.container]} styleContainer={{paddingVertical: 0}}>
             <View style={[styles.header, {width: windowWidth-30}]}>
                 <Text style={[colors.white, textStyles.bold, textStyles.md]}>Captura de código</Text>
-                <TouchableOpacity onPress={handleToggleAutoMode} style={[styles.headerButton, !autoMode && styles.headerButtonActive]}>
+                <TouchableOpacity onPress={handleToggleAutoMode} style={[styles.headerButton, autoMode && styles.headerButtonActive]}>
                     {
-                        autoMode ? 
-                            // <Ionicons name="checkmark-done-sharp" size={26} color={colors.yellow.color}  />
+                        autoMode ?
                             <Text style={
                                 [
                                     textStyles.bold,
                                     textStyles.pico,
-                                    colors.yellow
+                                    colors.white
                                 ]
                             }>AUTO</Text>
                         :
@@ -134,10 +135,10 @@ const CodeReaderView = (props: any) => {
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleToggleSoundsMode} style={[styles.headerButton, !soundsMode && styles.headerButtonActive]}>
                     {
-                        soundsMode ? 
-                            <Ionicons name="musical-notes" size={26} color={colors.yellow.color}  />
+                        soundsMode ?
+                            <Ionicons name="volume-high" size={26} color={colors.white.color}  />
                         :
-                            <Ionicons name="disc" size={26} color={colors.white.color} />
+                            <Ionicons name="volume-mute" size={26} color={colors.white.color} />
                     }
                 </TouchableOpacity>
             </View>
@@ -247,9 +248,9 @@ const CodeReaderView = (props: any) => {
             <GradientContainer
                 colors={
                     [
-                        'rgba(45, 45, 45, 1)',
-                        'rgba(62, 60, 71, 1)',
-                        'rgba(62, 60, 71, 1)'
+                        'rgba(0, 0, 0, .85)',
+                        'rgba(0, 0, 0, .85)',
+                        'rgba(0, 0, 0, .85)'
                     ]
                 }
                 start={{ x: .3, y: 1 }}
@@ -266,9 +267,9 @@ const CodeReaderView = (props: any) => {
                 <GradientButton
                     colors={
                         scannedCode ? [
-                            'rgba(169, 2, 2, 1)',
-                            'rgba(145, 7, 7, 1)',
-                            'rgba(133, 7, 7, 1)',
+                            '#8d0606',
+                            '#c70000',
+                            '#c70000',
                         ] :
                         [
                             'rgba(100, 100, 100, 1)',
@@ -282,9 +283,9 @@ const CodeReaderView = (props: any) => {
                 <GradientButton
                     colors={
                         scannedCode ? [
-                            'rgba(143, 45, 253, 1)',
-                            'rgba(122, 47, 249, 1)',
-                            'rgba(36, 55, 230, 1)'
+                            '#2a73d9',
+                            '#4d88db',
+                            '#4d88db'
                         ] :
                         [
                             'rgba(100, 100, 100, 1)',
@@ -306,7 +307,7 @@ const CodeReaderView = (props: any) => {
                     </GradientButton>
             </GradientContainer>
         </ScreenView>
-        <Navigator navigation={navigation}/>
+        {/* <Navigator navigation={navigation}/> */}
     </View>
 }
 
@@ -322,13 +323,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
-        backgroundColor: colors.blue.color,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
         marginTop: 20,
         height: 80,
         borderRadius: 10
     },
     headerButton: {
-        backgroundColor: 'rgba(3, 82, 192, 1)',
+        backgroundColor: 'rgba(255, 255, 255, 0)',
         width: 50,
         height: 50,
         borderRadius: 25,
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerButtonActive: {
-        backgroundColor: 'rgba(3, 82, 192, .5)',
+        backgroundColor: 'rgba(255, 255, 255, .1)',
     },
     body: {
         flex: 1,

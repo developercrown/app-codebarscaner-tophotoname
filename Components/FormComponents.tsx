@@ -1,16 +1,16 @@
 import { Picker } from "@react-native-picker/picker";
 import { LinearGradient } from "expo-linear-gradient";
-import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { colors, formStyles, textStyles } from "./Styles";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 
 const FormContainer = (props: any) => {
-    const {style, containerStyle} = props;
-    return <KeyboardAvoidingView style={[{  }, containerStyle]} behavior={"padding"} enabled>
-        <View style={[{ marginTop: 10 }, style]}>
-            {props.children}
-        </View>
+    const {style} = props;
+    return <KeyboardAvoidingView
+        style={[{ flex: 1 }, style]}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        {props.children}
     </KeyboardAvoidingView>
 }
 
@@ -26,6 +26,7 @@ const Input = forwardRef((props: any, ref: any) => {
             placeholder,
             style,
             styleInput,
+            styleLabel,
             type,
             value,
         } = props;
@@ -61,9 +62,10 @@ const Input = forwardRef((props: any, ref: any) => {
                 textStyles.colorDark,
                 textStyles.xs,
                 textStyles.bold,
-                    {
-                        marginTop: 10
-                    }
+                {
+                    marginTop: 10
+                },
+                styleLabel
                 ]}>{label}:</Text>
                 <TextInput
                     onChangeText={onChange}
@@ -119,35 +121,41 @@ const Input = forwardRef((props: any, ref: any) => {
 })
 
 const Select = (props: any) => {
-    const { items, label, onChange, style, styleLabel, styleContainer, value } = props
-    return <View style={[{ padding: 10, marginTop: 4 }, styleContainer]}>
-        <Text style={[{ color: '#111', fontWeight: 'bold', marginBottom: 10 }, styleLabel]}>{label}:</Text>
-        <Picker
-            style={
-                [
-                    {
-                        backgroundColor: 'rgba(255, 255, 255, .8)',
-                        color: '#333',
-                        fontWeight: 'bold',
-                        borderWidth: 1,
-                        borderColor: 'rgba(255, 255, 255, .4)'
-                    },
-                    style
-                ]
-            }
-            selectedValue={value}
-            onValueChange={(itemValue) =>
-                onChange(itemValue)
-            }>
-            {
-                items.map((e: any, key: number) => <Picker.Item key={key} label={e} value={e} />)
-            }
-        </Picker>
+    const { items, label, title, onChange, placeholder, style, styleLabel, styleContainer, darkMode, value } = props
+    return <View style={[{ marginTop: 4, width: '100%' }, styleContainer]}>
+        <Text style={[{ color: '#111', fontWeight: 'bold', marginBottom: 6 }, styleLabel]}>{label}:</Text>
+        <View style={{backgroundColor: 'red', overflow: 'hidden', borderRadius: 2}}>
+            <Picker
+                style={
+                    [
+                        {
+                            backgroundColor: darkMode ? 'rgba(10, 12, 18, 1)' : 'rgba(100, 120, 180, 1)', //TODO: to improve and test
+                            color: '#fff',//TODO: to improve and test darkmode
+                            borderWidth: 1,
+                            borderColor: 'rgba(0, 0, 0, .6)',
+                            elevation: 1
+                        },
+                        style
+                    ]
+                }
+                prompt={title}
+                dropdownIconColor={darkMode ? 'white' : 'white'}  //TODO: to improve and test
+                itemStyle={{backgroundColor: 'red', color: 'pink'}}
+                selectedValue={value}
+                placeholder={placeholder}
+                onValueChange={(itemValue) =>
+                    onChange(itemValue)
+                }>
+                {
+                    items.map((e: any, key: number) => <Picker.Item key={key} label={e} value={e} />)
+                }
+            </Picker>
+        </View>
     </View>
 }
 
 const TextArea = forwardRef((props: any, ref: any) => {
-    const { fontSize, onChange, value, label, onSubmit, placeholder, style, styleContainer } = props
+    const { fontSize, onChange, value, label, onSubmit, placeholder, style, styleContainer, styleLabel, styleInput } = props
     const inputRef = useRef<any>();
 
     const handleFocus = () => inputRef.current.focus();
@@ -176,7 +184,8 @@ const TextArea = forwardRef((props: any, ref: any) => {
             textStyles.bold,
             {
                 marginTop: 10
-            }
+            },
+            styleLabel
         ]}>{label}:</Text>
         <TextInput
             style={[
@@ -185,6 +194,7 @@ const TextArea = forwardRef((props: any, ref: any) => {
                 {
                     fontSize: fontSize ? fontSize : 14
                 },
+                styleInput,
                 style
             ]}
             multiline={true}
@@ -221,7 +231,7 @@ const GradientContainer = (props: any) => {
     const { style, colors, width, height, start , end } = props;
     return <LinearGradient
             colors={colors ? colors : ['#4064ae', '#545da9', '#7756a3']}
-            style={[{ width: width ? width : '100%', height: height ? height : 50 }, style]}
+            style={[{ width: width ? width : '100%', minHeight: height ? height : 50 }, style]}
             start={start}
             end={end}
         >
@@ -248,7 +258,42 @@ const IconButton = (props: any) => {
     </TouchableOpacity>
 }
 
+const badgeSizes: any = {
+    xs: {
+        ...textStyles.xs
+    },
+    sm: {
+        ...textStyles.sm
+    },
+    md: {
+        ...textStyles.md
+    },
+    lg: {
+        ...textStyles.lg
+    }
+};
+
+const Badge = (props: any) => {
+    const {background, children, color, onPress, size, style, value} = props;
+    const element = <Text style={[
+        {
+            backgroundColor: background ? background : 'black',
+            borderRadius: 10,
+            paddingHorizontal: 10,
+            marginVertical: 2,
+            textAlign: 'center',
+            color: color ? color : colors.white.color,
+            justifyContent: 'center',
+            alignItems: 'center'
+        },
+        badgeSizes[size ? size : 'xs'],
+        style
+    ]}>{value} {children}</Text>
+    return onPress ? <TouchableOpacity onPress={onPress}>{element}</TouchableOpacity> : element
+}
+
 export {
+    Badge,
     FormContainer,
     GradientButton,
     GradientContainer,

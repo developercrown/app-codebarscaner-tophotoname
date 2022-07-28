@@ -1,33 +1,65 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, BackHandler, Dimensions, Image, Modal, RefreshControl, StyleSheet, Text, TouchableHighlight, TouchableNativeFeedback, View } from 'react-native';
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Alert, BackHandler, Dimensions, Image, Modal, RefreshControl, StatusBar, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
 import axios from 'axios';
-import useSound from '../../hooks/useSound';
-import { LoadingPicture, Image404 } from '../../assets/images';
-import ScreenView from '../../components/ScreenView';
-import Navigator from '../../components/Navigator';
-import { colors, textStyles } from '../../components/Styles';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { GradientButton } from '../../components/FormComponents';
+
+import ScreenView from "../../components/ScreenView";
+import { LoadingPicture, Image404 } from '../../assets/images';
+import useSound from "../../hooks/useSound";
+import { colors, gradients, positionStyles, textStyles } from "../../components/Styles";
+import Constants from 'expo-constants';
+import { Badge, IconButton } from "../../components/FormComponents";
+import { LinearGradient } from "expo-linear-gradient";
 import useHeaderbar from '../../hooks/useHeaderbar';
-import FullScreenImage from '../../components/FullScreenImage';
+import FullScreenImage from "../../components/FullScreenImage";
+import ReviewEquipmentView from "./ReviewEquipmentView";
+import InternalHeader from "../../components/InternalHeader";
+import { useFocusEffect } from "@react-navigation/native";
+
+const serverURI = "https://api-inventario-minify.upn164.edu.mx";
+
+const ItemRight = (props: any) => {
+    const {background, label, value} = props;
+    const bg: string = background ? background : 'orange';
+    const gradient: any = gradients[bg];
+    return <LinearGradient
+        colors={gradient.array}
+        start={gradient.start}
+        end={gradient.end}
+        style={{
+            alignItems: 'flex-end',
+            paddingEnd: 20,
+            paddingVertical: 10,
+            borderBottomLeftRadius: 100,
+            borderTopLeftRadius: 100,
+            elevation: 2,
+            marginVertical: 4
+        }}
+    >
+        <Text style={[colors.white, textStyles.sm, textStyles.shadowLight, {marginVertical: 2}]}>{label}:</Text>
+        <Text style={[colors.white, textStyles.sm, textStyles.bold, textStyles.shadowLight, {marginVertical: 2}]}>{value}</Text>
+    </LinearGradient>
+}
 
 const EquipmentInformationView = (props: any) => {
     const { navigation, route } = props;
-    const { code } = route.params;
-
-    const sound = useSound();
-    const [wait, setWait] = useState<boolean>(false);
-    const [refreshing, setRefreshing] = useState<boolean>(false);
+    const { code, sourcePath } = route.params;
+    
+    useHeaderbar({ hide: true, navigation });
+    const serverURI = "https://api-inventario-minify.upn164.edu.mx";
     const [errorImage, setErrorImage] = useState<boolean>(false);
     const [showImage, setShowImage] = useState<boolean>(false);
+    const [wait, setWait] = useState<boolean>(false);
+    const [refreshing, setRefreshing] = useState<boolean>(false);
+    const [refreshingMessage, setRefreshingMessage] = useState<string>('');
+    const [reviewMode, setReviewMode] = useState<boolean>()
+
     const [data, setData] = useState<any>(null);
+
+    const sound = useSound();
 
     const windowWidth = Dimensions.get('window').width;
     const windowHeight = Dimensions.get('window').height;
-
-    const serverURI = "https://api-inventario-minify.upn164.edu.mx";
-
-    useHeaderbar({ hide: true, navigation });
 
     const getInformation = async (code: any) => {
         setErrorImage(false)
@@ -46,38 +78,96 @@ const EquipmentInformationView = (props: any) => {
             sound.error()
             Alert.alert('Atención!', 'No se encontro el equipo, ¿Desea registrarlo?', [
                 {
-                    text: 'OK', onPress: () => navigation.replace('RegisterEquipment', { code })
+                    text: 'OK', onPress: () => navigation.replace('RegisterEquipment', { code, sourcePath: 'EquipmentInformation' })
                 },
                 {
                     text: 'Cancel',
                     onPress: () => {
-                        sound.touch()
-                        navigation.goBack()
+                        handleBack()
                     },
                     style: 'cancel',
                 },
             ])
-
         });
     }
 
-    useEffect(() => {
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            return wait;
+    const handleBack = () => {
+        if(!wait) {
+            sound.back();
+            navigation.replace('CodebarReader', {code});
+        }
+    }
+
+    const handleVerifyImage = () => {
+        setRefreshing(true);
+        setRefreshingMessage('Verificando la información de la imagen');
+        const uri = `${serverURI}/verify-image/` + data.picture;
+        axios({
+            method: 'get',
+            url: uri,
+        }).then(({ status, data }) => {
+            console.log('data', data);
+            
+            if (status === 200) {
+                setData(data.data);
+            }
+            alert("La imagen si existe en el servidor, intentar recargar la información")
+            setWait(false);
+            setRefreshing(false);
+        }).catch(err => {
+            sound.error()
+            Alert.alert('Atención!', 'No se encontro la imagen en el servidor, ¿Desea capturarla?', [
+                {
+                    text: 'Capturar', onPress: () => {
+                        navigation.navigate('UploadPhoto', { code, sourcePath: 'EquipmentInformation' })
+                        setWait(false);
+                        setRefreshing(false);
+                    }
+                },
+                {
+                    text: 'Ignorar',
+                    onPress: () => {
+                        sound.touch()
+                    },
+                    style: 'cancel',
+                },
+            ])
         });
+    }
 
-        getInformation(code);
-
-        return () => backHandler.remove();
-    }, []);
-
-    const onRefresh = React.useCallback(() => {
-        setRefreshing(true)
-        getInformation(code);
-    }, []);
+    const handleReplacePicture = () => {
+        Alert.alert('Confirmación!', '¿Deseas reemplazar la fotografía del equipo por una nueva?', [
+            {
+                text: 'Capturar', onPress: () => {
+                    navigation.navigate('UploadPhoto', { code, picture: data.picture, sourcePath: 'EquipmentInformation' })
+                    setWait(false);
+                    setRefreshing(false);
+                }
+            },
+            {
+                text: 'Cancelar',
+                onPress: () => {
+                    sound.touch()
+                },
+                style: 'cancel',
+            },
+        ])
+    }
 
     const handleErrorImage = (props: any) => {
         setErrorImage(true)
+        Alert.alert('Atención!', 'No se pudo descargar la imagen del equipo, ¿Deseas verificar si existe en el sistema?', [
+            {
+                text: 'Verificar', onPress: handleVerifyImage
+            },
+            {
+                text: 'Ignorar',
+                onPress: () => {
+                    sound.touch()
+                },
+                style: 'cancel',
+            },
+        ])
     }
 
     const handleCloseFullscreenImage = () => {
@@ -85,39 +175,81 @@ const EquipmentInformationView = (props: any) => {
         setShowImage(false);
     }
 
-    return <View style={[styles.container]}>
+    const handleReviewOnSuccess = () => {
+        setReviewMode(false)
+        onRefresh()
+    }
+
+    const handleGotoReview = () => {
+        navigation.navigate('ReviewEquipment', { data, sourcePath: 'EquipmentInformation' })
+    }
+
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+            if(!wait){
+                handleBack();
+            }
+            return true;
+        });
+
+        getInformation(code);
+        setRefreshingMessage('Cargando la información');
+
+        return () => {
+            backHandler.remove()
+        };
+    }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            onRefresh()
+            return () => {
+                // Useful for cleanup functions
+            };
+        }, [])
+    );
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        setRefreshingMessage('Actualizando la información');
+        getInformation(code);
+    }, []);
+
+    return <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor='rgba(10, 10, 10, 1)'/>
+
         {
-            data && data !== null ? <>
-                {
-                    refreshing && <View style={[styles.refreshView]}>
-                        <ActivityIndicator size="large" color="#fff" />
-                        <Text style={[
-                            textStyles.alignCenter,
-                            colors.white,
-                            { paddingTop: 10 }
-                        ]}>Actualizando la información</Text>
-                    </View>
-                }
+            refreshing && <View style={[styles.refreshView]}>
+                <ActivityIndicator size="large" color="#fff" />
+                <Text style={[
+                    textStyles.alignCenter,
+                    colors.white,
+                    { paddingTop: 10 }
+                ]}>{refreshingMessage}</Text>
+            </View>
+        }
 
-                <Modal
-                    animationType="fade"
-                    statusBarTranslucent={true}
-                    hardwareAccelerated={true}
-                    transparent={false}
-                    visible={showImage}
-                    onRequestClose={() => {
-                        handleCloseFullscreenImage()
-                    }}
-                >
-                    <View style={[styles.fullScreenImageContainer, { width: windowWidth, height: windowHeight }]}>
-                        <FullScreenImage
-                            image={`${serverURI}/pictures/full/${data.picture}`}
-                            onBack={handleCloseFullscreenImage}
-                            title={'Prevista de fotografía'}
-                        />
-                    </View>
-                </Modal>
+        {
+            showImage && <Modal
+                animationType="fade"
+                statusBarTranslucent={true}
+                hardwareAccelerated={true}
+                transparent={true}
+                visible={showImage}
+                onRequestClose={handleCloseFullscreenImage}
+            >
+                <FullScreenImage
+                        image={`${serverURI}/pictures/full/${data.picture}`}
+                        onBack={handleCloseFullscreenImage}
+                        title={data.equipment_name}
+                    />
+            </Modal>
+        }
 
+        <InternalHeader title="Información del equipo" leftIcon="chevron-back" leftAction={handleBack} rightAction={handleBack} style={{backgroundColor: 'rgba(0, 0, 0, .5)'}}/>
+        
+        {
+            data && data != null ? <>
                 <ScreenView
                     style={[styles.container]}
                     styleContainer={styles.screenViewContainer}
@@ -127,189 +259,223 @@ const EquipmentInformationView = (props: any) => {
                             onRefresh={onRefresh} />
                     }
                 >
-                    <View style={[styles.pictureContainer, { width: windowWidth }]}>
-                        {
-                            errorImage ? <Image
-                                resizeMethod="resize"
-                                resizeMode="stretch"
-                                source={Image404}
-                                style={[styles.picture, { width: "100%" }]}
-                            />
-                                :
-                                <TouchableHighlight
-                                    onPress={() => {
-                                        sound.echo()
-                                        setShowImage(true)
-                                    }}
-                                >
-                                    <Image
-                                        source={{
-                                            uri: `${serverURI}/pictures/full/${data.picture}`,
-                                            width: 400,
-                                            height: 400,
-                                            scale: 1
-                                        }}
-                                        resizeMethod="resize"
-                                        resizeMode="cover"
-                                        defaultSource={LoadingPicture}
-                                        style={styles.picture}
-                                        onError={handleErrorImage}
-                                    />
-                                </TouchableHighlight>
-                        }
-                    </View>
-                    <View style={[styles.card, { width: windowWidth - 40 }]}>
+                    <View style={[styles.topContainer, { minHeight: 400, paddingBottom: 20}]}>
+                        
                         <Text style={[
-                            styles.textPadding,
-                            textStyles.alignCenter,
-                            textStyles.xl,
-                            textStyles.bold
-                        ]}>{data.codebar}</Text>
-                        <Text style={[
-                            { paddingTop: 10 },
-                            styles.textPadding,
-                            textStyles.alignCenter,
-                            textStyles.sm
+                            colors.white,
+                            textStyles.md,
+                            {
+                                marginTop: 20,
+                                marginBottom: 24,
+                                width: '100%',
+                                textAlign: 'center',
+                            }
                         ]}>{data.equipment_name}</Text>
-
-                        <Text style={[
-                            { paddingTop: 6 },
-                            styles.textPadding,
-                            textStyles.alignCenter,
-                            textStyles.sm
-                        ]}><Text style={textStyles.bold}>Estado Actual: </Text>{data.status}</Text>
+                    
+                        <View style={{
+                            width: '100%',
+                            flexDirection: 'row'
+                        }}>
+                            <View style={{
+                                flex: 1.4,
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                            }}>
+                                {
+                                    errorImage ? <Image
+                                                source={Image404}
+                                                resizeMethod="resize"
+                                                resizeMode="cover"
+                                                defaultSource={LoadingPicture}
+                                                style={{
+                                                    width: 200,
+                                                    height: 200,
+                                                    borderRadius: 100
+                                                }}
+                                                onError={handleErrorImage}
+                                            />
+                                        :
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                sound.echo()
+                                                setShowImage(true)
+                                            }}
+                                            delayLongPress={2000}
+                                            onLongPress={handleReplacePicture}
+                                        >
+                                            <Image
+                                                source={{
+                                                    uri: `${serverURI}/pictures/full/${data.picture}`,
+                                                    scale: 1
+                                                }}
+                                                resizeMethod="resize"
+                                                resizeMode="cover"
+                                                defaultSource={LoadingPicture}
+                                                style={{
+                                                    width: 200,
+                                                    height: 200,
+                                                    borderRadius: 100
+                                                }}
+                                                onError={handleErrorImage}
+                                            />
+                                        </TouchableOpacity>
+                                }
+                                <View style={{
+                                    width: '100%',
+                                    flexDirection: 'row',
+                                    marginTop: 10,
+                                    paddingHorizontal: 20
+                                }}>
+                                    <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                                        <Text style={[colors.white, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Estado Actual:</Text>
+                                        <Badge background={(data.status+"").toLowerCase() === "activo" ? "green" : 'red'} color="white" value={data.status}/>
+                                    </View>
+                                </View>
+                            </View>
+                            <View style={{
+                                flex: 1
+                            }}>
+                                <ItemRight background="orange" label='Código' value={data.codebar}/>
+                                <ItemRight background="red" label='Marca' value={data.trademark}/>
+                                <ItemRight background="blue" label='Modelo' value={data.model}/>
+                            </View>
+                            
+                        </View>
 
                         {
-                            data.review_status ?
-                                <View style={[
-                                    {
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        paddingVertical: 10,
-                                        flexDirection: 'row'
-                                    }]}>
-                                    <Ionicons name="checkmark" size={40} style={[colors.forestgreen]} />
-                                    <Text
-                                        style={[
-                                            textStyles.sm,
-                                            textStyles.bold,
-                                            colors.forestgreen
-                                        ]}>REVISADO</Text>
+                            data.review_status ? <View style={{
+                                width: '100%',
+                                flexDirection: 'row',
+                                marginTop: 20,
+                                paddingHorizontal: 20
+                            }}>
+                                <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                                    <Badge background="green" color="white" size="md" style={{paddingHorizontal: 20}} value="Equipo revisado"/>
                                 </View>
-                                :
-                                <View style={[{ alignItems: 'center', paddingVertical: 10 }]}>
-                                    <GradientButton
-                                        colors={
-                                            [
-                                                colors.firebrick.color,
-                                                colors.firebrick.color
-                                            ]
-                                        }
-                                        onTouch={() => navigation.navigate("EquipmentReview", { code })}
-                                        style={{
-                                            elevation: 1,
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                            flexDirection: 'row'
-                                        }}
-                                    >
-                                        <Ionicons name="close" size={40} style={[colors.white]} />
-                                        <Text
-                                            style={[
-                                                textStyles.sm,
-                                                textStyles.bold,
-                                                colors.white
-                                            ]}>Sin Revisión Previa</Text>
-                                    </GradientButton>
+                            </View>
+                            :
+                            <View style={{
+                                width: '100%',
+                                flexDirection: 'row',
+                                marginTop: 20,
+                                paddingHorizontal: 20
+                            }}>
+                                <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                                    <Badge background="red" color="white" size="md" style={{paddingHorizontal: 20, paddingVertical: 6}} onPress={handleGotoReview} value="Sin revisión" />
                                 </View>
+                            </View>
                         }
 
+                        <View style={{
+                            width: '100%',
+                            flexDirection: 'row',
+                            marginTop: 10,
+                            paddingHorizontal: 20
+                        }}>
+                            <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                                <Text style={[colors.white, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Series o Códigos:</Text>
+                                <Text style={[colors.white, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>{data.series}</Text>
+                            </View>
+                        </View>
+                        
                     </View>
-                    <View style={[styles.body, { width: windowWidth - 40 }]}>
-
-                        <Text style={[
-                            { paddingTop: 2 },
-                            styles.textPadding,
-                            textStyles.alignLeft,
-                            textStyles.sm
-                        ]}><Text style={textStyles.bold}>Departamento Resguardante: </Text>{data.safeguard_apartment}</Text>
-                        <Text style={[
-                            { paddingTop: 2 },
-                            styles.textPadding,
-                            textStyles.alignLeft,
-                            textStyles.sm
-                        ]}><Text style={textStyles.bold}>Responsable Resguardante: </Text>{data.safeguard_person}</Text>
-
-                        <Text style={[
-                            { paddingTop: 10 },
-                            styles.textPadding,
-                            textStyles.alignLeft,
-                            textStyles.sm
-                        ]}><Text style={textStyles.bold}>Ubicación actual: </Text>{data.location ? data.location : 'No localizado'}</Text>
-                        <Text style={[
-                            { paddingTop: 2 },
-                            styles.textPadding,
-                            textStyles.alignLeft,
-                            textStyles.sm
-                        ]}><Text style={textStyles.bold}>Marca: </Text>{data.trademark}</Text>
-                        <Text style={[
-                            { paddingTop: 2 },
-                            styles.textPadding,
-                            textStyles.alignLeft,
-                            textStyles.sm
-                        ]}><Text style={textStyles.bold}>Modelo: </Text>{data.model}</Text>
-                        <Text style={[
-                            { paddingTop: 2 },
-                            styles.textPadding,
-                            textStyles.alignLeft,
-                            textStyles.sm
-                        ]}><Text style={textStyles.bold}>Series: </Text>{data.series}</Text>
-                        <Text style={[
-                            { paddingTop: 2 },
-                            styles.textPadding,
-                            textStyles.alignLeft,
-                            textStyles.sm
-                        ]}><Text style={textStyles.bold}>Notas Adicionales: </Text>{data.notes}</Text>
-
-
-                        <Text style={[
-                            { paddingTop: 10 },
-                            styles.textPadding,
-                            textStyles.alignLeft,
-                            textStyles.sm
-                        ]}><Text style={textStyles.bold}>Fecha de registro: </Text>{data.created_at}</Text>
-                        <Text style={[
-                            { paddingTop: 10 },
-                            styles.textPadding,
-                            textStyles.alignLeft,
-                            textStyles.sm
-                        ]}><Text style={textStyles.bold}>Ultima Actualización: </Text>{data.updated_at}</Text>
+                    
+                    <View style={{
+                        backgroundColor: 'rgba(255, 255, 255, .9)',
+                        width: '95%',
+                        marginTop: 20,
+                        borderRadius: 10,
+                        paddingVertical: 20
+                    }}>
+                            <View style={{
+                                width: '100%',
+                                flexDirection: 'row',
+                                paddingHorizontal: 20
+                            }}>
+                                <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                                    <Text style={[colors.black, textStyles.bold, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Datos del resguardo:</Text>
+                                    <Text style={[colors.black, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>Departamento: {data.safeguard_apartment}</Text>
+                                    <Text style={[colors.black, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>Resguardante: {data.safeguard_person}</Text>
+                                </View>
+                            </View>
+                            <View style={{
+                                width: '100%',
+                                flexDirection: 'row',
+                                marginTop: 10,
+                                paddingHorizontal: 20
+                            }}>
+                                <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                                    <Text style={[colors.black, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Ubicación Actual:</Text>
+                                    <Badge background={'blue'} color="white" size="md" style={{paddingHorizontal: 20, paddingVertical: 4}} value={data.location ? data.location : 'No localizado'}/>
+                                </View>
+                            </View>
+                            <View style={{
+                                width: '100%',
+                                flexDirection: 'row',
+                                marginTop: 10,
+                                paddingHorizontal: 20
+                            }}>
+                                <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                                    <Text style={[colors.black, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Notas adicionales:</Text>
+                                    <Text style={[colors.black, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>{data.notes}</Text>
+                                </View>
+                            </View>
+                            <View style={{
+                                width: '100%',
+                                flexDirection: 'row',
+                                marginTop: 10,
+                                paddingHorizontal: 20
+                            }}>
+                                <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                                    <Text style={[colors.black, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Fecha de registro:</Text>
+                                    <Text style={[colors.black, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>{data.created_at}</Text>
+                                </View>
+                            </View>
+                            <View style={{
+                                width: '100%',
+                                flexDirection: 'row',
+                                marginTop: 10,
+                                paddingHorizontal: 20
+                            }}>
+                                <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                                    <Text style={[colors.black, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Fecha de actualización:</Text>
+                                    <Text style={[colors.black, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>{data.updated_at}</Text>
+                                </View>
+                            </View>
                     </View>
                 </ScreenView>
-                <Navigator navigation={navigation} />
             </>
-                :
-                <View style={[styles.container, {
-                    width: windowWidth,
-                    height: windowHeight,
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(0, 0, 0, 0.6)'
-                }]}>
-                    <ActivityIndicator size="large" color="#fff" />
-                    <Text style={[
-                        textStyles.alignCenter,
-                        colors.white,
-                        { paddingTop: 10 }
-                    ]}>Cargando la información...</Text>
-                </View>
+            :
+            <View style={[styles.container, {
+                width: windowWidth,
+                height: windowHeight,
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0, 0, 0, 0.6)'
+            }]}>
+                <ActivityIndicator size="large" color="#fff" />
+                <Text style={[
+                    textStyles.alignCenter,
+                    colors.white,
+                    { paddingTop: 10 }
+                ]}>Cargando la información...</Text>
+            </View>
         }
-    </View>;
+
+    </View>
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'transparent',
+        width: '100%',
+        backgroundColor: 'rgba(255, 255, 255, 0)',
+    },
+    fullScreenImageContainer: {
+        backgroundColor: 'rgba(0, 0, 0, 1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'absolute',
+        top: 0
     },
     screenViewContainer: {
         paddingVertical: 0,
@@ -317,6 +483,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
         zIndex: 1
+    },
+    topContainer: {
+        backgroundColor: 'rgba(10, 10, 10, .8)',
+        // backgroundColor: 'rgba(20, 30, 80, .9)',
+        width: '100%',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        borderBottomEndRadius: 40,
+        borderBottomStartRadius: 40
     },
     refreshView: {
         flex: 1,
@@ -329,48 +504,6 @@ const styles = StyleSheet.create({
         top: 0,
         zIndex: 99
     },
-    pictureContainer: {
-        overflow: 'hidden',
-        borderBottomLeftRadius: 18,
-        borderBottomRightRadius: 18,
-        minHeight: 100,
-        maxHeight: 300,
-        elevation: 1,
-        zIndex: 1
-    },
-    picture: {
-
-    },
-    card: {
-        borderColor: 'rgba(255, 255, 255, .05)',
-        borderWidth: 1,
-        backgroundColor: 'rgba(255, 255, 255, .95)',
-        borderRadius: 10,
-        minHeight: 140,
-        elevation: 2,
-        padding: 10,
-        top: -20,
-        zIndex: 4
-    },
-    body: {
-        backgroundColor: 'rgba(255, 255, 255, .95)',
-        padding: 10,
-        borderRadius: 10
-    },
-    textPadding: {
-        paddingHorizontal: 16
-    },
-    fullScreenImageContainer: {
-        backgroundColor: 'rgba(0, 0, 0, 1)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'absolute',
-        top: 0
-    },
-    pictureFullscreen: {
-        width: '100%',
-        height: '100%',
-    }
 });
 
 export default EquipmentInformationView;

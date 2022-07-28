@@ -1,4 +1,4 @@
-import { Dimensions, Image, StyleSheet, View } from "react-native"
+import { Dimensions, Image, StatusBar, StyleSheet, View } from "react-native"
 import {LogoText} from '../assets/images';
 import { FormContainer, GradientButton, IconButton, TextArea } from "../components/FormComponents";
 import ScreenView from '../components/ScreenView';
@@ -6,6 +6,7 @@ import { useState } from 'react';
 import useHeaderbar from "../hooks/useHeaderbar";
 import { alignStyles, colors, positionStyles, textStyles } from "../components/Styles";
 import useSound from "../hooks/useSound";
+import InternalHeader from "../components/InternalHeader";
 
 const ConfigurationView = (props: any) => {
     const { navigation } = props;
@@ -32,41 +33,40 @@ const ConfigurationView = (props: any) => {
         hide: true, navigation
     });
 
-    return <ScreenView style={{backgroundColor: 'rgba(255, 255, 255, .1)', height: '100%'}}>
-        <View style={[{width: windowWidth}, alignStyles.centered]}>
-            <IconButton
-                    icon="chevron-back"
-                    color={colors.dark.color}
-                    size={32}
-                    onTouch={handleBack}
-                    style={positionStyles.absoluteTopLeft}/>
-            <View style={styles.containerTop}>
-                <Image source={LogoText} style={styles.logo} />
+    return <>
+        <StatusBar barStyle="light-content" backgroundColor='rgba(10, 10, 10, 1)'/>
+        <ScreenView style={{backgroundColor: 'rgba(255, 255, 255, .6)', height: '100%'}}>
+            <InternalHeader title="Configuración de la app" leftIcon="chevron-back" leftAction={handleBack} rightAction={handleBack} style={{backgroundColor: 'rgba(40, 40, 40, 1)'}}/>
+
+            <View style={[{width: windowWidth}, alignStyles.centered]}>
+                <View style={styles.containerTop}>
+                    <Image source={LogoText} style={styles.logo} />
+                </View>
+                <View style={styles.bodyContainer}>
+                    <FormContainer>
+                        <TextArea fontSize={18} value={server} onChange={setServer} label="URL del servidor"/>
+                        <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 26 }}>
+                            <GradientButton
+                                label="Guardar Cambios"
+                                labelStyle={[textStyles.md]}
+                                onTouch={handleStoreServer}
+                            />
+                        </View>
+                        <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 36 }}>
+                            <GradientButton
+                                label="Restablecer configuraciones"
+                                labelStyle={[textStyles.sm]}
+                                onTouch={handleResetConfig}
+                                width={240}
+                                x={0}
+                                y={0.2}
+                            />
+                        </View>
+                    </FormContainer>
+                </View>
             </View>
-            <View style={styles.bodyContainer}>
-                <FormContainer>
-                    <TextArea fontSize={18} value={server} onChange={setServer} label="URL del servidor"/>
-                    <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 26 }}>
-                        <GradientButton
-                            label="Guardar Cambios"
-                            labelStyle={[textStyles.md]}
-                            onTouch={handleStoreServer}
-                        />
-                    </View>
-                    <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 36 }}>
-                        <GradientButton
-                            label="Restablecer configuraciones"
-                            labelStyle={[textStyles.sm]}
-                            onTouch={handleResetConfig}
-                            width={240}
-                            x={0}
-                            y={0.2}
-                        />
-                    </View>
-                </FormContainer>
-            </View>
-        </View>
-        </ScreenView>
+            </ScreenView>
+        </>
 }
 
 const styles = StyleSheet.create({
