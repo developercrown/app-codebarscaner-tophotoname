@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, BackHandler, Dimensions, Image, Modal, RefreshControl, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, BackHandler, Dimensions, Image, Modal, Pressable, RefreshControl, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import axios from 'axios';
 import ScreenView from "../../components/ScreenView";
 import { LoadingPicture, Image404 } from '../../assets/images';
@@ -130,6 +130,7 @@ const EquipmentInformationView = (props: any) => {
     }
 
     const handleReplacePicture = () => {
+        sound.echo()
         Alert.alert('Confirmación!', '¿Deseas reemplazar la fotografía del equipo por una nueva?', [
             {
                 text: 'Capturar', onPress: () => {
@@ -185,6 +186,7 @@ const EquipmentInformationView = (props: any) => {
     }
 
     const handleResetReviewState = (props: any) => {
+        sound.echo()
         Alert.alert('Atención!', '¿Deseas restaurar el estado de revisión del equipo?', [
             {
                 text: 'Restaurar', onPress: resetReviewState
@@ -376,9 +378,9 @@ const EquipmentInformationView = (props: any) => {
                                 paddingHorizontal: 20
                             }}>
                                 <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-                                    <TouchableOpacity delayLongPress={4000} onLongPress={handleResetReviewState}>
+                                    <Pressable delayLongPress={4000} onLongPress={handleResetReviewState}>
                                         <Badge background="green" color="white" size="md" style={{paddingHorizontal: 20}} value="Equipo revisado"/>
-                                    </TouchableOpacity>
+                                    </Pressable >
                                 </View>
                             </View>
                             :

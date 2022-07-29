@@ -3,7 +3,7 @@ import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StyleSheet, SafeAreaView, ImageBackground, Text, View, Image } from 'react-native';
 import {useNetInfo} from "@react-native-community/netinfo";
-
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 import ConfigurationView from './views/ConfigurationView';
 import DashboardView from './views/DashboardView';
 import LoginView from './views/LoginView';
@@ -38,7 +38,7 @@ import {
 } from '@expo-google-fonts/nunito';
 import { textStyles } from './components/Styles';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function App() {
   const netInfo = useNetInfo();
