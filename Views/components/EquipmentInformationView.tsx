@@ -1,18 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, BackHandler, Dimensions, Image, Modal, RefreshControl, StatusBar, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, BackHandler, Dimensions, Image, Modal, RefreshControl, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import axios from 'axios';
-import Ionicons from '@expo/vector-icons/Ionicons';
-
 import ScreenView from "../../components/ScreenView";
 import { LoadingPicture, Image404 } from '../../assets/images';
 import useSound from "../../hooks/useSound";
-import { colors, gradients, positionStyles, textStyles } from "../../components/Styles";
-import Constants from 'expo-constants';
-import { Badge, IconButton } from "../../components/FormComponents";
+import { colors, gradients, textStyles } from "../../components/Styles";
+import { Badge } from "../../components/FormComponents";
 import { LinearGradient } from "expo-linear-gradient";
 import useHeaderbar from '../../hooks/useHeaderbar';
 import FullScreenImage from "../../components/FullScreenImage";
-import ReviewEquipmentView from "./ReviewEquipmentView";
 import InternalHeader from "../../components/InternalHeader";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -106,8 +102,6 @@ const EquipmentInformationView = (props: any) => {
             method: 'get',
             url: uri,
         }).then(({ status, data }) => {
-            console.log('data', data);
-            
             if (status === 200) {
                 setData(data.data);
             }
@@ -170,14 +164,44 @@ const EquipmentInformationView = (props: any) => {
         ])
     }
 
+    const resetReviewState = (props: any) => {
+        setRefreshing(true);
+        setRefreshingMessage('Restaurando estado de revisión...');
+        const uri = `${serverURI}/api/v1/rows/restorereview/`+code;
+        axios({
+            method: 'post',
+            url: uri,
+        }).then(({ status, data }) => {
+            if (status === 200) {
+                setData(data.data);
+            }
+            alert("Restauración completada")
+            onRefresh()
+        }).catch(err => {
+            sound.error()
+            alert("No se pudo completar la restauración del estado de revisión, verifique la información")
+            onRefresh()
+        });
+    }
+
+    const handleResetReviewState = (props: any) => {
+        Alert.alert('Atención!', '¿Deseas restaurar el estado de revisión del equipo?', [
+            {
+                text: 'Restaurar', onPress: resetReviewState
+            },
+            {
+                text: 'Cancelar',
+                onPress: () => {
+                    sound.touch()
+                },
+                style: 'cancel',
+            },
+        ])
+    }
+
     const handleCloseFullscreenImage = () => {
         sound.back()
         setShowImage(false);
-    }
-
-    const handleReviewOnSuccess = () => {
-        setReviewMode(false)
-        onRefresh()
     }
 
     const handleGotoReview = () => {
@@ -288,6 +312,7 @@ const EquipmentInformationView = (props: any) => {
                                                 resizeMode="cover"
                                                 defaultSource={LoadingPicture}
                                                 style={{
+                                                    backgroundColor: '#333',
                                                     width: 200,
                                                     height: 200,
                                                     borderRadius: 100
@@ -314,7 +339,8 @@ const EquipmentInformationView = (props: any) => {
                                                 style={{
                                                     width: 200,
                                                     height: 200,
-                                                    borderRadius: 100
+                                                    borderRadius: 100,
+                                                    backgroundColor: '#333'
                                                 }}
                                                 onError={handleErrorImage}
                                             />
@@ -350,7 +376,9 @@ const EquipmentInformationView = (props: any) => {
                                 paddingHorizontal: 20
                             }}>
                                 <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-                                    <Badge background="green" color="white" size="md" style={{paddingHorizontal: 20}} value="Equipo revisado"/>
+                                    <TouchableOpacity delayLongPress={4000} onLongPress={handleResetReviewState}>
+                                        <Badge background="green" color="white" size="md" style={{paddingHorizontal: 20}} value="Equipo revisado"/>
+                                    </TouchableOpacity>
                                 </View>
                             </View>
                             :

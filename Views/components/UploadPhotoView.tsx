@@ -270,7 +270,8 @@ const UploadPhotoView = (props: any) => {
                             <Image
                                 source={{ uri: photo && photo.uri }}
                                 style={{
-                                    flex: 1
+                                    flex: 1,
+                                    backgroundColor: '#333',
                                 }}
                             />
                         </View>
@@ -279,7 +280,8 @@ const UploadPhotoView = (props: any) => {
                         picture ? <Image
                         source={{ uri: `${serverURI}/pictures/full/${picture}` }}
                         style={{
-                            flex: 1
+                            flex: 1,
+                            backgroundColor: '#333',
                         }}
                     />
                         :
@@ -287,7 +289,7 @@ const UploadPhotoView = (props: any) => {
                                 resizeMethod="resize"
                                 resizeMode="stretch"
                                 source={Image404}
-                                style={[{ width: "100%" }]}
+                                style={[{ width: "100%", backgroundColor: '#333' }]}
                             />
                         
 
