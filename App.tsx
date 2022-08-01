@@ -1,9 +1,7 @@
-
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StyleSheet, SafeAreaView, ImageBackground, Text, View, Image } from 'react-native';
 import {useNetInfo} from "@react-native-community/netinfo";
-// import AsyncStorage from '@react-native-async-storage/async-storage';
 import ConfigurationView from './views/ConfigurationView';
 import DashboardView from './views/DashboardView';
 import LoginView from './views/LoginView';
@@ -38,7 +36,7 @@ import {
 } from '@expo-google-fonts/nunito';
 import { textStyles } from './components/Styles';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useState, useEffect } from 'react';
+import { ConfigProvider } from './context/ConfigProvider';
 
 export default function App() {
   const netInfo = useNetInfo();
@@ -73,7 +71,6 @@ export default function App() {
     Roboto_500Medium,
     Roboto_700Bold,
     Roboto_900Black,
-
     Nunito_200ExtraLight,
     Nunito_200ExtraLight_Italic,
     Nunito_300Light,
@@ -91,40 +88,44 @@ export default function App() {
   });
 
   if (!fontsLoaded) {
-      return <SafeAreaView style={[styles.container]}>
-        <View style={{
-          backgroundColor: 'white',
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-          <View style={[{}]}>
-              <Image source={LogoText} style={{width: 280, height: 280}} />
-          </View>
-          <Text>Cargando aplicación</Text>
-        </View>
-      </SafeAreaView>
+      return <ConfigProvider>
+          <SafeAreaView style={[styles.container]}>
+            <View style={{
+              backgroundColor: 'white',
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <View style={[{}]}>
+                  <Image source={LogoText} style={{width: 280, height: 280}} />
+              </View>
+              <Text>Cargando aplicación</Text>
+            </View>
+        </SafeAreaView>
+      </ConfigProvider>
   }
 
   return (
-    <SafeAreaView style={[styles.container]}>
-      <ImageBackground source={Background} resizeMode="cover" style={styles.backgroundStyle}>
-        <NavigationContainer theme={navTheme}>
-          <Stack.Navigator screenOptions={options}>
-            <Stack.Screen name="Login" component={LoginView}/>
-            <Stack.Screen name="Configuration" component={ConfigurationView} options={{ title: 'Configuracion General'  }}/>
-            <Stack.Screen name="Dashboard" component={DashboardView} options={{ title: 'Bienvenido' }}/>
-          </Stack.Navigator>
-        </NavigationContainer>
-      </ImageBackground>
-      
-      {
-        !netInfo.isConnected && <View style={{backgroundColor: 'rgba(255, 255, 255, .9)', width: '100%', height: '100%', position: 'absolute', justifyContent: 'center', alignItems: 'center'}}>
-          <Ionicons name="warning" size={100} style={[{ color: 'rgba(200, 50, 50, 1)' }]} />
-          <Text style={[textStyles.sm, textStyles.bold]}>No tienes conección a internet</Text>
-        </View>
-      }
-    </SafeAreaView>
+    <ConfigProvider>
+      <SafeAreaView style={[styles.container]}>
+        <ImageBackground source={Background} resizeMode="cover" style={styles.backgroundStyle}>
+          <NavigationContainer theme={navTheme}>
+            <Stack.Navigator screenOptions={options}>
+              <Stack.Screen name="Login" component={LoginView}/>
+              <Stack.Screen name="Configuration" component={ConfigurationView} options={{ title: 'Configuracion General'  }}/>
+              <Stack.Screen name="Dashboard" component={DashboardView} options={{ title: 'Bienvenido' }}/>
+            </Stack.Navigator>
+          </NavigationContainer>
+        </ImageBackground>
+        
+        {
+          !netInfo.isConnected && <View style={{backgroundColor: 'rgba(255, 255, 255, .9)', width: '100%', height: '100%', position: 'absolute', justifyContent: 'center', alignItems: 'center'}}>
+            <Ionicons name="warning" size={100} style={[{ color: 'rgba(200, 50, 50, 1)' }]} />
+            <Text style={[textStyles.sm, textStyles.bold]}>No tienes conección a internet</Text>
+          </View>
+        }
+      </SafeAreaView>
+    </ConfigProvider>
   );
 }
 

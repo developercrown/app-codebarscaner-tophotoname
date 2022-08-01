@@ -48,8 +48,6 @@ const EquipmentInformationView = (props: any) => {
     const [wait, setWait] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [refreshingMessage, setRefreshingMessage] = useState<string>('');
-    const [reviewMode, setReviewMode] = useState<boolean>()
-
     const [data, setData] = useState<any>(null);
 
     const sound = useSound();
@@ -218,8 +216,8 @@ const EquipmentInformationView = (props: any) => {
             return true;
         });
 
-        getInformation(code);
-        setRefreshingMessage('Cargando la información');
+        // getInformation(code);
+        
 
         return () => {
             backHandler.remove()
