@@ -37,6 +37,7 @@ import {
 import { textStyles } from './components/Styles';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ConfigProvider } from './context/ConfigProvider';
+import { AuthProvider } from './context/AuthProvider';
 
 export default function App() {
   const netInfo = useNetInfo();
@@ -105,24 +106,26 @@ export default function App() {
 
   return (
     <ConfigProvider>
-      <SafeAreaView style={[styles.container]}>
-        <ImageBackground source={Background} resizeMode="cover" style={styles.backgroundStyle}>
-          <NavigationContainer theme={navTheme}>
-            <Stack.Navigator screenOptions={options}>
-              <Stack.Screen name="Login" component={LoginView}/>
-              <Stack.Screen name="Configuration" component={ConfigurationView} options={{ title: 'Configuracion General'  }}/>
-              <Stack.Screen name="Dashboard" component={DashboardView} options={{ title: 'Bienvenido' }}/>
-            </Stack.Navigator>
-          </NavigationContainer>
-        </ImageBackground>
-        
-        {
-          !netInfo.isConnected && <View style={{backgroundColor: 'rgba(255, 255, 255, .9)', width: '100%', height: '100%', position: 'absolute', justifyContent: 'center', alignItems: 'center'}}>
-            <Ionicons name="warning" size={100} style={[{ color: 'rgba(200, 50, 50, 1)' }]} />
-            <Text style={[textStyles.sm, textStyles.bold]}>No tienes conección a internet</Text>
-          </View>
-        }
-      </SafeAreaView>
+      <AuthProvider>
+        <SafeAreaView style={[styles.container]}>
+          <ImageBackground source={Background} resizeMode="cover" style={styles.backgroundStyle}>
+            <NavigationContainer theme={navTheme}>
+              <Stack.Navigator screenOptions={options}>
+                <Stack.Screen name="Login" component={LoginView}/>
+                <Stack.Screen name="Configuration" component={ConfigurationView} options={{ title: 'Configuracion General'  }}/>
+                <Stack.Screen name="Dashboard" component={DashboardView} options={{ title: 'Bienvenido' }}/>
+              </Stack.Navigator>
+            </NavigationContainer>
+          </ImageBackground>
+          
+          {
+            !netInfo.isConnected && <View style={{backgroundColor: 'rgba(255, 255, 255, .9)', width: '100%', height: '100%', position: 'absolute', justifyContent: 'center', alignItems: 'center'}}>
+              <Ionicons name="warning" size={100} style={[{ color: 'rgba(200, 50, 50, 1)' }]} />
+              <Text style={[textStyles.sm, textStyles.bold]}>No tienes conexión a internet</Text>
+            </View>
+          }
+        </SafeAreaView>
+      </AuthProvider>
     </ConfigProvider>
   );
 }

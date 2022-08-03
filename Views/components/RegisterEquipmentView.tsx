@@ -16,6 +16,7 @@ import CodebarReader from '../../components/CodebarReader';
 import InternalHeader from '../../components/InternalHeader';
 import ConfigContext from '../../context/ConfigProvider';
 import useAxios from '../../hooks/useAxios';
+import useValidate from '../../hooks/useValidate';
 
 
 const RegisterEquipmentView = (props: any) => {
@@ -23,6 +24,8 @@ const RegisterEquipmentView = (props: any) => {
 
     const { config } : any = useContext(ConfigContext);
     const {instance} = useAxios(config.servers.app);
+
+    const {required} = useValidate()
 
     const { navigation, route } = props;
     const { code } = route.params;
@@ -98,16 +101,6 @@ const RegisterEquipmentView = (props: any) => {
         const value = series === '' ? code : series + ' - ' + code;
         setSeries(value.trim())
         disableAllFullscreenElements()
-    }
-
-    const validateValue = (value: any) => {
-        value = (value+'').trim()
-        return (
-            value !== undefined &&
-            value !== null &&
-            value !== '' &&
-            value.length > 0
-        )
     }
 
     const uploadImage = async () => {
@@ -225,13 +218,13 @@ const RegisterEquipmentView = (props: any) => {
         sound.touch()
         if(photo){
             if(
-                validateValue(name) &&
-                validateValue(trademark) &&
-                validateValue(model) &&
-                validateValue(status) &&
-                validateValue(safeguardApartment) &&
-                validateValue(safeguardPerson) &&
-                validateValue(location)
+                required(name) &&
+                required(trademark) &&
+                required(model) &&
+                required(status) &&
+                required(safeguardApartment) &&
+                required(safeguardPerson) &&
+                required(location)
             ){
                 
                 const payloadData = {

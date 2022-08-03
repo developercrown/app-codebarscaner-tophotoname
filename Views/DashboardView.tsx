@@ -7,7 +7,7 @@ import ReviewInventoryView from './modules/ReviewInventoryView';
 import useSound from '../hooks/useSound';
 import UploadPhotoView from './components/UploadPhotoView';
 import useLocalStorage from '../hooks/useLocalStorage';
-import ConfigContext from '../context/ConfigProvider';
+import AuthContext from '../context/AuthProvider';
 
 
 const DashboardView = (props: any) => {
@@ -16,11 +16,14 @@ const DashboardView = (props: any) => {
     const sound = useSound(); 
     const { get } = useLocalStorage();
     const DashboardStack = createNativeStackNavigator();
+    const { auth, setAuth } : any = useContext(AuthContext);
     
     useEffect(() => {
         if(!welcomeState){
             sound.start();
             setWelcomeState(true)
+            console.log('auth data', auth); //TODO: delete in production
+            
         }
     }, [welcomeState]);
 

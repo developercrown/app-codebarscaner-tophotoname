@@ -1,19 +1,39 @@
-import { Image, StatusBar, StyleSheet, Text, View } from "react-native"
-import { alignStyles, colors, textStyles } from "../../components/Styles";
-import { GradientContainer } from "../../components/FormComponents";
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { Alert, Image, StatusBar, StyleSheet, Text, View } from "react-native"
+import { colors, textStyles } from "../../components/Styles";
 import { LogoText } from "../../assets/images";
 import useHeaderbar from "../../hooks/useHeaderbar";
 import { IconButton } from "../../components/FormComponents";
 import ScreenView from '../../components/ScreenView';
 import Navigator from "../../components/Navigator";
-import { useEffect } from "react";
+import useSound from "../../hooks/useSound";
+import { useContext } from "react";
+import AuthContext from "../../context/AuthProvider";
+import useLocalStorage from "../../hooks/useLocalStorage";
 
 const HomeView = (props: any) => {
     const {navigation} = props;
-    
+    const { setAuth } : any = useContext(AuthContext);
+    const { remove } = useLocalStorage();
+
+    const sound = useSound();
     const handleLogout = () => {
-        alert('logout action')
+        sound.notification()
+        Alert.alert('Confirmación!', '¿Realmente quieres cerrar tu sessón?', [
+            {
+                text: 'Cerrar Sessión', onPress: () => {
+                    sound.touch()
+                    remove('token').then(result => {
+                        setAuth(null);
+                        navigation.replace('Login')
+                    });
+                },
+            },
+            {
+                text: 'Cancelar', onPress: () => {
+                    sound.touch()
+                },
+            }
+        ]);
     }
 
     useHeaderbar({

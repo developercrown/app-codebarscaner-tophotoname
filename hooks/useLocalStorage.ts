@@ -4,11 +4,11 @@ const useLocalStorage = () => {
     const set = async (key: string, data: any, hasJson: boolean = false) => {
         try {
             let value = data
-            if(hasJson) {
+            if (hasJson) {
                 value = JSON.stringify(data)
             }
             return await AsyncStorage.setItem(key, value)
-        } catch (e) {        
+        } catch (e) {
             return false
         }
     }
@@ -16,16 +16,24 @@ const useLocalStorage = () => {
     const getValue = async (key: string) => {
         try {
             return await AsyncStorage.getItem(key)
-        } catch(e) {
+        } catch (e) {
             return null
         }
     };
 
+    const remove = async (key: string) => {
+        try {
+            await AsyncStorage.removeItem(key)
+        } catch (e) {
+            return null
+        }
+    }
+
     const get = (key: string, hasJson: boolean = false) => {
         return new Promise((resolve, reject) => {
             getValue(key).then((value: any) => {
-                if(value){
-                    if(hasJson){
+                if (value) {
+                    if (hasJson) {
                         value = JSON.parse(value)
                     }
                     resolve(value)
@@ -38,7 +46,7 @@ const useLocalStorage = () => {
         })
     }
 
-    return {get, set};
+    return { get, set, remove };
 };
 
 export default useLocalStorage;

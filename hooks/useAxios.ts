@@ -5,9 +5,7 @@ const RequestHeaders: any = {
     'Content-Type': 'application/vnd.api+json'
 }
 
-const getHeaderInstance = () => {
-    return (Object.assign(RequestHeaders,{}));
-}
+
 
 const useAxios = (server: string = '') => {
     const instance = axios.create({
@@ -15,7 +13,11 @@ const useAxios = (server: string = '') => {
         headers: RequestHeaders
     });
 
-    return {instance}
+    const getHeaderInstance = (extraHeaders: any = {}) => {
+        return (Object.assign(RequestHeaders, {...extraHeaders}));
+    }
+
+    return {instance, getHeaderInstance}
 }
 
 export default useAxios;
