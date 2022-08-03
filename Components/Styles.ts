@@ -502,7 +502,7 @@ const formStyles = StyleSheet.create({
         elevation: 0
     },
     inputBackground: {
-        backgroundColor: "rgba(255, 255, 255, .8)",
+        backgroundColor: "rgba(255, 255, 255, 1)",
     }
 });
 

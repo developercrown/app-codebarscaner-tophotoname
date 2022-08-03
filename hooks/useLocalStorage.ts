@@ -1,8 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const useLocalStorage = () => {
-    const set = async (key: string, value: any, hasJson: boolean = false) => {
+    const set = async (key: string, data: any, hasJson: boolean = false) => {
         try {
+            let value = data
+            if(hasJson) {
+                value = JSON.stringify(data)
+            }
             return await AsyncStorage.setItem(key, value)
         } catch (e) {        
             return false
@@ -17,10 +21,13 @@ const useLocalStorage = () => {
         }
     };
 
-    const get = (key: string) => {
+    const get = (key: string, hasJson: boolean = false) => {
         return new Promise((resolve, reject) => {
             getValue(key).then((value: any) => {
                 if(value){
+                    if(hasJson){
+                        value = JSON.parse(value)
+                    }
                     resolve(value)
                     return
                 }

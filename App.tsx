@@ -1,6 +1,6 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StyleSheet, SafeAreaView, ImageBackground, Text, View, Image } from 'react-native';
+import { StyleSheet, SafeAreaView, ImageBackground, Text, View, Image, Alert } from 'react-native';
 import {useNetInfo} from "@react-native-community/netinfo";
 import ConfigurationView from './views/ConfigurationView';
 import DashboardView from './views/DashboardView';
@@ -41,7 +41,7 @@ import { ConfigProvider } from './context/ConfigProvider';
 export default function App() {
   const netInfo = useNetInfo();
   const Stack = createNativeStackNavigator();
-
+  
   const navTheme = {
     ...DefaultTheme,
     colors: {
@@ -88,8 +88,7 @@ export default function App() {
   });
 
   if (!fontsLoaded) {
-      return <ConfigProvider>
-          <SafeAreaView style={[styles.container]}>
+      return <SafeAreaView style={[styles.container]}>
             <View style={{
               backgroundColor: 'white',
               flex: 1,
@@ -102,7 +101,6 @@ export default function App() {
               <Text>Cargando aplicación</Text>
             </View>
         </SafeAreaView>
-      </ConfigProvider>
   }
 
   return (

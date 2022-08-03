@@ -1,20 +1,22 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import HomeView from './modules/HomeView';
 import ReviewInventoryView from './modules/ReviewInventoryView';
 
 import useSound from '../hooks/useSound';
 import UploadPhotoView from './components/UploadPhotoView';
+import useLocalStorage from '../hooks/useLocalStorage';
+import ConfigContext from '../context/ConfigProvider';
 
 
 const DashboardView = (props: any) => {
     const {navigation} = props;
     const [welcomeState, setWelcomeState] = useState(false);
     const sound = useSound(); 
-
+    const { get } = useLocalStorage();
     const DashboardStack = createNativeStackNavigator();
-
+    
     useEffect(() => {
         if(!welcomeState){
             sound.start();

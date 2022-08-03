@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, BackHandler, Dimensions, Image, Modal, Pressable, RefreshControl, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import axios from 'axios';
 import ScreenView from "../../components/ScreenView";
@@ -11,8 +11,10 @@ import useHeaderbar from '../../hooks/useHeaderbar';
 import FullScreenImage from "../../components/FullScreenImage";
 import InternalHeader from "../../components/InternalHeader";
 import { useFocusEffect } from "@react-navigation/native";
+import ConfigContext from "../../context/ConfigProvider";
+import useAxios from "../../hooks/useAxios";
 
-const serverURI = "https://api-inventario-minify.upn164.edu.mx";
+// const serverURI = "https://api-inventario-minify.upn164.edu.mx";
 
 const ItemRight = (props: any) => {
     const {background, label, value} = props;
@@ -40,15 +42,17 @@ const ItemRight = (props: any) => {
 const EquipmentInformationView = (props: any) => {
     const { navigation, route } = props;
     const { code, sourcePath } = route.params;
+    const { config } : any = useContext(ConfigContext);
+    const {instance} = useAxios(config.servers.app)
     
     useHeaderbar({ hide: true, navigation });
-    const serverURI = "https://api-inventario-minify.upn164.edu.mx";
     const [errorImage, setErrorImage] = useState<boolean>(false);
     const [showImage, setShowImage] = useState<boolean>(false);
     const [wait, setWait] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [refreshingMessage, setRefreshingMessage] = useState<string>('');
     const [data, setData] = useState<any>(null);
+    const [serverPath, setServerPath] = useState<string>('');
 
     const sound = useSound();
 
@@ -58,17 +62,13 @@ const EquipmentInformationView = (props: any) => {
     const getInformation = async (code: any) => {
         setErrorImage(false)
         setWait(true);
-        const uri = `${serverURI}/api/v1/rows/` + code;
-        axios({
-            method: 'get',
-            url: uri,
-        }).then(({ status, data }) => {
+        instance.get(`/rows/${code}`).then(({ status, data }: any) => {
             if (status === 200) {
                 setData(data.data);
             }
             setWait(false);
             setRefreshing(false);
-        }).catch(err => {
+        }).catch((err: any) => {
             sound.error()
             Alert.alert('Atención!', 'No se encontro el equipo, ¿Desea registrarlo?', [
                 {
@@ -95,11 +95,8 @@ const EquipmentInformationView = (props: any) => {
     const handleVerifyImage = () => {
         setRefreshing(true);
         setRefreshingMessage('Verificando la información de la imagen');
-        const uri = `${serverURI}/verify-image/` + data.picture;
-        axios({
-            method: 'get',
-            url: uri,
-        }).then(({ status, data }) => {
+        const uri = `/verify-image/` + data.picture;
+        instance.get(uri).then(({ status, data }) => {
             if (status === 200) {
                 setData(data.data);
             }
@@ -120,11 +117,13 @@ const EquipmentInformationView = (props: any) => {
                     text: 'Ignorar',
                     onPress: () => {
                         sound.touch()
+                        setWait(false);
+                        setRefreshing(false);
                     },
                     style: 'cancel',
                 },
             ])
-        });
+        })
     }
 
     const handleReplacePicture = () => {
@@ -141,6 +140,8 @@ const EquipmentInformationView = (props: any) => {
                 text: 'Cancelar',
                 onPress: () => {
                     sound.touch()
+                    setWait(false);
+                    setRefreshing(false);
                 },
                 style: 'cancel',
             },
@@ -157,6 +158,8 @@ const EquipmentInformationView = (props: any) => {
                 text: 'Ignorar',
                 onPress: () => {
                     sound.touch()
+                    setWait(false);
+                    setRefreshing(false);
                 },
                 style: 'cancel',
             },
@@ -166,11 +169,8 @@ const EquipmentInformationView = (props: any) => {
     const resetReviewState = (props: any) => {
         setRefreshing(true);
         setRefreshingMessage('Restaurando estado de revisión...');
-        const uri = `${serverURI}/api/v1/rows/restorereview/`+code;
-        axios({
-            method: 'post',
-            url: uri,
-        }).then(({ status, data }) => {
+        const uri = `/rows/restorereview/`+code;
+        instance.post(uri).then(({ status, data }) => {
             if (status === 200) {
                 setData(data.data);
             }
@@ -180,7 +180,7 @@ const EquipmentInformationView = (props: any) => {
             sound.error()
             alert("No se pudo completar la restauración del estado de revisión, verifique la información")
             onRefresh()
-        });
+        })
     }
 
     const handleResetReviewState = (props: any) => {
@@ -215,10 +215,6 @@ const EquipmentInformationView = (props: any) => {
             }
             return true;
         });
-
-        // getInformation(code);
-        
-
         return () => {
             backHandler.remove()
         };
@@ -226,6 +222,12 @@ const EquipmentInformationView = (props: any) => {
 
     useFocusEffect(
         useCallback(() => {
+            if(config.servers.app){
+                const rootServer = (config.servers.app + '').split('/api/')
+                if(rootServer && rootServer.length > 0){
+                    setServerPath(rootServer[0])
+                }
+            }
             onRefresh()
             return () => {
                 // Useful for cleanup functions
@@ -234,9 +236,13 @@ const EquipmentInformationView = (props: any) => {
     );
 
     const onRefresh = useCallback(() => {
-        setRefreshing(true);
-        setRefreshingMessage('Actualizando la información');
-        getInformation(code);
+            setData(null)
+            setRefreshing(true);
+            setRefreshingMessage('Actualizando la información');
+            getInformation(code);
+            return
+        
+        
     }, []);
 
     return <View style={styles.container}>
@@ -263,7 +269,7 @@ const EquipmentInformationView = (props: any) => {
                 onRequestClose={handleCloseFullscreenImage}
             >
                 <FullScreenImage
-                        image={`${serverURI}/pictures/full/${data.picture}`}
+                        image={`${serverPath}/pictures/full/${data.picture}`}
                         onBack={handleCloseFullscreenImage}
                         title={data.equipment_name}
                     />
@@ -330,7 +336,7 @@ const EquipmentInformationView = (props: any) => {
                                         >
                                             <Image
                                                 source={{
-                                                    uri: `${serverURI}/pictures/full/${data.picture}`,
+                                                    uri: `${serverPath}/pictures/full/${data.picture}`,
                                                     scale: 1
                                                 }}
                                                 resizeMethod="resize"
@@ -474,19 +480,20 @@ const EquipmentInformationView = (props: any) => {
                 </ScreenView>
             </>
             :
-            <View style={[styles.container, {
-                width: windowWidth,
-                height: windowHeight,
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0, 0, 0, 0.6)'
-            }]}>
-                <ActivityIndicator size="large" color="#fff" />
-                <Text style={[
-                    textStyles.alignCenter,
-                    colors.white,
-                    { paddingTop: 10 }
-                ]}>Cargando la información...</Text>
-            </View>
+            null
+            // <View style={[styles.container, {
+            //     width: windowWidth,
+            //     height: windowHeight,
+            //     justifyContent: 'center',
+            //     backgroundColor: 'rgba(0, 0, 0, 0.6)'
+            // }]}>
+            //     <ActivityIndicator size="large" color="#fff" />
+            //     <Text style={[
+            //         textStyles.alignCenter,
+            //         colors.white,
+            //         { paddingTop: 10 }
+            //     ]}>Cargando la información...</Text>
+            // </View>
         }
 
     </View>

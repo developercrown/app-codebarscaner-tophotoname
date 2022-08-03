@@ -3,7 +3,7 @@ import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Mo
 import ScreenView from '../../components/ScreenView';
 import { background, colors, textStyles } from '../../components/Styles';
 import useHeaderbar from '../../hooks/useHeaderbar';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 
 import { Image404 } from '../../assets/images';
 import useSound from '../../hooks/useSound';
@@ -15,14 +15,17 @@ import FullScreenImage from '../../components/FullScreenImage';
 import CodebarReader from '../../components/CodebarReader';
 import InternalHeader from '../../components/InternalHeader';
 import ConfigContext from '../../context/ConfigProvider';
+import useAxios from '../../hooks/useAxios';
 
 
 const RegisterEquipmentView = (props: any) => {
-    const { config } : any = useContext(ConfigContext);
     const [dbConfig, setDbConfig] = useState<any>(null);
 
+    const { config } : any = useContext(ConfigContext);
+    const {instance} = useAxios(config.servers.app);
+
     const { navigation, route } = props;
-    const { code, sourcePath } = route.params;
+    const { code } = route.params;
     const [photo, setPhoto] = useState<any>(null);
     const [viewPhotoMode, setViewPhotoMode] = useState<boolean>(false);
     const [takePhotoMode, setTakePhotoMode] = useState<boolean>(false);
@@ -86,7 +89,6 @@ const RegisterEquipmentView = (props: any) => {
     }
 
     const handlePhotoTaken = (photo: any) => {
-        // console.log('photo here', photo); // data => height, width, uri
         setPhoto(photo);
         disableAllFullscreenElements()
     }
@@ -119,22 +121,19 @@ const RegisterEquipmentView = (props: any) => {
                 type: `image/${fileType}`,
             };
             payload.append('photo', dataImage);
-            const server = 'https://api-inventario-minify.upn164.edu.mx/api/v1/rows/photo/'+code;
             setUploadProgres(0);
-            axios({
-                method: 'post',
-                url: server,
-                data: payload,
+            const uri = '/rows/photo/'+code;
+            const config = {
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'multipart/form-data',
                 },
                 onUploadProgress: (event: any) => {
-                    // console.log(event, Math.round((100 * event.loaded) / event.total));
                     setUploadProgres(Math.round((100 * event.loaded) / event.total))
                 },
                 validateStatus: () => true
-            }).then((response: any) => {
+            }
+            instance.post(uri, payload, config).then((response: any) => {
                 const { data, status } = response
                 if (status == 200) {
                     resolve({data, status})
@@ -151,13 +150,11 @@ const RegisterEquipmentView = (props: any) => {
 
     const saveRow = (payload: any) => {
         return new Promise((resolve, reject) => {
-            const uri = 'https://api-inventario-minify.upn164.edu.mx/api/v1/rows/';
-            axios({
-                method: 'post',
-                url: uri,
-                data: payload,
+            const uri = '/rows/';
+            const config = {
                 validateStatus: () => true
-            }).then(({ status, data }) => {
+            }
+            instance.post(uri, payload, config).then(({ status, data }) => {
                 if (status == 200) {
                     resolve({data, status})
                 } else {
@@ -485,7 +482,7 @@ const RegisterEquipmentView = (props: any) => {
                                         label="Series o códigos"
                                         placeholder="Ingresa aquí todos los códigos o series en el equipo"
                                         styleLabel={[ textStyles.shadowLight, colors.white ]}
-                                        styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
+                                        styleInput={[{ backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
                                         styleContainer={{ padding: 0, margin: 0, paddingRight: 0 }}
                                         onChange={setSeries}
                                         ref={equipmentSeriesRef}
@@ -585,7 +582,7 @@ const RegisterEquipmentView = (props: any) => {
                                 <TextArea
                                     label="Notas adicionales"
                                     placeholder="Ingresa los detalles adicionales, notas de resguardo o estado del equipo"
-                                    styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
+                                    styleInput={[{ backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
                                     styleLabel={[ textStyles.shadowLight, colors.white ]}
                                     styleContainer={{ padding: 0, margin: 0, paddingRight: 0 }}
                                     onChange={setNotes}

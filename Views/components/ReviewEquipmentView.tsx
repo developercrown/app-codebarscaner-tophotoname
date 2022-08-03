@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, BackHandler, Image, Modal, Platform, StatusBar, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, BackHandler, Image, Modal, StatusBar, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
 import ScreenView from "../../components/ScreenView";
 import { LoadingPicture, Image404 } from '../../assets/images';
 import useSound from "../../hooks/useSound";
@@ -7,9 +7,10 @@ import { colors, fontStyles, gradients, textStyles } from "../../components/Styl
 import { Badge, FormContainer, Select, TextArea } from "../../components/FormComponents";
 import InternalHeader from "../../components/InternalHeader";
 import FullScreenImage from "../../components/FullScreenImage";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import useHeaderbar from "../../hooks/useHeaderbar";
 import ConfigContext from "../../context/ConfigProvider";
+import useAxios from "../../hooks/useAxios";
 
 const CardBlock = (props: any) => {
     const { collapsed, hiddable, title } = props;
@@ -81,7 +82,10 @@ const ReviewEquipmentView = (props: any) => {
     const { navigation, route } = props;
     const { data, sourcePath } = route.params;
     const [dbConfig, setDbConfig] = useState<any>(null);
-    const { config }: any = useContext(ConfigContext);
+
+    const { config } : any = useContext(ConfigContext);
+    const {instance} = useAxios(config.servers.app)
+    const [serverPath, setServerPath] = useState<string>('');
 
     const {
         codebar,
@@ -90,7 +94,6 @@ const ReviewEquipmentView = (props: any) => {
         notes,
         model,
         trademark,
-        review_status,
         picture,
         safeguard_apartment,
         safeguard_person,
@@ -98,7 +101,6 @@ const ReviewEquipmentView = (props: any) => {
         status
     } = data
 
-    const serverURI = "https://api-inventario-minify.upn164.edu.mx";
     const [errorImage, setErrorImage] = useState<boolean>(false);
     const [showImage, setShowImage] = useState<boolean>(false);
     const [wait, setWait] = useState<boolean>(false);
@@ -129,13 +131,11 @@ const ReviewEquipmentView = (props: any) => {
 
     const sendReview = (payload: any) => {
         return new Promise((resolve, reject) => {
-            const uri = 'https://api-inventario-minify.upn164.edu.mx/api/v1/rows/' + data.codebar;
-            axios({
-                method: 'put',
-                url: uri,
-                data: payload,
+            const uri = 'rows/' + data.codebar;
+            const config = {
                 validateStatus: () => true
-            }).then(({ status, data }) => {
+            }
+            instance.put(uri, payload, config).then(({ status, data }) => {
                 if (status == 200) {
                     resolve({ data, status })
                 } else {
@@ -207,6 +207,12 @@ const ReviewEquipmentView = (props: any) => {
     useEffect(() => {
         if (config && config.status) {
             setDbConfig(config.data)
+            if(config.servers.app){
+                const rootServer = (config.servers.app + '').split('/api/')
+                if(rootServer && rootServer.length > 0){
+                    setServerPath(rootServer[0])
+                }
+            }
         }
     }, [dbConfig])
 
@@ -224,7 +230,7 @@ const ReviewEquipmentView = (props: any) => {
                         onRequestClose={handleCloseFullscreenImage}
                     >
                         <FullScreenImage
-                            image={`${serverURI}/pictures/full/${picture}`}
+                            image={`${serverPath}/pictures/full/${picture}`}
                             onBack={handleCloseFullscreenImage}
                             title={equipment_name}
                         />
@@ -255,7 +261,7 @@ const ReviewEquipmentView = (props: any) => {
                                         >
                                             <Image
                                                 source={{
-                                                    uri: `${serverURI}/pictures/full/${picture}`,
+                                                    uri: `${serverPath}/pictures/full/${picture}`,
                                                     scale: 1
                                                 }}
                                                 resizeMethod="scale"
@@ -274,7 +280,7 @@ const ReviewEquipmentView = (props: any) => {
                                         <>
                                             <Image
                                                 source={{
-                                                    uri: `${serverURI}/pictures/full/${picture}`,
+                                                    uri: `${serverPath}/pictures/full/${picture}`,
                                                     scale: 1
                                                 }}
                                                 resizeMethod="scale"

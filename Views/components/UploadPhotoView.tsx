@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Modal, Alert, Platform, ActivityIndicator, BackHandler, StatusBar } from 'react-native';
 import ScreenView from '../../components/ScreenView';
 import { background, colors, textStyles } from '../../components/Styles';
@@ -10,13 +10,17 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import CameraPhotoCapturer from '../../components/CameraPhotoCapturer';
 import FullScreenImage from '../../components/FullScreenImage';
 import InternalHeader from '../../components/InternalHeader';
-import axios from 'axios';
-
-const serverURI = "https://api-inventario-minify.upn164.edu.mx";
+import useAxios from '../../hooks/useAxios';
+import ConfigContext from '../../context/ConfigProvider';
+import { useFocusEffect } from '@react-navigation/native';
 
 const UploadPhotoView = (props: any) => {
     const { navigation, route } = props;
     const { code, picture, sourcePath } = route.params;
+
+    const { config } : any = useContext(ConfigContext);
+    const {instance} = useAxios(config.servers.app)
+    const [serverPath, setServerPath] = useState<string>('');
 
     const [photo, setPhoto] = useState<any>(null);
     const [viewPhotoMode, setViewPhotoMode] = useState<boolean>(false);
@@ -69,12 +73,9 @@ const UploadPhotoView = (props: any) => {
                 type: `image/${fileType}`,
             };
             payload.append('photo', dataImage);
-            const server = 'https://api-inventario-minify.upn164.edu.mx/api/v1/rows/photo/'+code;
             setUploadProgres(0);
-            axios({
-                method: 'post',
-                url: server,
-                data: payload,
+            const uri = '/rows/photo/'+code;
+            const config = {
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'multipart/form-data',
@@ -83,7 +84,8 @@ const UploadPhotoView = (props: any) => {
                     setUploadProgres(Math.round((100 * event.loaded) / event.total))
                 },
                 validateStatus: () => true
-            }).then((response: any) => {
+            }
+            instance.post(uri, payload, config).then((response: any) => {
                 const { data, status } = response
                 if (status == 200) {
                     resolve({data, status})
@@ -92,7 +94,7 @@ const UploadPhotoView = (props: any) => {
                 }
             }).catch((err: any) => {
                 reject({data: err})
-            });
+            })
         })
     }
 
@@ -165,6 +167,20 @@ const UploadPhotoView = (props: any) => {
             navigation.navigate(sourcePath, {code});
         }
     }
+
+    useFocusEffect(
+        useCallback(() => {
+            if(config.servers.app){
+                const rootServer = (config.servers.app + '').split('/api/')
+                if(rootServer && rootServer.length > 0){
+                    setServerPath(rootServer[0])
+                }
+            }
+            return () => {
+                // Useful for cleanup functions
+            };
+        }, [])
+    );
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -278,7 +294,7 @@ const UploadPhotoView = (props: any) => {
                     </TouchableHighlight>
                         :
                         picture ? <Image
-                        source={{ uri: `${serverURI}/pictures/full/${picture}` }}
+                        source={{ uri: `${serverPath}/pictures/full/${picture}` }}
                         style={{
                             flex: 1,
                             backgroundColor: '#333',

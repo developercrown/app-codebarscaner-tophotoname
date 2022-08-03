@@ -3,14 +3,17 @@ import useAxios from '../hooks/useAxios';
 
 const ConfigContext =  createContext({});
 
-const serverURI = "https://api-inventario-minify.upn164.edu.mx/api/v1";
-
 export const ConfigProvider = (props: any) => {
+    const [servers, setServers] = useState({
+        app: null,
+        auth: null
+    })
+
     const [ config, setConfig ] = useState({
         status: false,
         data: {}
     });
-    const {instance} = useAxios(serverURI)
+    
 
     const resetconfig = () => {
         setConfig({
@@ -19,29 +22,29 @@ export const ConfigProvider = (props: any) => {
         });
     }
 
-    const requestConfig = () => {
+    const requestConfig = (servers: any) => {
+        const {instance} = useAxios(servers.app)
         instance.get('app-config').then((response: any) => {
             const {data, status} = response;
             if(status === 200) {
                 const cfg = {
                     status: true,
-                    data
+                    data,
+                    servers
                 };
                 setConfig(cfg)
             }
-        }).catch((error) => {
-            setConfig({
+        }).catch((error: any) => {
+            const cfg = {
                 status: false,
-                data: {}
-            });        
+                data: {},
+                servers
+            };
+            setConfig(cfg);
         });
     }
 
-    useEffect(() => {
-        requestConfig()
-    }, []);
-
-    return <ConfigContext.Provider value={{config, setConfig, resetconfig}}>
+    return <ConfigContext.Provider value={{config, requestConfig, setConfig, resetconfig}}>
         {props.children}
     </ConfigContext.Provider>
 }
