@@ -9,13 +9,14 @@ const CodebarReader = (props: any) => {
     const {onGoBack, onCallback} = props
     const [hasPermission, setHasPermission] = useState<any>(null);
     const [scanned, setScanned] = useState<any>(false);
+    const [show, setShow] = useState<boolean>(false);
     const [code, setCode] = useState<any>()
 
     const handleBarCodeScanned = async (props: any) => {
         let { data } = props
         const sound = useSound();
         setScanned(true);
-        sound.hello()
+        sound.beep()
         setCode(data);
         setTimeout(() => {
             if(onCallback){
@@ -29,8 +30,13 @@ const CodebarReader = (props: any) => {
             const { status } = await BarCodeScanner.requestPermissionsAsync();
             setHasPermission(status === 'granted');
         })();
-        
         return () => {};
+    }, []);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setShow(true)
+        }, 10);
     }, []);
 
     if (hasPermission === null) {
@@ -46,11 +52,13 @@ const CodebarReader = (props: any) => {
 
     return <View style={styles.container}>
         <View style={styles.container}>
-            <BarCodeScanner
-                onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-                style={StyleSheet.absoluteFillObject}
+            {
+                show && <BarCodeScanner
+                    onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+                    style={StyleSheet.absoluteFillObject}
 
-            />
+                />
+            }
             <View style={styles.controlsContainer}>
                 <View
                     style={styles.controlsContainerTop}

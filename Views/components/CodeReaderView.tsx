@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BackHandler, Dimensions, Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { BackHandler, Dimensions, Image, Modal, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BarCodeScanner } from "expo-barcode-scanner";
 import ScreenView from '../../components/ScreenView';
@@ -8,6 +8,7 @@ import { FormContainer, GradientButton, GradientContainer, Input } from "../../c
 import { colors, marginStyles, textStyles } from "../../components/Styles";
 import { CameraLine } from "../../assets/images";
 import InternalHeader from "../../components/InternalHeader";
+import CodebarReader from "../../components/CodebarReader";
 
 const CodeReaderView = (props: any) => {
     const { navigation } = props;
@@ -17,6 +18,7 @@ const CodeReaderView = (props: any) => {
     const [scanned, setScanned] = useState<any>(false);
     const [scannedCode, setScannedCode] = useState<string | undefined>('');
     const [hasPermission, setHasPermission] = useState<any>(null);
+    const [readCodebarsMode, setReadCodebarsMode] = useState<boolean>(false);
     const sound = useSound(); 
 
     const windowWidth = Dimensions.get('window').width;
@@ -37,14 +39,13 @@ const CodeReaderView = (props: any) => {
         }
     }
 
-    const handleBarCodeScanned = async (props: any) => {
-        let { data } = props
-        setScanned(true);
-        setScannedCode(data);
-        executeSound(sound.msn2);
+    const handleCodebarReaded = async (code: any) => {
+        setReadCodebarsMode(false)
+        setScannedCode(code);
+        // executeSound(sound.beep);
         setTimeout(() => {
             if(autoMode){
-                gotoSearchEquipment(data)
+                gotoSearchEquipment(code)
             }
         }, 250);
     };
@@ -83,6 +84,10 @@ const CodeReaderView = (props: any) => {
         navigation.goBack();
     }
 
+    const openCodebarCapturer = () => {
+        setReadCodebarsMode(true)
+    }
+
     useEffect(() => {
         navigation.setOptions({
             headerShown: false
@@ -109,6 +114,23 @@ const CodeReaderView = (props: any) => {
     
     return <View style={[styles.container]}>
         <StatusBar barStyle="light-content" backgroundColor='rgba(10, 10, 10, 1)'/>
+
+        {
+            readCodebarsMode &&  <Modal
+                animationType="fade"
+                statusBarTranslucent={true}
+                hardwareAccelerated={true}
+                transparent={false}
+                visible={readCodebarsMode}
+                onRequestClose={()=>{setReadCodebarsMode(false)}}
+            > 
+                <CodebarReader
+                    onCallback={handleCodebarReaded}
+                    onGoBack={()=>{setReadCodebarsMode(false)}}
+                    />
+            </Modal>
+        }
+
         <InternalHeader title="Revisión del Equipo" leftIcon="chevron-back" leftAction={handleBack} rightAction={handleBack} style={{backgroundColor: 'rgba(0, 0, 0, .5)'}}/>
         <ScreenView style={[styles.container]} styleContainer={{paddingVertical: 0}}>
             <View style={[styles.header, {width: windowWidth-30}]}>
@@ -211,21 +233,24 @@ const CodeReaderView = (props: any) => {
                 </View>
 
                 <View style={[styles.bodyCameraContainer]}>
-                    { hasPermission ?
-                        <BarCodeScanner
-                            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-                            style={StyleSheet.absoluteFillObject}
-                        />
-                        :
-                        hasPermission === false?
-                        <View style={styles.bodyCameraContainerRequest}>
-                            <Text style={[colors.white, textStyles.sm, textStyles.alignCenter]}>No hay permiso de uso de la camara</Text>
-                        </View>
-                        :
-                        <View style={styles.bodyCameraContainerRequest}>
-                            <Text style={[colors.white, textStyles.sm, textStyles.alignCenter]}>Solicitando permisos para la camara</Text>
-                        </View>
-                    }
+                    <GradientButton
+                        colors={[
+                                '#8d0606',
+                                '#c70000',
+                                '#c70000',
+                        ]}
+                        onTouch={openCodebarCapturer}
+                        style={{
+                            justifyContent: "center",
+                            alignItems: "center",
+                            width: 200,
+                            height: 200,
+                            borderRadius: 100
+                        }}
+                    >
+                        <Ionicons name="qr-code" size={80} style={[colors.white]} />
+                        <Text style={[colors.white]}>Escanear código</Text>
+                    </GradientButton>
                 </View>
 
                 <View style={[styles.bodyCameraContainerInput]}>
@@ -350,7 +375,9 @@ const styles = StyleSheet.create({
     },
     bodyCameraContainer: {
         width: '90%',
-        height: '85%'
+        height: '85%',
+        justifyContent: "center",
+        alignItems: "center"
     },
     bodyCameraContainerRequest: {
         backgroundColor: 'rgba(0, 0, 0, 1)',
