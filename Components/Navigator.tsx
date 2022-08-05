@@ -9,7 +9,7 @@ const MenuOption = (props: any) => {
     const isActive = current.name === path
 
     return <TouchableOpacity style={[styles.navigatorIcon, (isActive && styles.navigatorIconActive)] } onPress={action}>
-        <Ionicons name={icon} size={isActive ? 35 : 30} style={[ {color: isActive ? colors.white.color : colors.dark.color}]} />
+        <Ionicons name={icon} size={isActive ? 35 : 30} style={[ {color: isActive ? colors.dark.color : colors.dark.color}]} />
     </TouchableOpacity>
 }
 
@@ -42,18 +42,13 @@ const Navigator = (props: any) => {
     }, []);
 
     const items = [
-        
-        // {
-        //     icon: "search",
-        //     path: "Search"
-        // },
+        {
+            icon: "search",
+            path: "Search"
+        },
         {
             icon: "qr-code-outline",
             path: "ReviewInventory"
-        },
-        {
-            icon: "home",
-            path: "Home"
         },
         {
             icon: "cog",
@@ -137,7 +132,7 @@ const styles = StyleSheet.create({
         position:'relative',
     },
     navigatorIconActive: {
-        backgroundColor: 'rgba(255, 255, 255, 0)',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
         width: 50,
         height: 50,
         padding: 0,
