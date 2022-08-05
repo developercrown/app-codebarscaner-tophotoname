@@ -85,6 +85,7 @@ const CodeReaderView = (props: any) => {
     }
 
     const openCodebarCapturer = () => {
+        sound.echo()
         setReadCodebarsMode(true)
     }
 
@@ -117,7 +118,7 @@ const CodeReaderView = (props: any) => {
 
         {
             readCodebarsMode &&  <Modal
-                animationType="fade"
+                animationType="slide"
                 statusBarTranslucent={true}
                 hardwareAccelerated={true}
                 transparent={false}

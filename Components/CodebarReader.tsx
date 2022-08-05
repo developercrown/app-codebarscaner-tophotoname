@@ -74,7 +74,7 @@ const CodebarReader = (props: any) => {
             </TouchableOpacity>
                 </View>
                 <View style={styles.controlsContainerBottom}>
-                <Text style={[colors.white, textStyles.sm, textStyles.bold]}>{code ? code : 'Experando el código'}</Text>
+                <Text style={[colors.white, textStyles.sm, textStyles.bold]}>{code ? code : 'Capturando el código'}</Text>
             </View>
             </View>
         </View>
