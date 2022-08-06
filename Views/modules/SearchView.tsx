@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { Animated, BackHandler, Dimensions, Modal, StatusBar, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, Animated, BackHandler, Dimensions, Modal, StatusBar, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native"
 import { SwipeListView } from "react-native-swipe-list-view";
 import { Input } from "../../components/FormComponents";
 import FullScreenImage from "../../components/FullScreenImage";
@@ -16,55 +16,31 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import PaginatorResponse from "../../models/PaginatorResponse";
 
 const SearchView = (props: any) => {
-    const {navigation} = props;
-    const { config } : any = useContext(ConfigContext);
-    const { auth, setAuth } : any = useContext(AuthContext);
-    const {instance} = useAxios(config.servers.app)
+    const { navigation } = props;
+    const { config }: any = useContext(ConfigContext);
+    const { auth, setAuth }: any = useContext(AuthContext);
+    const { instance } = useAxios(config.servers.app)
     const windowWidth = Dimensions.get('window').width;
     const windowHeight = Dimensions.get('window').height;
     const sound = useSound();
 
     const [serverPath, setServerPath] = useState<string>('');
     const [wait, setWait] = useState<boolean>(false);
+    const [waitMessage, setWaitMessage] = useState<string>("");
     const [viewPhotoMode, setViewPhotoMode] = useState<boolean>(false);
     const [photo, setPhoto] = useState<any>(null);
 
-    const [rows, setRows] = useState<any>([
-        {
-            key: 0,
-            name: "uno",
-            codebar: "10650149",
-            status: "ACTIVO",
-        },
-        {
-            key: 1,
-            name: "dos",
-            codebar: "10650150",
-            status: "BAJA",
-        },
-        {
-            key: 2,
-            name: "tres",
-            codebar: "10650151",
-            status: "ACTIVO",
-        }
-    ]);
-
-    // const rowSwipeAnimatedValues: any = {};
-    // Array(3)
-    //     .fill('')
-    //     .forEach((_, i) => {
-    //         rowSwipeAnimatedValues[`${i}`] = new Animated.Value(0);
-    //     });
+    const [rows, setRows] = useState<any>([]);
 
     const [search, setSearch] = useState<string>("");
     const searchBoxRef = useRef();
-    
+    const listRef = useRef<any>();
+
 
     useHeaderbar({ hide: true, navigation });
 
     const handleBack = () => {
-        if(!wait) {
+        if (!wait) {
             sound.back();
             // navigation.navigate(sourcePath, {code});
             return
@@ -82,33 +58,49 @@ const SearchView = (props: any) => {
         setWait(false)
     }
 
+    const setData = (data: any) => {
+        setRows(data)
+        setWait(false)
+    }
+
+    const onRowDidOpen = (rowKey: any) => {
+        // console.log('This row opened', rowKey);
+    };
+
+    const onSwipeValueChange = (swipeData: any) => {
+        const { key, value } = swipeData;
+        // console.log(key);
+        
+        // rowSwipeAnimatedValues[key].setValue(Math.abs(value));
+    };
+
     const searchRows = () => {
+        setWaitMessage(search === "" ? "Obteniendo información" : "Buscando")
         setWait(true)
-        instance.get("/rows?equipment_name="+search).then((response: any) => {
-            const {status} = response;
+        instance.get("/rows?equipment_name=" + search).then((response: any) => {
+            const { status } = response;
             const data: PaginatorResponse = response.data;
-            if(status === 200){
+            if (status === 200) {
                 const results = data.data;
-                if(results.length >= 1){
-                    console.log(results);
-                    setRows(results)
-                    setWait(false)
+                // console.log(data);
+                if (results.length >= 1) {
+                    setData(results)
                     return
                 }
                 notResultFailback("No se encontraron registros en el sistema");
                 return
             }
             notResultFailback("No se pudieron obtener los registros, verifique su información");
-        }).catch((err: any) =>{
+        }).catch((err: any) => {
             notResultFailback("Ocurrio un error al consultar la información, intentelo más tarde.");
         })
     }
 
     useFocusEffect(
         useCallback(() => {
-            if(config.servers.app){
+            if (config.servers.app) {
                 const rootServer = (config.servers.app + '').split('/api/')
-                if(rootServer && rootServer.length > 0){
+                if (rootServer && rootServer.length > 0) {
                     setServerPath(rootServer[0])
                     searchRows()
                 }
@@ -131,16 +123,23 @@ const SearchView = (props: any) => {
     })
 
     const header = <>
-        <StatusBar barStyle="light-content" backgroundColor='rgba(10, 10, 10, 1)'/>
+        <StatusBar barStyle="light-content" backgroundColor='rgba(10, 10, 10, 1)' />
         {
-            <InternalHeader title={ "Busqueda de equipos" } leftIcon="chevron-back" leftAction={handleBack} rightAction={handleBack} style={{backgroundColor: 'rgba(0, 0, 0, .5)'}}/>
+            <InternalHeader title={"Busqueda de equipos"} leftIcon="chevron-back" leftAction={handleBack} rightAction={handleBack} style={{ backgroundColor: 'rgba(0, 0, 0, .5)' }} />
         }
     </>
 
     const closeRow = (rowMap: any, rowKey: any) => {
-        if (rowMap[rowKey]) {
-            rowMap[rowKey].closeRow();
-        }
+        console.log('rm', rowMap);
+        
+        
+        // if (listRef[rowKey]) {
+        //     listRef[rowKey].closeRow();
+        // }
+
+
+        // console.log(listRef);
+        
     };
 
     const deleteRow = (rowMap: any, rowKey: any) => {
@@ -153,67 +152,71 @@ const SearchView = (props: any) => {
 
     const renderItem = (data: any) => {
         // console.log(data);
-        
+
         return <TouchableHighlight
-                    onPress={() => console.log('You touched me')}
-                    style={styles.rowFront}
-                    underlayColor={'#AAA'}
-                >
-                    <View>
-                        <Text>{data.item.equipment_name}</Text>
-                    </View>
-                </TouchableHighlight>
+            onPress={() => console.log('You touched me')}
+            style={styles.rowFront}
+            underlayColor={'#AAA'}
+        >
+            <View>
+                <Text>{data.item.equipment_name}</Text>
+            </View>
+        </TouchableHighlight>
     };
 
-    const renderHiddenItem = (data: any, rowMap: any) => (
-        <View style={styles.rowBack}>
+    const renderHiddenItem = (data: any, rowMap: any) => {
+        // console.log('init', data, data.index);
+        // console.log('extra', rowSwipeAnimatedValues[data.index]);
+        console.log(data, rowMap[0]);
+        
+
+        return <View style={styles.rowBack}>
             <Text>Left</Text>
             <TouchableOpacity
                 style={[styles.backRightBtn, styles.backRightBtnLeft]}
-                onPress={() => closeRow(rowMap, data.item.key)}
+                onPress={() => closeRow(rowMap, data.index)}
             >
                 <Text style={colors.dark}>Close</Text>
             </TouchableOpacity>
             <TouchableOpacity
                 style={[styles.backRightBtn, styles.backRightBtnRight]}
-                onPress={() => deleteRow(rowMap, data.item.key)}
+                onPress={() => deleteRow(rowMap, data.index)}
             >
                 <Animated.View
                     style={[
-                        styles.trash,
-                        {
-                            // transform: [
-                            //     {
-                            //         scale: rowSwipeAnimatedValues[
-                            //             data.item.key
-                            //         ].interpolate({
-                            //             inputRange: [45, 90],
-                            //             outputRange: [0, 1],
-                            //             extrapolate: 'clamp',
-                            //         }),
-                            //     },
-                            // ],
-                        },
+                        styles.trash
                     ]}
                 >
                     <Ionicons name="trash" size={28} style={{ color: 'white' }} />
                 </Animated.View>
             </TouchableOpacity>
         </View>
-    );
+    };
 
     return <View style={[styles.container]}>
-        { header }
+        {header}
+
         {
-            !wait && viewPhotoMode &&  <Modal
+            wait && <View style={[styles.contentView]}>
+                <ActivityIndicator size="large" color="#fff" />
+                <Text style={[
+                    textStyles.alignCenter,
+                    colors.white,
+                    { paddingTop: 10 }
+                ]}>{waitMessage}</Text>
+            </View>
+        }
+
+        {
+            !wait && viewPhotoMode && <Modal
                 animationType="slide"
                 statusBarTranslucent={true}
                 hardwareAccelerated={true}
                 transparent={false}
                 visible={viewPhotoMode}
                 onRequestClose={disableAllFullscreenElements}
-            > 
-                <FullScreenImage image={photo} onBack={()=> setViewPhotoMode(false)}/>
+            >
+                <FullScreenImage image={photo} onBack={() => setViewPhotoMode(false)} />
             </Modal>
         }
         <View
@@ -228,7 +231,7 @@ const SearchView = (props: any) => {
             }}>
                 <Input
                     icon="search"
-                    styleLabel={[ textStyles.shadowLight, colors.white ]}
+                    styleLabel={[textStyles.shadowLight, colors.white]}
                     styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
                     placeholder="Ingresa el nombre del equipo"
                     ref={searchBoxRef}
@@ -251,7 +254,7 @@ const SearchView = (props: any) => {
             </View>
             <View style={{
                 width: "100%",
-                height: windowHeight-100,
+                height: windowHeight - 100,
                 flexDirection: "row",
                 justifyContent: "center",
                 alignItems: "flex-start",
@@ -261,6 +264,7 @@ const SearchView = (props: any) => {
                 {
                     rows && rows.length > 1 ?
                         <SwipeListView
+                            ref={listRef}
                             data={rows}
                             renderItem={renderItem}
                             renderHiddenItem={renderHiddenItem}
@@ -269,6 +273,8 @@ const SearchView = (props: any) => {
                             previewRowKey={'0'}
                             previewOpenValue={-40}
                             previewOpenDelay={1000}
+                            onRowDidOpen={onRowDidOpen}
+                            onSwipeValueChange={onSwipeValueChange}
                         />
                         :
                         <Text>Sin registros</Text>
@@ -284,6 +290,17 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 255, 255, 0)',
     },
 
+    contentView: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, .8)',
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        top: 0,
+        zIndex: 99
+    },
     rowFront: {
         alignItems: 'center',
         backgroundColor: '#CCC',
