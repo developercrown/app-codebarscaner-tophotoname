@@ -1,6 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, BackHandler, Dimensions, Image, Modal, Pressable, RefreshControl, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import axios from 'axios';
 import ScreenView from "../../components/ScreenView";
 import { LoadingPicture, Image404 } from '../../assets/images';
 import useSound from "../../hooks/useSound";
@@ -13,8 +12,6 @@ import InternalHeader from "../../components/InternalHeader";
 import { useFocusEffect } from "@react-navigation/native";
 import ConfigContext from "../../context/ConfigProvider";
 import useAxios from "../../hooks/useAxios";
-
-// const serverURI = "https://api-inventario-minify.upn164.edu.mx";
 
 const ItemRight = (props: any) => {
     const {background, label, value} = props;
@@ -41,7 +38,7 @@ const ItemRight = (props: any) => {
 
 const EquipmentInformationView = (props: any) => {
     const { navigation, route } = props;
-    const { code, sourcePath } = route.params;
+    const { code } = route.params;
     const { config } : any = useContext(ConfigContext);
     const {instance} = useAxios(config.servers.app)
     
@@ -55,9 +52,6 @@ const EquipmentInformationView = (props: any) => {
     const [serverPath, setServerPath] = useState<string>('');
 
     const sound = useSound();
-
-    const windowWidth = Dimensions.get('window').width;
-    const windowHeight = Dimensions.get('window').height;
 
     const getInformation = async (code: any) => {
         setErrorImage(false)
@@ -88,7 +82,8 @@ const EquipmentInformationView = (props: any) => {
     const handleBack = () => {
         if(!wait) {
             sound.back();
-            navigation.replace('CodebarReader', {code});
+            // navigation.replace('CodebarReader', {code})
+            navigation.goBack();
         }
     }
 
@@ -481,19 +476,6 @@ const EquipmentInformationView = (props: any) => {
             </>
             :
             null
-            // <View style={[styles.container, {
-            //     width: windowWidth,
-            //     height: windowHeight,
-            //     justifyContent: 'center',
-            //     backgroundColor: 'rgba(0, 0, 0, 0.6)'
-            // }]}>
-            //     <ActivityIndicator size="large" color="#fff" />
-            //     <Text style={[
-            //         textStyles.alignCenter,
-            //         colors.white,
-            //         { paddingTop: 10 }
-            //     ]}>Cargando la información...</Text>
-            // </View>
         }
 
     </View>

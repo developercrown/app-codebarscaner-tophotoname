@@ -333,7 +333,6 @@ const CodeReaderView = (props: any) => {
                     </GradientButton>
             </GradientContainer>
         </ScreenView>
-        {/* <Navigator navigation={navigation}/> */}
     </View>
 }
 

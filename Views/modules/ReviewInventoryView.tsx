@@ -6,7 +6,7 @@ import RegisterEquipmentView from '../components/RegisterEquipmentView';
 import ReviewEquipmentView from '../components/ReviewEquipmentView';
 
 const ReviewInventoryView = (props: any) => {
-    const {navigation} = props;
+    const { navigation } = props;
     const ReviewInventoryStack = createNativeStackNavigator();
 
     useEffect(() => {
