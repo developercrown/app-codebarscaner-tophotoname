@@ -13,14 +13,75 @@ import useHeaderbar from "../../hooks/useHeaderbar";
 import useSound from "../../hooks/useSound";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import PaginatorResponse from "../../models/PaginatorResponse";
-import { LoadingPicture } from "../../assets/images";
+import Constants from 'expo-constants';
 import ImagenComponent from "../../components/ImagenComponent";
+import FullScreenSelectorComponent from "../../components/FullScreenSelectorComponent";
+
+const availableFilters = [
+    {
+        label: 'Nombre del equipo',
+        payload: {
+            placeholder: 'Ingresa el nombre del equipo',
+            filter: 'equipment_name'
+        }
+    },
+    {
+        label: 'Código de barras',
+        payload: {
+            placeholder: 'Ingresa el código de barras del equipo',
+            filter: 'codebar'
+        }
+    },
+    {
+        label: 'Ubicación',
+        payload: {
+            placeholder: 'Ingresa la ubicación del equipo',
+            filter: 'location'
+        }
+    },
+    {
+        label: 'Modelo',
+        payload: {
+            placeholder: 'Ingresa el modelo del equipo',
+            filter: 'model'
+        }
+    },
+    {
+        label: 'Marca',
+        payload: {
+            placeholder: 'Ingresa la marca del equipo',
+            filter: 'trademark'
+        }
+    },
+    {
+        label: 'Persona Resguardante',
+        payload: {
+            placeholder: 'Ingresa el nombre del resguardante',
+            filter: 'safeguard_person'
+        }
+    },
+    {
+        label: 'Departamento Resguardante',
+        payload: {
+            placeholder: 'Ingresa el departamento resguardante',
+            filter: 'safeguard_apartment'
+        }
+    },
+    {
+        label: 'Series/Códigos Adicionales',
+        payload: {
+            placeholder: 'Ingresa la información',
+            filter: 'series'
+        }
+    }
+]
 
 const FinderEquipmentView = (props: any) => {
     const { navigation } = props;
     const { config }: any = useContext(ConfigContext);
     const { auth, setAuth }: any = useContext(AuthContext);
-    const { instance } = useAxios(config.servers.app)
+    const { instance } = useAxios(config.servers.app);
+
     const windowWidth = Dimensions.get('window').width;
     const windowHeight = Dimensions.get('window').height;
     const sound = useSound();
@@ -29,9 +90,25 @@ const FinderEquipmentView = (props: any) => {
     const [wait, setWait] = useState<boolean>(false);
     const [waitMessage, setWaitMessage] = useState<string>("");
     const [viewPhotoMode, setViewPhotoMode] = useState<boolean>(false);
+    const [viewFilterChooserMode, setViewFilterChooserMode] = useState<boolean>(false);
     const [photo, setPhoto] = useState<any>(null);
     const [imageTitle, setImageTitle] = useState<string>('');
+
+    const [inputPlaceholder, setInputPlaceholder] = useState<string>('');
+    const [filter, setFilter] = useState<string>('');
+
     const [rows, setRows] = useState<any>([]);
+
+    const [pageProps, setPageProps] = useState<any>(
+        {
+            currentPage: 0,
+            lastPage: 0,
+            itemsPerPage: 0,
+            indexFrom: 0,
+            indexTo: 0,
+            totalItems: 0
+        }
+    );
 
     const [search, setSearch] = useState<string>("");
     const searchBoxRef = useRef();
@@ -40,28 +117,35 @@ const FinderEquipmentView = (props: any) => {
 
     useHeaderbar({ hide: true, navigation });
 
-    const handleBack = () => {
-        if (!wait) {
-            sound.back();
-            // navigation.navigate(sourcePath, {code});
-            return
-        }
-        sound.touch();
+    const handleFilterSelected = (results: any) => {
+        sound.drop()
+        disableAllFullscreenElements()
+        setCurrentFilter(results)
     }
+
+    const setCurrentFilter = (data: any) => {
+        setInputPlaceholder(data.placeholder)
+        setFilter(data.filter)
+    }
+    
 
     const disableAllFullscreenElements = () => {
         setViewPhotoMode(false)
+        setViewFilterChooserMode(false)
     }
 
     const notResultFailback = (message: string) => {
         alert(message)
         setRows([])
         setWait(false)
-    }
-
-    const setData = (data: any) => {
-        setRows(data)
-        setWait(false)
+        setPageProps({
+            currentPage: 0,
+            lastPage: 0,
+            itemsPerPage: 0,
+            indexFrom: 0,
+            indexTo: 0,
+            totalItems: 0
+        })
     }
 
     const addKeys = (sourceRows: Array<any>): Array<any> => {
@@ -77,13 +161,23 @@ const FinderEquipmentView = (props: any) => {
     const searchRows = () => {
         setWaitMessage(search === "" ? "Obteniendo información" : "Buscando")
         setWait(true)
-        instance.get("/rows?equipment_name=" + search).then((response: any) => {
+        instance.get(`/rows?${filter}=${search}`).then((response: any) => {
             const { status } = response;
             const data: PaginatorResponse = response.data;
             if (status === 200) {
                 const results = addKeys(data.data);
+                const paginatorConfig = {
+                    currentPage: data.current_page,
+                    lastPage: data.last_page,
+                    itemsPerPage: data.per_page,
+                    indexFrom: data.from,
+                    indexTo: data.to,
+                    totalItems: data.total
+                }
                 if (results.length >= 1) {
-                    setData(results)
+                    setPageProps(paginatorConfig);
+                    setRows(results)
+                    setWait(false)
                     return
                 }
                 notResultFailback("No se encontraron registros en el sistema");
@@ -101,7 +195,15 @@ const FinderEquipmentView = (props: any) => {
                 const rootServer = (config.servers.app + '').split('/api/')
                 if (rootServer && rootServer.length > 0) {
                     setServerPath(rootServer[0])
-                    searchRows()
+                    if(!filter || filter === ''){
+                        console.log('currentf', filter);
+                        
+                        setCurrentFilter(availableFilters[0].payload)
+                    }
+                    if(!rows || rows.length === 0) {
+                        console.log('currentr', rows);
+                        searchRows()
+                    }
                 }
             }
             return () => {
@@ -110,6 +212,15 @@ const FinderEquipmentView = (props: any) => {
         }, [])
     );
 
+    const handleBack = () => {
+        if (!wait) {
+            sound.back();
+            navigation.goBack();
+            return
+        }
+        sound.touch();
+    }
+    
     useEffect(() => {
         const backAction = () => {
             handleBack()
@@ -124,7 +235,7 @@ const FinderEquipmentView = (props: any) => {
     const header = <>
         <StatusBar barStyle="light-content" backgroundColor='rgba(10, 10, 10, 1)' />
         {
-            <InternalHeader title={"Busqueda de equipos"} leftIcon="chevron-back" leftAction={handleBack} rightAction={handleBack} style={{ backgroundColor: 'rgba(0, 0, 0, .5)' }} />
+            <InternalHeader title={"Busqueda de equipos"} leftIcon="chevron-back" leftAction={handleBack} rightIcon="refresh-circle-outline" rightAction={searchRows} style={{ backgroundColor: 'rgba(0, 0, 0, .5)' }} />
         }
     </>
 
@@ -140,7 +251,8 @@ const FinderEquipmentView = (props: any) => {
     };
 
     const gotoInformation = (data: any) => {
-        console.log('data', data);
+        // console.log('data', data);
+        sound.drop()
         navigation.navigate(
             "EquipmentInformation",
             {
@@ -185,7 +297,6 @@ const FinderEquipmentView = (props: any) => {
                     <Text style={[fontStyles.nunito, fontStyles.nunitoBlack, {}]}>{data.item.codebar}</Text>
                     <Text style={[fontStyles.nunito,]}>{data.item.equipment_name}</Text>
                 </View>
-                {/* <View style={{width: 16, height: 16, borderRadius: 8, position: 'absolute', backgroundColor: data.item.review_status ? 'green' : 'red', bottom: 5, right: 5}}></View> */}
                 {
                     !data.item.review_status && <View style={{width: 22, height: 22, position: 'absolute', bottom: 5, right: 8}}>
                         <Ionicons name={"warning"} size={24} style={[colors.darkorange]} />
@@ -247,26 +358,45 @@ const FinderEquipmentView = (props: any) => {
                 <FullScreenImage image={photo} title={imageTitle} onBack={() => setViewPhotoMode(false)} />
             </Modal>
         }
+
+        {
+            !wait &&
+            !viewPhotoMode &&
+            viewFilterChooserMode &&
+            <FullScreenSelectorComponent
+                icon="filter"
+                data={availableFilters}
+                title={"Selecciona el filtro de busqueda"}
+                onExit={() => { setViewFilterChooserMode(false); sound.back(); }}
+                onSelect={handleFilterSelected}
+                />
+            
+        }
+
         <View
             style={[styles.container]}
         >
             <View style={{
                 width: "100%",
                 height: 70,
-                justifyContent: "center",
+                justifyContent: "space-around",
                 alignItems: "center",
+                flexDirection: "row",
                 backgroundColor: "#aaa"
             }}>
                 <Input
                     icon="search"
-                    styleLabel={[textStyles.shadowLight, colors.white]}
                     styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
-                    placeholder="Ingresa el nombre del equipo"
+                    styleContainer={[{ width: '85%', paddingHorizontal: 8}]}
+                    placeholder={inputPlaceholder}
                     ref={searchBoxRef}
                     onChange={setSearch}
                     onSubmit={() => searchRows()}
                     value={search}
                 />
+                <TouchableOpacity style={{right: 4}}  onPress={() => {setViewFilterChooserMode(true); sound.touch();}}>
+                    <Ionicons name={"filter"} size={24} style={[colors.dark]} />
+                </TouchableOpacity>
             </View>
             <View style={{
                 width: "100%",
@@ -276,13 +406,24 @@ const FinderEquipmentView = (props: any) => {
                 alignItems: "center",
                 backgroundColor: "#bbb"
             }}>
-                <View><Text>Left</Text></View>
-                <View><Text>Center</Text></View>
-                <View><Text>Right</Text></View>
+                <View>
+                    <Text style={[fontStyles.nunito, textStyles.pico]}>
+                        Sección <Text style={[fontStyles.nunitoBold]}>{pageProps.currentPage}</Text> de <Text style={[fontStyles.nunitoBold]}>{pageProps.lastPage}</Text>
+                    </Text>
+                </View>
+                <View>
+                    <Text style={[fontStyles.nunito, textStyles.pico]}>
+                        Indice: <Text style={[fontStyles.nunitoBold]}>{pageProps.indexFrom}</Text> a <Text style={[fontStyles.nunitoBold]}>{pageProps.indexTo}</Text>
+                    </Text>
+                </View>
+                <View>
+                    <Text style={[fontStyles.nunito, textStyles.pico]}><Text style={[fontStyles.nunitoBold]}>{pageProps.totalItems}</Text> Resultados</Text>
+                </View>
             </View>
+
             <View style={{
                 width: "100%",
-                height: windowHeight - 180,
+                height: windowHeight - 110 - (Constants.statusBarHeight + 32),
                 flexDirection: "row",
                 justifyContent: "center",
                 alignItems: "center",
@@ -296,7 +437,7 @@ const FinderEquipmentView = (props: any) => {
                             ref={listRef}
                             data={rows}
                             renderItem={renderItem}
-                            renderHiddenItem={renderHiddenItem}
+                            // renderHiddenItem={renderHiddenItem}
                             leftOpenValue={75}
                             rightOpenValue={-150}
                             previewRowKey={'0'}

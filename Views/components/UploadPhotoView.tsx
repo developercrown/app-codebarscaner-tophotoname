@@ -37,12 +37,7 @@ const UploadPhotoView = (props: any) => {
 
     useEffect(() => {
         const backAction = () => {
-            if(!processMode){
-                handleBack()
-                return true;
-            }
-            
-            sound.deny();
+            handleBack()
             return true;
         };
         const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
@@ -164,8 +159,9 @@ const UploadPhotoView = (props: any) => {
     const handleBack = () => {
         if(!processMode) {
             sound.back();
-            navigation.navigate(sourcePath, {code});
+            navigation.goBack();
         }
+        sound.touch();
     }
 
     useFocusEffect(
@@ -313,7 +309,7 @@ const UploadPhotoView = (props: any) => {
             </View>
             <TouchableOpacity
                 onPress={() => {
-                    sound.echo()
+                    sound.touch()
                     setTakePhotoMode(true)
                 }}
                 style={styles.takePhotoButton}

@@ -5,7 +5,6 @@ import HomeView from './modules/HomeView';
 import ReviewInventoryView from './modules/ReviewInventoryView';
 
 import useSound from '../hooks/useSound';
-import UploadPhotoView from './components/UploadPhotoView';
 import AuthContext from '../context/AuthProvider';
 
 
@@ -14,7 +13,7 @@ const DashboardView = (props: any) => {
     const [welcomeState, setWelcomeState] = useState(false);
     const sound = useSound();
     const DashboardStack = createNativeStackNavigator();
-    const { auth, setAuth } : any = useContext(AuthContext);
+    // const { auth, setAuth } : any = useContext(AuthContext);
     
     useEffect(() => {
         if(!welcomeState){
@@ -34,7 +33,6 @@ const DashboardView = (props: any) => {
     return <DashboardStack.Navigator initialRouteName="Home">
         <DashboardStack.Screen name="Home" component={HomeView} />
         <DashboardStack.Screen name="ReviewInventory" component={ReviewInventoryView} />
-        <DashboardStack.Screen name="UploadPhoto" component={UploadPhotoView} />
     </DashboardStack.Navigator>
 }
 export default DashboardView;

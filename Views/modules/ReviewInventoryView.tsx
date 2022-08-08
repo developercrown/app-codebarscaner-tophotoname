@@ -4,6 +4,7 @@ import CodeReaderView from "../components/CodeReaderView";
 import EquipmentInformationView from '../components/EquipmentInformationView';
 import RegisterEquipmentView from '../components/RegisterEquipmentView';
 import ReviewEquipmentView from '../components/ReviewEquipmentView';
+import UploadPhotoView from '../components/UploadPhotoView';
 
 const ReviewInventoryView = (props: any) => {
     const { navigation } = props;
@@ -20,6 +21,7 @@ const ReviewInventoryView = (props: any) => {
         <ReviewInventoryStack.Screen name="EquipmentInformation" component={EquipmentInformationView} />
         <ReviewInventoryStack.Screen name="RegisterEquipment" component={RegisterEquipmentView} />
         <ReviewInventoryStack.Screen name="ReviewEquipment" component={ReviewEquipmentView} />
+        <ReviewInventoryStack.Screen name="UploadPhoto" component={UploadPhotoView} />
     </ReviewInventoryStack.Navigator>
 }
 

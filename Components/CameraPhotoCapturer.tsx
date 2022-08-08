@@ -98,12 +98,14 @@ const CameraPhotoCapturer = (props: any) => {
         if (cameraSource === CameraType.front) {
             ToastAndroid.show('Linterna solo disponible con la camara trasera', ToastAndroid.SHORT);
         }
+        sound.toggle()
         setTorch((props: any) => {
             return !props
         })
     }
 
     const toggleCameraSource = () => {
+        sound.toggle()
         if (cameraSource === CameraType.front) {
             setCameraSource(CameraType.back)
         } else {
@@ -112,6 +114,7 @@ const CameraPhotoCapturer = (props: any) => {
     }
 
     const toggleQualityResolution  = () => {
+        sound.toggle()
         if(qualityLevelIndex < cameraQualityOptions.length-1) {
             setQualityLevelIndex(qualityLevelIndex+1);
         } else {
@@ -120,6 +123,7 @@ const CameraPhotoCapturer = (props: any) => {
     }
 
     const changeWhiteBalance = () => {
+        sound.toggle()
         if(whiteBalanceIndex < whiteBalanceOptions.length-1) {
             setWhiteBalanceIndex(whiteBalanceIndex+1);
         } else {
@@ -130,6 +134,7 @@ const CameraPhotoCapturer = (props: any) => {
     const gotoDiscartPicture = () => {
         setPhoto(null);
         setWait(false);
+        sound.back()
     }
 
     const takePhoto = async () => {
@@ -148,7 +153,6 @@ const CameraPhotoCapturer = (props: any) => {
                 sound.photo();
                 setWait(false);
             }
-            
             return
         }
     }

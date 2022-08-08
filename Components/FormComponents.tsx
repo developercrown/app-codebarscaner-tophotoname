@@ -25,6 +25,7 @@ const Input = forwardRef((props: any, ref: any) => {
             onSubmit,
             placeholder,
             style,
+            styleContainer,
             styleInput,
             styleLabel,
             type,
@@ -53,7 +54,7 @@ const Input = forwardRef((props: any, ref: any) => {
         }
     }));
 
-    return <View style={formStyles.inputContainer}>
+    return <View style={[formStyles.inputContainer, styleContainer]}>
 
         {
             !icon && <>

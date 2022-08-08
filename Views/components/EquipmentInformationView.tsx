@@ -66,7 +66,7 @@ const EquipmentInformationView = (props: any) => {
             sound.error()
             Alert.alert('Atención!', 'No se encontro el equipo, ¿Desea registrarlo?', [
                 {
-                    text: 'OK', onPress: () => navigation.replace('RegisterEquipment', { code, sourcePath: 'EquipmentInformation' })
+                    text: 'OK', onPress: () => navigation.replace('RegisterEquipment', { code })
                 },
                 {
                     text: 'Cancel',
@@ -82,7 +82,6 @@ const EquipmentInformationView = (props: any) => {
     const handleBack = () => {
         if(!wait) {
             sound.back();
-            // navigation.replace('CodebarReader', {code})
             navigation.goBack();
         }
     }
@@ -103,7 +102,7 @@ const EquipmentInformationView = (props: any) => {
             Alert.alert('Atención!', 'No se encontro la imagen en el servidor, ¿Desea capturarla?', [
                 {
                     text: 'Capturar', onPress: () => {
-                        navigation.navigate('UploadPhoto', { code, sourcePath: 'EquipmentInformation' })
+                        navigation.navigate('UploadPhoto', { code })
                         setWait(false);
                         setRefreshing(false);
                     }
@@ -126,7 +125,7 @@ const EquipmentInformationView = (props: any) => {
         Alert.alert('Confirmación!', '¿Deseas reemplazar la fotografía del equipo por una nueva?', [
             {
                 text: 'Capturar', onPress: () => {
-                    navigation.navigate('UploadPhoto', { code, picture: data.picture, sourcePath: 'EquipmentInformation' })
+                    navigation.navigate('UploadPhoto', { code, picture: data.picture })
                     setWait(false);
                     setRefreshing(false);
                 }
@@ -200,7 +199,7 @@ const EquipmentInformationView = (props: any) => {
     }
 
     const handleGotoReview = () => {
-        navigation.navigate('ReviewEquipment', { data, sourcePath: 'EquipmentInformation' })
+        navigation.navigate('ReviewEquipment', { data })
     }
 
     useEffect(() => {
