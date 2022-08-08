@@ -109,7 +109,7 @@ const FinderEquipmentView = (props: any) => {
             totalItems: 0
         }
     );
-
+    
     const [search, setSearch] = useState<string>("");
     const searchBoxRef = useRef();
     const listRef = useRef<any>();
@@ -158,14 +158,26 @@ const FinderEquipmentView = (props: any) => {
         return output
     }
 
-    const searchRows = () => {
-        setWaitMessage(search === "" ? "Obteniendo información" : "Buscando")
+    const searchRows = (page: number = 1) => {
+        let message = '';
+
+        if(page >= 2){
+            message = "Solicitando más elementos";
+        } else {
+            if(search === ""){
+                message = "Obteniendo información";
+            } else {
+                message = "Buscando";
+            }
+        }
+
+        setWaitMessage(message)
         setWait(true)
-        instance.get(`/rows?${filter}=${search}`).then((response: any) => {
+        instance.get(`/rows?page=${page}&${filter}=${search}`).then((response: any) => {
             const { status } = response;
             const data: PaginatorResponse = response.data;
             if (status === 200) {
-                const results = addKeys(data.data);
+                let results = data.data;
                 const paginatorConfig = {
                     currentPage: data.current_page,
                     lastPage: data.last_page,
@@ -176,7 +188,18 @@ const FinderEquipmentView = (props: any) => {
                 }
                 if (results.length >= 1) {
                     setPageProps(paginatorConfig);
-                    setRows(results)
+                    
+                    if(page===1){
+                        results = addKeys(results)
+                        setRows(results)
+                    } else if(page>= 2){
+                        let newData = [
+                            ...rows,
+                            ...results
+                        ];
+                        newData = addKeys(newData)
+                        setRows(newData)
+                    }
                     setWait(false)
                     return
                 }
@@ -189,6 +212,10 @@ const FinderEquipmentView = (props: any) => {
         })
     }
 
+    const handleEndReached = (props: any) => {
+        searchRows(pageProps.currentPage+1)
+    }
+
     useFocusEffect(
         useCallback(() => {
             if (config.servers.app) {
@@ -196,12 +223,10 @@ const FinderEquipmentView = (props: any) => {
                 if (rootServer && rootServer.length > 0) {
                     setServerPath(rootServer[0])
                     if(!filter || filter === ''){
-                        console.log('currentf', filter);
                         
                         setCurrentFilter(availableFilters[0].payload)
                     }
                     if(!rows || rows.length === 0) {
-                        console.log('currentr', rows);
                         searchRows()
                     }
                 }
@@ -391,6 +416,7 @@ const FinderEquipmentView = (props: any) => {
                     placeholder={inputPlaceholder}
                     ref={searchBoxRef}
                     onChange={setSearch}
+                    actionLeftIcon={() => searchRows()}
                     onSubmit={() => searchRows()}
                     value={search}
                 />
@@ -443,6 +469,7 @@ const FinderEquipmentView = (props: any) => {
                             previewRowKey={'0'}
                             previewOpenValue={-40}
                             previewOpenDelay={3000}
+                            onEndReached={handleEndReached}
                         />
                         :
                         <Text>Sin registros</Text>

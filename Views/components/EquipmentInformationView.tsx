@@ -239,6 +239,8 @@ const EquipmentInformationView = (props: any) => {
         
     }, []);
 
+    const currentStatus = (data?.status+"").toLowerCase();
+
     return <View style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor='rgba(10, 10, 10, 1)'/>
 
@@ -354,7 +356,7 @@ const EquipmentInformationView = (props: any) => {
                                 }}>
                                     <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
                                         <Text style={[colors.white, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Estado Actual:</Text>
-                                        <Badge background={(data.status+"").toLowerCase() === "activo" ? "green" : 'red'} color="white" value={data.status}/>
+                                        <Badge background={currentStatus === "activo" || currentStatus === "bueno" ? "green" : 'red'} color="white" value={data.status}/>
                                     </View>
                                 </View>
                             </View>

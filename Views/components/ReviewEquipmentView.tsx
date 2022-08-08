@@ -120,7 +120,7 @@ const ReviewEquipmentView = (props: any) => {
     const handleBack = () => {
         if (!wait) {
             sound.back();
-            navigation.replace(sourcePath, { code: codebar });
+            navigation.goBack();
         }
     }
 

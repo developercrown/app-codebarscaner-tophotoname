@@ -23,6 +23,7 @@ const Input = forwardRef((props: any, ref: any) => {
             keyboardType,
             onChange,
             onSubmit,
+            actionLeftIcon,
             placeholder,
             style,
             styleContainer,
@@ -42,6 +43,12 @@ const Input = forwardRef((props: any, ref: any) => {
     const handleSubmit = () => {
         if(onSubmit){
             onSubmit()
+        }
+    }
+
+    const handleTouchLeftButton = () => {
+        if(actionLeftIcon){
+            actionLeftIcon()
         }
     }
 
@@ -95,7 +102,7 @@ const Input = forwardRef((props: any, ref: any) => {
                     style
                 ]
             }>
-                <IconButton icon={icon} color={colors.dark.color} size={24}/>
+                <IconButton icon={icon} color={colors.dark.color} size={24} onTouch={handleTouchLeftButton}/>
                 <TextInput
                     keyboardType={keyboardType}
                     onChangeText={onChange}
