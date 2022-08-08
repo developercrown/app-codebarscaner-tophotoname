@@ -16,6 +16,7 @@ import PaginatorResponse from "../../models/PaginatorResponse";
 import Constants from 'expo-constants';
 import ImagenComponent from "../../components/ImagenComponent";
 import FullScreenSelectorComponent from "../../components/FullScreenSelectorComponent";
+import CodebarReader from "../../components/CodebarReader";
 
 const availableFilters = [
     {
@@ -90,6 +91,7 @@ const FinderEquipmentView = (props: any) => {
     const [wait, setWait] = useState<boolean>(false);
     const [waitMessage, setWaitMessage] = useState<string>("");
     const [viewPhotoMode, setViewPhotoMode] = useState<boolean>(false);
+    const [codebarReaderMode, setCodebarReaderMode] = useState<boolean>(false);
     const [viewFilterChooserMode, setViewFilterChooserMode] = useState<boolean>(false);
     const [photo, setPhoto] = useState<any>(null);
     const [imageTitle, setImageTitle] = useState<string>('');
@@ -132,6 +134,7 @@ const FinderEquipmentView = (props: any) => {
     const disableAllFullscreenElements = () => {
         setViewPhotoMode(false)
         setViewFilterChooserMode(false)
+        setCodebarReaderMode(false)
     }
 
     const notResultFailback = (message: string) => {
@@ -164,6 +167,9 @@ const FinderEquipmentView = (props: any) => {
         if(page >= 2){
             message = "Solicitando más elementos";
         } else {
+            if(listRef && listRef.current){
+                listRef.current._listView.scrollToOffset({ offset: 0, animated: true });
+            }
             if(search === ""){
                 message = "Obteniendo información";
             } else {
@@ -171,11 +177,14 @@ const FinderEquipmentView = (props: any) => {
             }
         }
 
+
         setWaitMessage(message)
         setWait(true)
+
         instance.get(`/rows?page=${page}&${filter}=${search}`).then((response: any) => {
             const { status } = response;
             const data: PaginatorResponse = response.data;
+            
             if (status === 200) {
                 let results = data.data;
                 const paginatorConfig = {
@@ -186,13 +195,13 @@ const FinderEquipmentView = (props: any) => {
                     indexTo: data.to,
                     totalItems: data.total
                 }
-                if (results.length >= 1) {
+                if (results.length >= 1) {                    
                     setPageProps(paginatorConfig);
                     
-                    if(page===1){
+                    if(page === 1){
                         results = addKeys(results)
                         setRows(results)
-                    } else if(page>= 2){
+                    } else if(page >= 2){
                         let newData = [
                             ...rows,
                             ...results
@@ -210,11 +219,19 @@ const FinderEquipmentView = (props: any) => {
         }).catch((err: any) => {
             notResultFailback("Ocurrio un error al consultar la información, intentelo más tarde.");
         })
+        return
     }
 
     const handleEndReached = (props: any) => {
-        searchRows(pageProps.currentPage+1)
+        if(pageProps.currentPage < pageProps.lastPage){
+            searchRows(pageProps.currentPage+1)
+        }
     }
+
+    const handleCodebarReaded = async (code: any) => {
+        setCodebarReaderMode(false)
+        setSearch(code);
+    };
 
     useFocusEffect(
         useCallback(() => {
@@ -270,18 +287,22 @@ const FinderEquipmentView = (props: any) => {
         }
     };
 
-    const EditRow = (rowMap: any, rowKey: any) => {
-        console.log('editar');        
-        closeRow(rowMap, rowKey);
-    };
-
     const gotoInformation = (data: any) => {
-        // console.log('data', data);
         sound.drop()
         navigation.navigate(
             "EquipmentInformation",
             {
                 code: data.codebar
+            }
+        );
+    }
+
+    const handleCloneRow = (data: any) => {
+        sound.drop()
+        navigation.navigate(
+            "RegisterEquipment",
+            {
+                data
             }
         );
     }
@@ -308,6 +329,7 @@ const FinderEquipmentView = (props: any) => {
                         style={{elevation: 1}}
                     >
                         <ImagenComponent
+                            key={data.item.codebar}
                             uri={`${serverPath}/pictures/thumbs/${data.item.picture}`}
                             style={{
                                 width: 80,
@@ -315,6 +337,7 @@ const FinderEquipmentView = (props: any) => {
                                 borderRadius: 20,
                                 backgroundColor: '#333'
                             }}
+                            loading={wait}
                         />
                     </TouchableOpacity>
                 </View>
@@ -337,22 +360,25 @@ const FinderEquipmentView = (props: any) => {
     const renderHiddenItem = (data: any, rowMap: any) => (
         <View style={styles.rowBack}>
             <TouchableOpacity
-                style={[]}
-                onPress={() => closeRow(rowMap, data.item.key)}
+                style={[{justifyContent: "center", alignItems: "center"}]}
+                onPress={() => {closeRow(rowMap, data.item.key); handleCloneRow(data.item)}}
             >
+                <Ionicons name="copy" size={24} style={[colors.dark]} />
                 <Text style={colors.black}>Clonar</Text>
             </TouchableOpacity>
             <TouchableOpacity
                 style={[styles.backRightBtn, styles.backRightBtnLeft]}
                 onPress={() => closeRow(rowMap, data.item.key)}
             >
-                <Text style={colors.dark}>Cerrar</Text>
+                <Ionicons name="close" size={24} style={[colors.dark]} />
+                <Text style={[colors.dark, fontStyles.nunitoBold, textStyles.xs]}>Cerrar</Text>
             </TouchableOpacity>
             <TouchableOpacity
                 style={[styles.backRightBtn, styles.backRightBtnRight]}
-                onPress={() => EditRow(rowMap, data.item.key)}
+                onPress={() => {closeRow(rowMap, data.item.key); gotoInformation(data.item)}}
             >
-                <Text style={colors.dark}>Editar</Text>
+                <Ionicons name="eye" size={24} style={[colors.dark]} />
+                <Text style={[colors.dark, fontStyles.nunitoBold, textStyles.xs]}>Ver</Text>
             </TouchableOpacity>
         </View>
     );
@@ -398,6 +424,22 @@ const FinderEquipmentView = (props: any) => {
             
         }
 
+        {
+            codebarReaderMode &&  <Modal
+                animationType="slide"
+                statusBarTranslucent={true}
+                hardwareAccelerated={true}
+                transparent={false}
+                visible={codebarReaderMode}
+                onRequestClose={()=>{setCodebarReaderMode(false)}}
+            > 
+                <CodebarReader
+                    onCallback={handleCodebarReaded}
+                    onGoBack={()=>{setCodebarReaderMode(false)}}
+                    />
+            </Modal>
+        }
+
         <View
             style={[styles.container]}
         >
@@ -412,7 +454,7 @@ const FinderEquipmentView = (props: any) => {
                 <Input
                     icon="search"
                     styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
-                    styleContainer={[{ width: '85%', paddingHorizontal: 8}]}
+                    styleContainer={[{ width: '80%', paddingHorizontal: 8}]}
                     placeholder={inputPlaceholder}
                     ref={searchBoxRef}
                     onChange={setSearch}
@@ -420,6 +462,9 @@ const FinderEquipmentView = (props: any) => {
                     onSubmit={() => searchRows()}
                     value={search}
                 />
+                <TouchableOpacity style={{right: 4}}  onPress={() => {setCodebarReaderMode(true); sound.touch();}}>
+                    <Ionicons name={"qr-code"} size={24} style={[colors.dark, {marginRight: 10}]} />
+                </TouchableOpacity>
                 <TouchableOpacity style={{right: 4}}  onPress={() => {setViewFilterChooserMode(true); sound.touch();}}>
                     <Ionicons name={"filter"} size={24} style={[colors.dark]} />
                 </TouchableOpacity>
@@ -452,18 +497,18 @@ const FinderEquipmentView = (props: any) => {
                 height: windowHeight - 110 - (Constants.statusBarHeight + 32),
                 flexDirection: "row",
                 justifyContent: "center",
-                alignItems: "center",
+                alignItems: "flex-start",
                 paddingTop: 0,
                 margin: 'auto',
                 backgroundColor: "rgba(255, 255, 255, 0)"
             }}>
                 {
-                    rows && rows.length > 1 ?
+                    rows && rows.length > 0 ?
                         <SwipeListView
                             ref={listRef}
                             data={rows}
                             renderItem={renderItem}
-                            // renderHiddenItem={renderHiddenItem}
+                            renderHiddenItem={renderHiddenItem}
                             leftOpenValue={75}
                             rightOpenValue={-150}
                             previewRowKey={'0'}
@@ -472,7 +517,7 @@ const FinderEquipmentView = (props: any) => {
                             onEndReached={handleEndReached}
                         />
                         :
-                        <Text>Sin registros</Text>
+                        <Text style={[textStyles.shadowLight, textStyles.lg, fontStyles.nunitoBold, colors.white, { marginTop: 40}]}>Sin registros</Text>
                 }
             </View>
         </View>

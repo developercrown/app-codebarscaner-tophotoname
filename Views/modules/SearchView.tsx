@@ -4,6 +4,7 @@ import EquipmentInformationView from '../components/EquipmentInformationView';
 import ReviewEquipmentView from '../components/ReviewEquipmentView';
 import FinderEquipmentView from './../components/FinderEquipmentView';
 import UploadPhotoView from '../components/UploadPhotoView';
+import RegisterEquipmentView from '../components/RegisterEquipmentView';
 
 const ReviewInventoryView = (props: any) => {
     const { navigation } = props;
@@ -19,6 +20,7 @@ const ReviewInventoryView = (props: any) => {
         <SearchStack.Screen name="FinderEquipment" component={FinderEquipmentView} />
         <SearchStack.Screen name="EquipmentInformation" component={EquipmentInformationView} />
         <SearchStack.Screen name="ReviewEquipment" component={ReviewEquipmentView} />
+        <SearchStack.Screen name="RegisterEquipment" component={RegisterEquipmentView} />
         <SearchStack.Screen name="UploadPhoto" component={UploadPhotoView} />
     </SearchStack.Navigator>
 }

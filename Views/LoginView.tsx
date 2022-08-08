@@ -161,10 +161,7 @@ const LoginView = (props: any) => {
                 }
                 setMessage('Verificando tu sessión')
                 setWait(true)
-                console.log('yes session', dataSession);
                 logon(dataSession)
-                
-    //             // requestSignin()
             })
         }
         

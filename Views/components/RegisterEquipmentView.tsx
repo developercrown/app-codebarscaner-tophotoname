@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Modal, Alert, Platform, ActivityIndicator, BackHandler, StatusBar } from 'react-native';
+import { View, StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, Modal, Alert, Platform, ActivityIndicator, BackHandler, StatusBar, Pressable } from 'react-native';
 import ScreenView from '../../components/ScreenView';
 import { background, colors, textStyles } from '../../components/Styles';
 import useHeaderbar from '../../hooks/useHeaderbar';
@@ -28,16 +28,18 @@ const RegisterEquipmentView = (props: any) => {
     const {required} = useValidate()
 
     const { navigation, route } = props;
-    const { code } = route.params;
+    const { code, data } = route.params;
     const [photo, setPhoto] = useState<any>(null);
     const [viewPhotoMode, setViewPhotoMode] = useState<boolean>(false);
     const [takePhotoMode, setTakePhotoMode] = useState<boolean>(false);
-    const [readCodebarsMode, setReadCodebarsMode] = useState<boolean>(false);
+    const [readCodebarMode, setReadCodebarMode] = useState<boolean>(false);
+    const [readSeriesCodebarsMode, setReadSeriesCodebarsMode] = useState<boolean>(false);
     const [processMode, setProcessMode] = useState<boolean>(false);
     const [step, setStep] = useState<number>(0);
     const [uploadProgres, setUploadProgres] = useState<number>(0);
 
     // Form data states
+    const [codebar, setCodebar] = useState<string>('');
     const [name, setName] = useState('');
     const [series, setSeries] = useState('');
     const [trademark, setTrademark] = useState('');
@@ -76,10 +78,27 @@ const RegisterEquipmentView = (props: any) => {
         }
     },  [dbConfig])
 
+    useEffect(() => {
+        if(code && code != ""){
+            setCodebar(code)
+        }
+        
+        if(data){
+            setName(data.equipment_name)
+            setTrademark(data.trademark)
+            setModel(data.model)
+            setStatus(data.status)
+            setSafeguardApartment(data.safeguard_apartment)
+            setSafeguardPerson(data.safeguard_person)
+            setLocation(data.location)
+        }
+        
+    }, [data])
+
     const handleBack = () => {
         if(!processMode) {
             sound.back();
-            navigation.replace('CodebarReader', {code});
+            navigation.goBack();
             return
         }
         sound.deny();
@@ -88,7 +107,8 @@ const RegisterEquipmentView = (props: any) => {
     const disableAllFullscreenElements = () => {
         setTakePhotoMode(false)
         setViewPhotoMode(false)
-        setReadCodebarsMode(false)
+        setReadSeriesCodebarsMode(false)
+        setReadCodebarMode(false)
     }
 
     const handlePhotoTaken = (photo: any) => {
@@ -96,10 +116,16 @@ const RegisterEquipmentView = (props: any) => {
         disableAllFullscreenElements()
     }
 
-    const handleCodebarReaded = (code: string) => {
+    const handleCodeSeriesReaded = (code: string) => {
         code = code.trim()
         const value = series === '' ? code : series + ' - ' + code;
         setSeries(value.trim())
+        disableAllFullscreenElements()
+    }
+
+    const handleCodebarReaded = (code: string) => {
+        code = code.trim()
+        setCodebar(code)
         disableAllFullscreenElements()
     }
 
@@ -115,7 +141,7 @@ const RegisterEquipmentView = (props: any) => {
             };
             payload.append('photo', dataImage);
             setUploadProgres(0);
-            const uri = '/rows/photo/'+code;
+            const uri = '/rows/photo/'+codebar;
             const config = {
                 headers: {
                     Accept: 'application/json',
@@ -228,7 +254,7 @@ const RegisterEquipmentView = (props: any) => {
             ){
                 
                 const payloadData = {
-                        "codebar": code,
+                        "codebar": codebar,
                         location,
                         model,
                         name,
@@ -325,22 +351,37 @@ const RegisterEquipmentView = (props: any) => {
             dbConfig && 
             <>
                 {
-                    readCodebarsMode && !takePhotoMode && !viewPhotoMode &&  <Modal
+                    readCodebarMode &&  <Modal
                         animationType="slide"
                         statusBarTranslucent={true}
                         hardwareAccelerated={true}
                         transparent={false}
-                        visible={readCodebarsMode}
-                        onRequestClose={disableAllFullscreenElements}
+                        visible={readCodebarMode}
+                        onRequestClose={()=>{setReadCodebarMode(false)}}
                     > 
                         <CodebarReader
                             onCallback={handleCodebarReaded}
+                            onGoBack={()=>{setReadCodebarMode(false)}}
+                            />
+                    </Modal>
+                }
+                {
+                    readSeriesCodebarsMode && !takePhotoMode && !viewPhotoMode &&  <Modal
+                        animationType="slide"
+                        statusBarTranslucent={true}
+                        hardwareAccelerated={true}
+                        transparent={false}
+                        visible={readSeriesCodebarsMode}
+                        onRequestClose={disableAllFullscreenElements}
+                    > 
+                        <CodebarReader
+                            onCallback={handleCodeSeriesReaded}
                             onGoBack={disableAllFullscreenElements}
                             />
                     </Modal>
                 }
                 {
-                    !takePhotoMode && !readCodebarsMode && viewPhotoMode &&  <Modal
+                    !takePhotoMode && !readSeriesCodebarsMode && viewPhotoMode &&  <Modal
                         animationType="slide"
                         statusBarTranslucent={true}
                         hardwareAccelerated={true}
@@ -352,7 +393,7 @@ const RegisterEquipmentView = (props: any) => {
                     </Modal>
                 }
                 {
-                    !viewPhotoMode && !readCodebarsMode && takePhotoMode &&  <Modal
+                    !viewPhotoMode && !readSeriesCodebarsMode && takePhotoMode &&  <Modal
                         animationType="slide"
                         statusBarTranslucent={true}
                         hardwareAccelerated={true}
@@ -410,13 +451,23 @@ const RegisterEquipmentView = (props: any) => {
                     >
                         <Ionicons name="camera" size={24} style={[colors.dark]} />
                     </TouchableOpacity>
-                    <View style={[styles.codebarContainer, styles.cardStyle]}>
-                        <View style={[{ flexDirection: 'row', alignItems: 'center', }]}>
-                            <Ionicons name="qr-code" size={24} style={[colors.black, { marginRight: 8 }]} />
-                            <Text style={[textStyles.md]}>Código del equipo:</Text>
-                        </View>
-                        <Text style={[textStyles.md, textStyles.bold]}>{code}</Text>
-                    </View>
+                    {
+                        code ? <View style={[styles.codebarContainer, styles.cardStyle]}>
+                                <View style={[{ flexDirection: 'row', alignItems: 'center', }]}>
+                                    <Ionicons name="qr-code" size={24} style={[colors.black, { marginRight: 8 }]} />
+                                    <Text style={[textStyles.md]}>Código del equipo:</Text>
+                                </View>
+                                <Text style={[textStyles.md, textStyles.bold]}>{codebar}</Text>
+                            </View>
+                            :
+                            <TouchableOpacity style={[styles.codebarContainer, styles.cardStyle]} onPress={()=>setReadCodebarMode(true)}>
+                                <View style={[{ flexDirection: 'row', alignItems: 'center', }]}>
+                                    <Ionicons name="qr-code" size={24} style={[colors.black, { marginRight: 8 }]} />
+                                    <Text style={[textStyles.md]}>Código del equipo:</Text>
+                                </View>
+                                <Text style={[textStyles.md, textStyles.bold]}>{codebar}</Text>
+                            </TouchableOpacity>
+                    }
                     <View style={[
                         styles.bodyForm,
                         { alignItems: 'center', justifyContent: 'flex-start' }]}
@@ -485,7 +536,7 @@ const RegisterEquipmentView = (props: any) => {
                                 <View style={{ width: '20%', justifyContent: 'center', alignItems: 'center' }}>
                                     <TouchableOpacity
                                         onPress={()=>{
-                                            setReadCodebarsMode(true)
+                                            setReadSeriesCodebarsMode(true)
                                         }}
                                         style={[{
                                             width: 60,
