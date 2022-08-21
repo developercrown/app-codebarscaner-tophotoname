@@ -332,7 +332,7 @@ const EquipmentInformationView = (props: any) => {
                                         >
                                             <Image
                                                 source={{
-                                                    uri: `${serverPath}/pictures/full/${data.picture}`,
+                                                    uri: `${serverPath}/pictures/thumbs/${data.picture}`,
                                                     scale: 1
                                                 }}
                                                 resizeMethod="resize"
