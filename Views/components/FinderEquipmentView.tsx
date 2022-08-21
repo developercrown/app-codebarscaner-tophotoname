@@ -22,64 +22,73 @@ const availableFilters = [
     {
         label: 'Nombre del equipo',
         payload: {
+            referenceLabel: 'Nombre',
+            filter: 'equipment_name',
             placeholder: 'Ingresa el nombre del equipo',
-            filter: 'equipment_name'
         }
     },
     {
         label: 'Código de barras',
         payload: {
+            referenceLabel: 'Código',
+            filter: 'codebar',
             placeholder: 'Ingresa el código de barras del equipo',
-            filter: 'codebar'
         }
     },
     {
         label: 'Ubicación',
         payload: {
+            referenceLabel: 'Ubicación',
+            filter: 'location',
             placeholder: 'Ingresa la ubicación del equipo',
-            filter: 'location'
         }
     },
     {
         label: 'Modelo',
         payload: {
+            referenceLabel: 'Modelo',
+            filter: 'model',
             placeholder: 'Ingresa el modelo del equipo',
-            filter: 'model'
         }
     },
     {
         label: 'Marca',
         payload: {
+            referenceLabel: 'Marca',
+            filter: 'trademark',
             placeholder: 'Ingresa la marca del equipo',
-            filter: 'trademark'
         }
     },
     {
         label: 'Persona Resguardante',
         payload: {
+            referenceLabel: 'Persona',
+            filter: 'safeguard_person',
             placeholder: 'Ingresa el nombre del resguardante',
-            filter: 'safeguard_person'
         }
     },
     {
         label: 'Departamento Resguardante',
         payload: {
+            referenceLabel: 'Departamento',
+            filter: 'safeguard_apartment',
             placeholder: 'Ingresa el departamento resguardante',
-            filter: 'safeguard_apartment'
         }
     },
     {
         label: 'Series/Códigos Adicionales',
         payload: {
+            referenceLabel: 'Series',
+            filter: 'series',
             placeholder: 'Ingresa la información',
-            filter: 'series'
         }
     },
     {
         label: 'Estado de revisión',
         payload: {
+            referenceLabel: 'Revisión',
+            filter: 'review',
             placeholder: 'Ingresa la información',
-            filter: 'review'
         }
     }
 ]
@@ -105,6 +114,7 @@ const FinderEquipmentView = (props: any) => {
 
     const [inputPlaceholder, setInputPlaceholder] = useState<string>('');
     const [filter, setFilter] = useState<string>('');
+    const [filterLabel, setFilterLabel] = useState<string>('');
 
     const [rows, setRows] = useState<any>([]);
 
@@ -135,6 +145,7 @@ const FinderEquipmentView = (props: any) => {
     const setCurrentFilter = (data: any) => {
         setInputPlaceholder(data.placeholder)
         setFilter(data.filter)
+        setFilterLabel(data.referenceLabel)
     }
     
 
@@ -484,6 +495,11 @@ const FinderEquipmentView = (props: any) => {
                 alignItems: "center",
                 backgroundColor: "#bbb"
             }}>
+                <View>
+                    <Text style={[fontStyles.nunito, textStyles.nano]}>
+                        Filtro: <Text style={[fontStyles.nunitoBold]}>{filterLabel}</Text>
+                    </Text>
+                </View>
                 <View>
                     <Text style={[fontStyles.nunito, textStyles.pico]}>
                         Sección <Text style={[fontStyles.nunitoBold]}>{pageProps.currentPage}</Text> de <Text style={[fontStyles.nunitoBold]}>{pageProps.lastPage}</Text>
