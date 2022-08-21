@@ -3,9 +3,11 @@ import { StyleSheet, Text, View } from 'react-native';
 import { IconButton } from './FormComponents';
 import Constants from 'expo-constants';
 import { colors, fontStyles, textStyles } from './Styles';
+import { Pressable } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const InternalHeader = (props?: any) => {
-    const { title, leftIcon, leftAction, light, rightIcon, rightAction, style } = props;
+    const { title, leftIcon, leftAction, light, rightIcon, rightAction, rightLongAction, style } = props;
 
     return <View style={[styles.container, style]}>
         {
@@ -26,13 +28,9 @@ const InternalHeader = (props?: any) => {
             fontStyles.nunitoSemiBold
         ]}>{title}</Text>
         {
-            rightIcon ? <IconButton
-                icon={rightIcon}
-                color={light ? colors.dark.color : colors.white.color}
-                size={32}
-                onTouch={rightAction}
-                style={{}}
-            />
+            rightIcon ? <Pressable delayLongPress={4000} onLongPress={rightLongAction} onPress={rightAction}>
+                <Ionicons name={rightIcon} size={32} style={{ color: light ? colors.dark.color : colors.white.color }} />
+            </Pressable>
             :
             <View style={{width: 32}} />
         }

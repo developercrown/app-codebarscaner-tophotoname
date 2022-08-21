@@ -22,7 +22,7 @@ const LoginView = (props: any) => {
     const { get, set, remove } = useLocalStorage();
     const { config, requestConfig } : any = useContext(ConfigContext);
     const { setAuth } : any = useContext(AuthContext);
-    const {instance, getHeaderInstance} = useAxios(config?.servers?.auth);
+    const {instance, getHeaderInstance} = useAxios(config?.servers?.app);
     const { required } : any = useValidate();
 
     const [username, setUsername] = useState<string>('');
@@ -65,7 +65,7 @@ const LoginView = (props: any) => {
             validateStatus: () => true
         }
         setWait(true)
-        instance.post('public/account/logon', {}, config).then((response: any) => {
+        instance.post('logon', {}, config).then((response: any) => {
             const { data, status } = response;
             if(status===200){
                 setAuthenticated(data)
@@ -103,11 +103,14 @@ const LoginView = (props: any) => {
             }
         }
         const config = {
-            validateStatus: () => true
+            validateStatus: () => true,
+            headers: {
+                origin: "https://inventorytool.upn164.edu.mx"
+            }
         }
         setMessage('Solicitando ingreso al sistema');
         setWait(true)
-        instance.post('public/account/login', payload, config).then((response: any) => {
+        instance.post('login', payload, config).then((response: any) => {
             const { data, status } = response
             if(status===200){
                 logon(data.token)
@@ -152,7 +155,7 @@ const LoginView = (props: any) => {
     }, [])
 
     useEffect(() => {
-        if(config && config.status && config.servers.auth){
+        if(config && config.status && config.servers.app){
             get('token').then((dataSession: any) => {
                 if (!dataSession) {
                     setWait(false)

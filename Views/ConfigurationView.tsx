@@ -21,7 +21,6 @@ const ConfigurationView = (props: any) => {
 
     const windowWidth = Dimensions.get('window').width;
     const [appServer, setAppServer] = useState('');
-    const [authServer, setAuthServer] = useState('');
     const [wait, setWait] = useState<boolean>(false);
     const [processMessages, setProcessMessages] = useState<any>([]);
 
@@ -61,14 +60,12 @@ const ConfigurationView = (props: any) => {
     const setDefaults = (data: any) => {
         if(data && data.app && data.auth){
             setAppServer(data.app)
-            setAuthServer(data.auth)
             return
         }
     }
 
     const handleDefaults = (data: any) => {
         setAppServer('https://api-inventario-minify.upn164.edu.mx/api/v1')
-        setAuthServer('https://api-shield.upn164.edu.mx/api/v1')
     }
 
     useHeaderbar({
@@ -103,49 +100,33 @@ const ConfigurationView = (props: any) => {
     }
 
     const save = () => {
-        if (validateValue(appServer) && validateValue(authServer)) {
+        if (validateValue(appServer)) {
             appendMessage('Iniciando proceso de validación', true)
             setWait(true)
-            setTimeout(() => {
-                appendMessage('')
-                appendMessage('Validando comunicación con el servidor de la app:')
-                appendMessage(appServer)
-                validateServer(appServer).then((result) => {
-                    if (result) {
-                        setTimeout(() => {
-                            appendMessage('')
-                            appendMessage('Validando comunicación con el servidor de autenticación:')
-                            appendMessage(authServer)
-                            validateServer(authServer).then((result) => {
-                                if (result) {
-                                    const data = {
-                                        app: appServer,
-                                        auth: authServer
-                                    };
-                                    
-                                    set('servers', data, true).then((result) => {
-                                        Alert.alert('Validacion finalizada!', `Ahora haz clic en continuar para usar la app."`, [{
-                                            text: 'Continuar', onPress: () => {
-                                                setWait(false)
-                                                navigation.replace('Login')
-                                            }
-                                        }])
-                                        sound.success();
-                                    })
-                                    
-                                    return
-                                }
-                                Alert.alert('Ocurrio un error!', `La validación del servidor "${authServer}" ha fallado, verifique su información.`, [{ text: 'Continuar', onPress: () => setWait(false) }])
-                                sound.error();
+                setTimeout(() => {
+                    appendMessage('Validando comunicación con el servidor de la app:')
+                    appendMessage(appServer)
+                    validateServer(appServer).then((result) => {
+                        if (result) {
+                            const data = {
+                                app: appServer
+                            };
+                            set('servers', data, true).then((result) => {
+                                Alert.alert('Validacion finalizada!', `Ahora haz clic en continuar para usar la app."`, [{
+                                    text: 'Continuar', onPress: () => {
+                                        setWait(false)
+                                        navigation.replace('Login')
+                                    }
+                                }])
+                                sound.success();
                             })
-                        }, 150);
-                        return
-                    }
-                    Alert.alert('Ocurrio un error!', `La validación del servidor "${appServer}" ha fallado, verifique su información.`, [{ text: 'Continuar', onPress: () => setWait(false) }])
-                    sound.error();
-                })
-            }, 150);
-            return
+                            return
+                        }
+                        Alert.alert('Ocurrio un error!', `La validación del servidor "${appServer}" ha fallado, verifique su información.`, [{ text: 'Continuar', onPress: () => setWait(false) }])
+                        sound.error();
+                    })
+                }, 150);
+                return
         }
         alert('Ingresa los valores requeridos por favor!')
     }
@@ -173,14 +154,13 @@ const ConfigurationView = (props: any) => {
         {
             !wait ? <>
                 <ScreenView style={{ backgroundColor: 'rgba(255, 255, 255, .6)', height: '100%' }}>
-                    <InternalHeader title="Configuración de la app" leftIcon="chevron-back" leftAction={handleBack} rightIcon="flag" rightAction={handleDefaults} style={{ backgroundColor: 'rgba(40, 40, 40, 1)' }} />
+                    <InternalHeader title="Configuración de la app" leftIcon="chevron-back" leftAction={handleBack} rightIcon="flag" rightLongAction={handleDefaults} style={{ backgroundColor: 'rgba(40, 40, 40, 1)' }} />
                     <View style={[{ width: windowWidth }, alignStyles.centered]}>
                         <View style={styles.containerTop}>
                             <Image source={LogoText} style={styles.logo} />
                         </View>
                         <View style={styles.bodyContainer}>
                             <FormContainer style={[styles.bodyContainer, { alignItems: 'center' }]}>
-                                <TextArea fontSize={16} value={authServer} onChange={setAuthServer} label="URL del Servidor de autenticación" style={{ width: windowWidth - 50, elevation: 1 }} />
                                 <TextArea fontSize={16} value={appServer} onChange={setAppServer} label="URL del servidor de la app" style={{ marginTop: 0, width: windowWidth - 50, elevation: 1 }} />
                                 <TouchableOpacity
                                     onPress={save}
