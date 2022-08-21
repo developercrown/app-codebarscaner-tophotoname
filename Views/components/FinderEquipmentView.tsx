@@ -74,6 +74,13 @@ const availableFilters = [
             placeholder: 'Ingresa la información',
             filter: 'series'
         }
+    },
+    {
+        label: 'Estado de revisión',
+        payload: {
+            placeholder: 'Ingresa la información',
+            filter: 'review'
+        }
     }
 ]
 
