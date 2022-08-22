@@ -1,8 +1,9 @@
 import { Keyboard, StyleSheet, TouchableOpacity, View } from "react-native"
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from "./Styles";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useState } from "react";
 import useSound from "../hooks/useSound";
+import AuthContext from "../context/AuthProvider";
 
 const MenuOption = (props: any) => {
     const {icon, path, action, current} = props;
@@ -18,6 +19,8 @@ const Navigator = (props: any) => {
     const sound = useSound(); 
     const [current, setCurrent] = useState<any>("");
     const [visible, setVisible] = useState<boolean>(true);
+    const { auth } : any = useContext(AuthContext);
+    const role = auth.data.role;
 
     const handleNavigate = (target: string) => {
         sound.drop();
@@ -44,17 +47,30 @@ const Navigator = (props: any) => {
     const items = [
         {
             icon: "search",
-            path: "Search"
+            path: "Search",
+            visibilityRules: ["admin", "viewer"]
         },
         {
             icon: "qr-code-outline",
-            path: "ReviewInventory"
+            path: "ReviewInventory",
+            visibilityRules:  ["admin", "support"]
         },
         {
             icon: "cog",
-            path: "Configuration"
+            path: "Configuration",
+            visibilityRules:  ["admin", "support", "viewer"]
         }
     ]
+
+    const isAvailable = (item: any): boolean => {
+        const data = item.visibilityRules;
+        for(let i = 0; i < data.length; i++) {
+            if(data[i] == role){
+                return true
+            }
+        }
+        return false
+    }
 
     useEffect(() => {
         const props = navigation.getState()
@@ -68,13 +84,16 @@ const Navigator = (props: any) => {
         <View style={styles.navigatorContainer}>
             {
                 items && items.map((item: any, key)=>{
-                    return <MenuOption
+                    if(isAvailable(item)){
+                        return <MenuOption
                                 action={()=>handleNavigate(item.path)}
                                 current={current}
                                 icon={item.icon}
                                 key={key}
                                 path={item.path}
                                 />
+                    }
+                    return null
                 })
             }
         </View>
