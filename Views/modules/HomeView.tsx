@@ -42,7 +42,9 @@ const HomeView = (props: any) => {
         navigation,
         hideShadow: false,
         leftSection: <View style={[{justifyContent: 'center', alignItems: 'center', height: 40}]}>
-            <Text style={[textStyles.bold, textStyles.md, colors.white, {}]}>Bienvenido {auth.data.username}</Text>
+            {
+                auth?.data?.username && <Text style={[textStyles.bold, textStyles.md, colors.white, {}]}>Bienvenido {auth?.data?.username}</Text>
+            }
         </View>,
         rightSection: <View style={[{justifyContent: 'flex-start', alignItems: 'flex-start', height: 60}]}>
             <IconButton icon="exit" color={colors.white.color} size={26}  style={{marginTop: 10}} onTouch={handleLogout} />

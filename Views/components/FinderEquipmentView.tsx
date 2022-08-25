@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Animated, BackHandler, Dimensions, Image, Modal, StatusBar, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, Alert, Animated, BackHandler, Dimensions, Image, Modal, StatusBar, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native"
 import { SwipeListView } from "react-native-swipe-list-view";
 import { Input } from "../../components/FormComponents";
 import FullScreenImage from "../../components/FullScreenImage";
@@ -98,7 +98,8 @@ const FinderEquipmentView = (props: any) => {
     const { config }: any = useContext(ConfigContext);
     const { auth, setAuth }: any = useContext(AuthContext);
     const { instance } = useAxios(config.servers.app);
-
+    const role = auth.data?.role;
+    
     const windowWidth = Dimensions.get('window').width;
     const windowHeight = Dimensions.get('window').height;
     const sound = useSound();
@@ -156,7 +157,7 @@ const FinderEquipmentView = (props: any) => {
     }
 
     const notResultFailback = (message: string) => {
-        alert(message)
+        Alert.alert( 'Atención!', message);     
         setRows([])
         setWait(false)
         setPageProps({
@@ -199,7 +200,11 @@ const FinderEquipmentView = (props: any) => {
         setWaitMessage(message)
         setWait(true)
 
-        instance.get(`/rows?page=${page}&${filter}=${search}`).then((response: any) => {
+        const config = {
+            validateStatus: () => true
+        }
+
+        instance.get(`/rows?page=${page}&${filter}=${search}`, config).then((response: any) => {
             const { status } = response;
             const data: PaginatorResponse = response.data;
             
@@ -232,9 +237,15 @@ const FinderEquipmentView = (props: any) => {
                 }
                 notResultFailback("No se encontraron registros en el sistema");
                 return
+            } else if(status === 401) {
+                handleBack()
+                notResultFailback("No tienes autorización para consultar el recurso");
+                return
             }
             notResultFailback("No se pudieron obtener los registros, verifique su información");
         }).catch((err: any) => {
+            console.log(err);
+            
             notResultFailback("Ocurrio un error al consultar la información, intentelo más tarde.");
         })
         return
@@ -325,6 +336,75 @@ const FinderEquipmentView = (props: any) => {
         );
     }
 
+    const deleteRow = (data: any) => {
+        setWaitMessage('Eliminando equipo del sistema')
+        setWait(true)
+
+        setTimeout(() => {
+            const config = {
+                validateStatus: () => true
+            }
+    
+            instance.delete(`/rows/${data.codebar}`, config).then((response: any) => {
+                const { status } = response; 
+                if (status === 200) {
+                    Alert.alert( 'Listo!', "Equipo borrado con exito");
+                    searchRows()
+                    return
+                } else if(status === 401) {
+                    handleBack()
+                    notResultFailback("No tienes autorización para eliminar el recurso");
+                    return
+                }
+                Alert.alert( 'Aviso!', "No se logro realizar la operación");
+            }).catch((err: any) => {
+                notResultFailback("Ocurrio un error al procesar tu solicitud, intentelo más tarde.");
+            })
+            setWait(false)
+        }, 150);
+        return
+    }
+
+    const handleDeleteRow = (data: any) => {
+        sound.notification();
+            Alert.alert(
+                'Confirmación!',
+                '¿Esta seguro de borrar el equipo del sistema?',
+                [
+                    {
+                        text: 'Borrarlo', onPress: () => {
+                            Alert.alert(
+                                'Aviso!',
+                                '¿Seguro que quieres continuar con el borrado?, recuerda que esta acción no se puede revertir',
+                                [
+                                    {
+                                        text: 'Continuar', onPress: () => {
+                                            sound.touch();
+                                            deleteRow(data)
+                                        }
+                                    },
+                                    {
+                                        text: 'Cancelar',
+                                        onPress: () => {
+                                            sound.touch()
+                                        },
+                                        style: 'cancel',
+                                    },
+                                ]
+                            )
+                        }
+                    },
+                    {
+                        text: 'Cancelar',
+                        onPress: () => {
+                            sound.touch()
+                        },
+                        style: 'cancel',
+                    },
+                ]
+            )
+    }
+
     const renderItem = (data: any) => {
         
         let status: any = (data.item.status+'').toLowerCase();
@@ -375,31 +455,53 @@ const FinderEquipmentView = (props: any) => {
         </TouchableHighlight>
     };
 
-    const renderHiddenItem = (data: any, rowMap: any) => (
-        <View style={styles.rowBack}>
-            <TouchableOpacity
-                style={[{justifyContent: "center", alignItems: "center"}]}
-                onPress={() => {closeRow(rowMap, data.item.key); handleCloneRow(data.item)}}
-            >
-                <Ionicons name="copy" size={24} style={[colors.dark]} />
-                <Text style={colors.black}>Clonar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={[styles.backRightBtn, styles.backRightBtnLeft]}
-                onPress={() => closeRow(rowMap, data.item.key)}
-            >
-                <Ionicons name="close" size={24} style={[colors.dark]} />
-                <Text style={[colors.dark, fontStyles.nunitoBold, textStyles.xs]}>Cerrar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={[styles.backRightBtn, styles.backRightBtnRight]}
-                onPress={() => {closeRow(rowMap, data.item.key); gotoInformation(data.item)}}
-            >
-                <Ionicons name="eye" size={24} style={[colors.dark]} />
-                <Text style={[colors.dark, fontStyles.nunitoBold, textStyles.xs]}>Ver</Text>
-            </TouchableOpacity>
-        </View>
-    );
+    const renderHiddenItem = (data: any, rowMap: any) => {
+        
+        if(role === 'viewer'){
+            return null
+        }
+        return (
+            <View style={styles.rowBack}>
+                {
+                    role === 'admin' && <TouchableOpacity
+                        style={[{justifyContent: "center", alignItems: "center"}]}
+                        onPress={() => {closeRow(rowMap, data.item.key); handleCloneRow(data.item)}}
+                    >
+                        <Ionicons name="copy" size={24} style={[colors.dark]} />
+                        <Text style={colors.black}>Clonar</Text>
+                    </TouchableOpacity>
+                }
+
+                {
+                    role === 'admin' ? <TouchableOpacity
+                        style={[styles.backRightBtn, styles.backRightBtnLeft]}
+                        
+                        onPress={() => {closeRow(rowMap, data.item.key); handleDeleteRow(data.item)}}
+                    >
+                        <Ionicons name="trash" size={24} style={[colors.red]} />
+                        <Text style={colors.red}>Borrar</Text>
+                    </TouchableOpacity>
+                    :
+                    <TouchableOpacity
+                        style={[styles.backRightBtn, styles.backRightBtnLeft]}
+                        onPress={() => {closeRow(rowMap, data.item.key); gotoInformation(data.item)}}
+                    >
+                        <Ionicons name="eye" size={24} style={[colors.dark]} />
+                        <Text style={[colors.dark, fontStyles.nunitoBold, textStyles.xs]}>Ver</Text>
+                    </TouchableOpacity>
+                }
+
+                <TouchableOpacity
+                    style={[styles.backRightBtn, {justifyContent: "center", alignItems: "center", right: 0,}]}
+                    onPress={() => closeRow(rowMap, data.item.key)}
+                >
+                    <Ionicons name="close" size={24} style={[colors.dark]} />
+                    <Text style={[colors.dark, fontStyles.nunitoBold, textStyles.xs]}>Cerrar</Text>
+                </TouchableOpacity> 
+                
+            </View>
+        )
+    };
 
     return <View style={[styles.container]}>
         {header}
@@ -532,8 +634,8 @@ const FinderEquipmentView = (props: any) => {
                             data={rows}
                             renderItem={renderItem}
                             renderHiddenItem={renderHiddenItem}
-                            leftOpenValue={75}
-                            rightOpenValue={-150}
+                            leftOpenValue={auth.data?.role === 'viewer' ? 0 : 75}
+                            rightOpenValue={auth.data?.role === 'viewer' ? 0 : -150}
                             previewRowKey={'0'}
                             previewOpenValue={-40}
                             previewOpenDelay={3000}
@@ -593,7 +695,7 @@ const styles = StyleSheet.create({
         right: 75,
     },
     backRightBtnRight: {
-        right: 0,
+        right: 10,
     },
     trash: {
         height: 25,

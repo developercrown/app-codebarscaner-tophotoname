@@ -12,6 +12,7 @@ import InternalHeader from "../../components/InternalHeader";
 import { useFocusEffect } from "@react-navigation/native";
 import ConfigContext from "../../context/ConfigProvider";
 import useAxios from "../../hooks/useAxios";
+import AuthContext from "../../context/AuthProvider";
 
 const ItemRight = (props: any) => {
     const {background, label, value} = props;
@@ -39,8 +40,11 @@ const ItemRight = (props: any) => {
 const EquipmentInformationView = (props: any) => {
     const { navigation, route } = props;
     const { code } = route.params;
+    const { auth, setAuth }: any = useContext(AuthContext);
     const { config } : any = useContext(ConfigContext);
-    const {instance} = useAxios(config.servers.app)
+    const {instance} = useAxios(config.servers.app);
+
+    const role = auth.data?.role;
     
     useHeaderbar({ hide: true, navigation });
     const [errorImage, setErrorImage] = useState<boolean>(false);
@@ -121,6 +125,9 @@ const EquipmentInformationView = (props: any) => {
     }
 
     const handleReplacePicture = () => {
+        if(role === 'viewer'){
+            return
+        }
         sound.echo()
         Alert.alert('Confirmación!', '¿Deseas reemplazar la fotografía del equipo por una nueva?', [
             {
@@ -144,6 +151,9 @@ const EquipmentInformationView = (props: any) => {
 
     const handleErrorImage = (props: any) => {
         setErrorImage(true)
+        if(role === 'viewer'){
+            return
+        }
         Alert.alert('Atención!', 'No se pudo descargar la imagen del equipo, ¿Deseas verificar si existe en el sistema?', [
             {
                 text: 'Verificar', onPress: handleVerifyImage
@@ -164,12 +174,18 @@ const EquipmentInformationView = (props: any) => {
         setRefreshing(true);
         setRefreshingMessage('Restaurando estado de revisión...');
         const uri = `/rows/restorereview/`+code;
-        instance.post(uri).then(({ status, data }) => {
+        const config = {
+            validateStatus: () => true
+        }
+        instance.post(uri, {}, config).then(({ status, data }) => {
             if (status === 200) {
                 setData(data.data);
+                alert("Restauración completada")
+                onRefresh()
+                return
             }
-            alert("Restauración completada")
-            onRefresh()
+            alert("No se pudo procesar la restauración")
+            setRefreshing(false);
         }).catch(err => {
             sound.error()
             alert("No se pudo completar la restauración del estado de revisión, verifique la información")
@@ -178,6 +194,9 @@ const EquipmentInformationView = (props: any) => {
     }
 
     const handleResetReviewState = (props: any) => {
+        if(role === 'viewer'){
+            return
+        }
         sound.echo()
         Alert.alert('Atención!', '¿Deseas restaurar el estado de revisión del equipo?', [
             {
@@ -327,7 +346,7 @@ const EquipmentInformationView = (props: any) => {
                                                 sound.echo()
                                                 setShowImage(true)
                                             }}
-                                            delayLongPress={2000}
+                                            delayLongPress={1000}
                                             onLongPress={handleReplacePicture}
                                         >
                                             <Image
@@ -378,7 +397,7 @@ const EquipmentInformationView = (props: any) => {
                                 paddingHorizontal: 20
                             }}>
                                 <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-                                    <Pressable delayLongPress={4000} onLongPress={handleResetReviewState}>
+                                    <Pressable delayLongPress={1000} onLongPress={handleResetReviewState}>
                                         <Badge background="green" color="white" size="md" style={{paddingHorizontal: 20}} value="Equipo revisado"/>
                                     </Pressable >
                                 </View>
@@ -391,7 +410,7 @@ const EquipmentInformationView = (props: any) => {
                                 paddingHorizontal: 20
                             }}>
                                 <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-                                    <Badge background="red" color="white" size="md" style={{paddingHorizontal: 20, paddingVertical: 6}} onPress={handleGotoReview} value="Sin revisión" />
+                                    <Badge background="red" color="white" size="md" style={{paddingHorizontal: 20, paddingVertical: 6}} onPress={role !== 'viewer' && handleGotoReview} value="Sin revisión" />
                                 </View>
                             </View>
                         }

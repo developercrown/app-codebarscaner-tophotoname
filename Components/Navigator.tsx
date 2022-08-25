@@ -20,7 +20,8 @@ const Navigator = (props: any) => {
     const [current, setCurrent] = useState<any>("");
     const [visible, setVisible] = useState<boolean>(true);
     const { auth } : any = useContext(AuthContext);
-    const role = auth.data.role;
+
+    const role = auth?.data?.role;
 
     const handleNavigate = (target: string) => {
         sound.drop();
@@ -59,7 +60,12 @@ const Navigator = (props: any) => {
             icon: "cog",
             path: "Configuration",
             visibilityRules:  ["admin", "support", "viewer"]
-        }
+        },
+        // { //TODO: Users Module
+        //     icon: "body",
+        //     path: "Users",
+        //     visibilityRules:  ["admin"]
+        // }
     ]
 
     const isAvailable = (item: any): boolean => {
