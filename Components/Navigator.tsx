@@ -56,16 +56,16 @@ const Navigator = (props: any) => {
             path: "ReviewInventory",
             visibilityRules:  ["admin", "support"]
         },
+        { //TODO: Users Module
+            icon: "body",
+            path: "Users",
+            visibilityRules:  ["admin"]
+        },
         {
             icon: "cog",
             path: "Configuration",
             visibilityRules:  ["admin", "support", "viewer"]
-        },
-        // { //TODO: Users Module
-        //     icon: "body",
-        //     path: "Users",
-        //     visibilityRules:  ["admin"]
-        // }
+        }
     ]
 
     const isAvailable = (item: any): boolean => {

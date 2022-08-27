@@ -39,6 +39,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ConfigProvider } from './context/ConfigProvider';
 import { AuthProvider } from './context/AuthProvider';
 import SearchView from './views/modules/SearchView';
+import UsersView from './views/modules/UsersView';
 
 export default function App() {
   const netInfo = useNetInfo();
@@ -114,6 +115,7 @@ export default function App() {
               <Stack.Navigator screenOptions={options}>
                 <Stack.Screen name="Login" component={LoginView}/>
                 <Stack.Screen name="Search" component={SearchView}/>
+                <Stack.Screen name="Users" component={UsersView}/>
                 <Stack.Screen name="Configuration" component={ConfigurationView} options={{ title: 'Configuracion General'  }}/>
                 <Stack.Screen name="Dashboard" component={DashboardView} options={{ title: 'Bienvenido' }}/>
               </Stack.Navigator>
