@@ -244,8 +244,6 @@ const FinderEquipmentView = (props: any) => {
             }
             notResultFailback("No se pudieron obtener los registros, verifique su información");
         }).catch((err: any) => {
-            console.log(err);
-            
             notResultFailback("Ocurrio un error al consultar la información, intentelo más tarde.");
         })
         return

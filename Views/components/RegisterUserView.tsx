@@ -11,7 +11,6 @@ import useAxios from "../../hooks/useAxios";
 import useHeaderbar from "../../hooks/useHeaderbar";
 import useSound from "../../hooks/useSound";
 import Ionicons from '@expo/vector-icons/Ionicons';
-import PaginatorResponse from "../../models/PaginatorResponse";
 import Constants from 'expo-constants';
 import ImagenComponent from "../../components/ImagenComponent";
 import FullScreenSelectorComponent from "../../components/FullScreenSelectorComponent";
@@ -40,11 +39,11 @@ const availableFilters = [
     }
 ]
 
-const UsersSearchView = (props: any) => {
+const RegisterUserView = (props: any) => {
     const { navigation } = props;
     const { config }: any = useContext(ConfigContext);
     const { auth }: any = useContext(AuthContext);
-    const { instance } = useAxios(config.servers.app);
+    const { instance } = useAxios(config.servers.auth);
     
     const windowHeight = Dimensions.get('window').height;
     const sound = useSound();
@@ -54,8 +53,6 @@ const UsersSearchView = (props: any) => {
     const [waitMessage, setWaitMessage] = useState<string>("");
     const [viewSelectRole, setViewSelectRole] = useState<boolean>(false);
     const [currentUserSelected, setCurrentUserSelected] = useState<any>(null);
-
-    const [inputPlaceholder, setInputPlaceholder] = useState<string>('');
 
     const [rows, setRows] = useState<any>([]);
 
@@ -76,7 +73,77 @@ const UsersSearchView = (props: any) => {
 
 
     useHeaderbar({ hide: true, navigation });
-    
+
+    const refuseStore = (status: number) => {
+        switch(status){
+            case 402:
+                alert("El usuario ya existe en el sistema")
+                return
+            case 403:
+                alert("No se pudo realizar el registro del usuario, verifique su información")
+                return
+            default:
+                alert("No se pudo realizar el registro del usuario, intentelo mas tarde")
+                return
+        }
+    }
+
+    const storeUser = (identifier: number, role: string, label: string) => {
+        const payload = {
+            identifier,
+            role,
+            label
+        }
+        const configuration = {
+            baseURL: config.servers.app,
+            validateStatus: () => true,
+            headers: {
+                origin: "https://inventorytool.upn164.edu.mx"
+            }
+        }
+        instance.post('/users', payload, configuration).then((response: any) => {
+            const { data, status } = response
+            if(status===200){
+                Alert.alert('Exito!', `Se ha registrado correctamente el usuario en el sistema`, [
+                    {
+                        text: 'Continuar',
+                        onPress: () => {
+                            navigation.goBack();
+                        }
+                    },
+                ]);
+                return
+            }
+            refuseStore(status)
+        }).catch((err: any) => {
+            refuseStore(0)
+        });
+        
+    }
+
+    const handleRoleSelect = (results: any) => {
+        sound.drop();
+        disableAllFullscreenElements();
+        const role = results.role;
+        Alert.alert('Confirmación', `¿Estas seguro de asignar el rol de "${results.label}" al usuario: ${currentUserSelected.firstname} ${currentUserSelected.lastname}?, esta acción no se puede revertir`, [
+            {
+                text: 'Cancelar',
+                onPress: () => null,
+                style: 'cancel',
+            },
+            {
+                text: 'Continuar',
+                onPress: () => {
+                    storeUser(currentUserSelected.id, role, `${currentUserSelected.firstname} ${currentUserSelected.lastname} ${currentUserSelected.surname}`)
+                }
+            },
+        ]);
+    }
+
+    const disableAllFullscreenElements = () => {
+        setViewSelectRole(false)
+    }
+
     const notResultFailback = (message: string) => {
         Alert.alert( 'Atención!', message);     
         setRows([])
@@ -95,7 +162,6 @@ const UsersSearchView = (props: any) => {
         const output = sourceRows.map((row, key) => {
             return {
                 ...row,
-                identifier: row.key,
                 key,
             }
         })
@@ -126,28 +192,30 @@ const UsersSearchView = (props: any) => {
             validateStatus: () => true
         }
 
-        const query = (search!== '' && search.length > 1) ? `&search=${search}` : '';
-        const path = `/users?page=${page}${query}`;
+        const query = (search!== '' && search.length > 1) ? `&filter[conditional]=or&filter[username]=${search}&filter[firstname]=${search}&filter[lastname]=${search}&filter[surname]=${search}&filter[email]=${search}&filter[enrollment]=${search}&filter[dni]=${search}` : '';
+        const path = `/users?page[number]=${page}&page[size]=10${query}`;
         
         instance.get(path, config).then((response: any) => {
             const { status } = response;
-            const data: PaginatorResponse = response.data;
+            const data: any = response.data;
             
             if (status === 200) {
                 let results = data.data;
+                const paginationMeta = data.meta.page;
                 const paginatorConfig = {
-                    currentPage: data.current_page,
-                    lastPage: data.last_page,
-                    itemsPerPage: data.per_page,
-                    indexFrom: data.from,
-                    indexTo: data.to,
-                    totalItems: data.total
+                    currentPage: paginationMeta["current-page"],
+                    lastPage: paginationMeta["last-page"],
+                    itemsPerPage: paginationMeta["per-page"],
+                    indexFrom: paginationMeta.from,
+                    indexTo: paginationMeta.to,
+                    totalItems: paginationMeta.total
                 }
+                
                 if (results.length >= 1) {                    
                     setPageProps(paginatorConfig);
                     
                     if(page === 1){
-                        results = addKeys(results)                        
+                        results = addKeys(results)
                         setRows(results)
                     } else if(page >= 2){
                         let newData = [
@@ -164,11 +232,13 @@ const UsersSearchView = (props: any) => {
                 return
             } else if(status === 401) {
                 handleBack()
-                notResultFailback("No tienes autorización para consultar el recurso");
+                notResultFailback("No tienes autorización para consultar los usuarios");
                 return
             }
             notResultFailback("No se pudieron obtener los registros, verifique su información");
         }).catch((err: any) => {
+            console.log(err);
+            
             notResultFailback("Ocurrio un error al consultar la información, intentelo más tarde.");
         })
         return
@@ -186,7 +256,9 @@ const UsersSearchView = (props: any) => {
                 const rootServer = (config.servers.app + '').split('/api/')
                 if (rootServer && rootServer.length > 0) {
                     setServerPath(rootServer[0])
-                    searchRows()
+                    if(!rows || rows.length === 0) {
+                        searchRows()
+                    }
                 }
             }
             return () => {
@@ -215,189 +287,33 @@ const UsersSearchView = (props: any) => {
         }
     })
 
-    const newUser = () => {
-        sound.drop()
-        navigation.navigate(
-            "RegisterUser"
-        );
-    }
-
     const header = <>
         <StatusBar barStyle="light-content" backgroundColor='rgba(10, 10, 10, 1)' />
         {
-            <InternalHeader title={"Listado de usuarios"} leftIcon="chevron-back" leftAction={handleBack} rightIcon="person-add" rightAction={newUser} style={{ backgroundColor: 'rgba(0, 0, 0, .5)' }} />
+            <InternalHeader
+                title={"Usuarios en el ecosistema"}
+                leftIcon="chevron-back"
+                leftAction={handleBack}
+                rightIcon="refresh-circle-outline"
+                rightAction={searchRows}
+                style={{ backgroundColor: 'rgba(0, 0, 0, .5)' }}
+                />
         }
     </>
 
-    const closeRow = (rowMap: any, rowKey: any) => {
-        if (rowMap[rowKey]) {
-            rowMap[rowKey].closeRow();
-        }
-    };
-
-    const handleEditRow = (data: any) => {
-        sound.drop()
-        if(auth.data.key === data.identifier){
-            Alert.alert(
-                'Denegado!',
-                'No puedes realizar operaciones a tu usuario',
-                [
-                    {
-                        text: 'Entendido'
-                    }
-                ]
-            )
-            return
-        }
+    const registerOnSystem = (data: any) => {
         setCurrentUserSelected(data)
         setViewSelectRole(true)
     }
 
-    const deleteRow = (data: any) => {
-        setWaitMessage('Eliminando usuario del sistema')
-        setWait(true)
-
-        setTimeout(() => {
-            const config = {
-                validateStatus: () => true
-            }
-            instance.delete(`/users/${data.identifier}`, config).then((response: any) => {
-                const { data, status } = response;                
-                if (status === 200) {
-                    Alert.alert( 'Listo!', "Usuario borrado con exito");
-                    searchRows()
-                    return
-                } else if(status === 401) {
-                    handleBack()
-                    notResultFailback("No tienes autorización para eliminar el usuario");
-                    return
-                }
-                Alert.alert( 'Aviso!', "No se pudo realizar la operación");
-            }).catch((err: any) => {
-                notResultFailback("Ocurrio un error al procesar tu solicitud, intentelo más tarde.");
-            })
-            setWait(false)
-        }, 150);
-        return
-    }
-
-    const handleDeleteRow = (data: any) => {
-        sound.notification();
-        if(auth.data.key === data.identifier){
-            Alert.alert(
-                'Denegado!',
-                'No puedes realizar operaciones a tu usuario',
-                [
-                    {
-                        text: 'Entendido'
-                    }
-                ]
-            )
-            return
-        }
-        
-        Alert.alert(
-            'Confirmación!',
-            '¿Esta seguro de eliminar el usuario del sistema?',
-            [
-                {
-                    text: 'Borrarlo', onPress: () => {
-                        Alert.alert(
-                            'Aviso!',
-                            '¿Seguro que quieres continuar con el proceso de borrado?, recuerda que esta acción no se puede revertir',
-                            [
-                                {
-                                    text: 'Continuar', onPress: () => {
-                                        sound.touch();
-                                        deleteRow(data)
-                                    }
-                                },
-                                {
-                                    text: 'Cancelar',
-                                    onPress: () => {
-                                        sound.touch()
-                                    },
-                                    style: 'cancel',
-                                },
-                            ]
-                        )
-                    }
-                },
-                {
-                    text: 'Cancelar',
-                    onPress: () => {
-                        sound.touch()
-                    },
-                    style: 'cancel',
-                },
-            ]
-        )
-    }
-
-    const disableAllFullscreenElements = () => {
-        setViewSelectRole(false)
-    }
-
-    const updateUserRole = (id: number, role: any) => {
-        const config = {
-            validateStatus: () => true
-        }
-        instance.put(`/users/role/${id}`, { role }, config).then((response: any) => {
-            const { status } = response; 
-            if (status === 200) {
-                Alert.alert( 'Listo!', "Rol reasignado con exito");
-                searchRows()
-                return
-            } else if(status === 401) {
-                handleBack()
-                notResultFailback("No tienes autorización para actualizar al usuario");
-                return
-            }
-            Alert.alert( 'Aviso!', "No se pudo realizar la operación");
-        }).catch((err: any) => {
-            notResultFailback("Ocurrio un error al procesar tu solicitud, intentelo más tarde.");
-        })
-    }
-
-    const handleRoleSelect = (results: any) => {
-        sound.drop();
-        disableAllFullscreenElements();
-        const role = results.role;
-        Alert.alert('Confirmación', `¿Estas seguro de asignar el rol de "${results.label}" al usuario: ${currentUserSelected.firstname} ${currentUserSelected.lastname}?, esta acción no se puede revertir`, [
-            {
-                text: 'Cancelar',
-                onPress: () => null,
-                style: 'cancel',
-            },
-            {
-                text: 'Continuar',
-                onPress: () => {
-                    updateUserRole(currentUserSelected.identifier, role)
-                }
-            },
-        ]);
-    }
-
-    const roleTraslator = (role: string) => {
-        switch (role.toLowerCase()) {
-            case 'viewer':
-                return 'Consultor'
-            case 'support':
-                return "Capturador"
-            case 'admin':
-                return 'Administrador'
-            default:
-                return 'No identificado'
-        }
-    }
-
     const renderItem = (data: any) => {
-        
-        let status: any = (data.item.status+'').toLowerCase();
-        status = (status == 'activo' || status == 'bueno') ? true : false;
-        
+        let item = data.item
+        let row = {
+            id: item.id,
+            ...item.attributes
+        }
         return <TouchableHighlight
-            // onPress={() => gotoInformation(data.item)}
+            onPress={() => registerOnSystem(row)}
             style={styles.rowFront}
             underlayColor={'#AAA'}
         >
@@ -411,7 +327,7 @@ const UsersSearchView = (props: any) => {
                     >
                         <ImagenComponent
                             key={data.item.codebar}
-                            uri={`https://api-shield.upn164.edu.mx/pictures/thumbs/${data.item.picture}`}
+                            uri={`https://api-shield.upn164.edu.mx/pictures/thumbs/${row.profile_picture_name}`}
                             style={{
                                 width: 80,
                                 height: 80,
@@ -423,48 +339,12 @@ const UsersSearchView = (props: any) => {
                     </TouchableOpacity>
                 </View>
                 <View style={{width: '70%'}}>
-                    <Text style={[fontStyles.nunito, fontStyles.nunitoBlack, {}]}>{data.item.username}</Text>
-                    <Text style={[fontStyles.nunito,]}>{`${data.item.firstname} ${data.item.lastname} ${data.item.surname}`}</Text>
-                    <Text style={[fontStyles.nunito,]}>{`${roleTraslator(data.item.role)}`}</Text>
+                    <Text style={[fontStyles.nunito, fontStyles.nunitoBlack, {}]}>{row.username}</Text>
+                    <Text style={[fontStyles.nunito, fontStyles.nunitoBlack, {}]}>{row.email}</Text>
+                    <Text style={[fontStyles.nunito,]}>{`${row.firstname} ${row.lastname} ${row.surname}`}</Text>
                 </View>
             </View>
         </TouchableHighlight>
-    };
-
-    const renderHiddenItem = (data: any, rowMap: any) => {
-        return (
-            <View style={styles.rowBack}>
-                {
-                    <TouchableOpacity
-                        style={[{justifyContent: "center", alignItems: "center"}]}
-                        onPress={() => {closeRow(rowMap, data.item.key); handleEditRow(data.item)}}
-                    >
-                        <Ionicons name="briefcase" size={24} style={[colors.dark]} />
-                        <Text style={[colors.black, textStyles.pico]}>Editar rol</Text>
-                    </TouchableOpacity>
-                }
-
-                {
-                    <TouchableOpacity
-                        style={[styles.backRightBtn, styles.backRightBtnLeft]}
-                        
-                        onPress={() => {closeRow(rowMap, data.item.key); handleDeleteRow(data.item)}}
-                    >
-                        <Ionicons name="trash" size={24} style={[colors.red]} />
-                        <Text style={colors.red}>Eliminar</Text>
-                    </TouchableOpacity>
-                }
-
-                <TouchableOpacity
-                    style={[styles.backRightBtn, {justifyContent: "center", alignItems: "center", right: 0,}]}
-                    onPress={() => closeRow(rowMap, data.item.key)}
-                >
-                    <Ionicons name="close" size={24} style={[colors.dark]} />
-                    <Text style={[colors.dark, fontStyles.nunitoBold, textStyles.xs]}>Cerrar</Text>
-                </TouchableOpacity> 
-                
-            </View>
-        )
     };
 
     return <View style={[styles.container]}>
@@ -487,7 +367,7 @@ const UsersSearchView = (props: any) => {
             <FullScreenSelectorComponent
                 icon="filter"
                 data={availableFilters}
-                title={"Selecciona el rol a asignar"}
+                title={"Selecciona el rol a asignar al usuario"}
                 onExit={() => { setViewSelectRole(false); sound.back(); }}
                 onSelect={handleRoleSelect}
                 />
@@ -509,13 +389,16 @@ const UsersSearchView = (props: any) => {
                     icon="search"
                     styleInput={[{ padding: 0, backgroundColor: 'rgba(255, 255, 255, 0.8)' }]}
                     styleContainer={[{ width: '90%', paddingHorizontal: 8}]}
-                    placeholder={"ingresa tu dato de busqueda"}
+                    placeholder={"Ingresa la información de consulta"}
                     ref={searchBoxRef}
                     onChange={setSearch}
                     actionLeftIcon={() => searchRows()}
                     onSubmit={() => searchRows()}
                     value={search}
                 />
+                <TouchableOpacity style={{right: 4}}  onPress={() => {setSearch(''); sound.touch();}}>
+                    <Ionicons name={"trash-outline"} size={24} style={[colors.dark, {marginRight: 10}]} />
+                </TouchableOpacity>
             </View>
             <View style={{
                 width: "100%",
@@ -556,12 +439,6 @@ const UsersSearchView = (props: any) => {
                             ref={listRef}
                             data={rows}
                             renderItem={renderItem}
-                            renderHiddenItem={renderHiddenItem}
-                            leftOpenValue={auth.data?.role === 'viewer' ? 0 : 75}
-                            rightOpenValue={auth.data?.role === 'viewer' ? 0 : -150}
-                            previewRowKey={'0'}
-                            previewOpenValue={-40}
-                            previewOpenDelay={3000}
                             onEndReached={handleEndReached}
                         />
                         :
@@ -626,4 +503,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default UsersSearchView;
+export default RegisterUserView;
