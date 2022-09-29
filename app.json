@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Inventory Reviewer Tool 1.7",
+    "name": "Inventory Reviewer Tool 1.8",
     "slug": "devcrown-apps",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,7 +20,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.devcrown.inventoryreviewertool",
-      "buildNumber": "1.0.0"
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos.",
+        "NSPhotoLibraryAddUsageDescription": "Allow $(PRODUCT_NAME) to save photos."
+      }
     },
     "android": {
       "package": "com.devcrown.inventoryreviewertool",
@@ -33,7 +37,10 @@
         "CAMERA",
         "VIBRATE",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_MEDIA_LOCATION"
       ]
     },
     "web": {
@@ -48,6 +55,11 @@
           "isAccessMediaLocationEnabled": true
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a971931f-5ce9-4f21-8d67-ea52aaddfa6f"
+      }
+    }
   }
 }

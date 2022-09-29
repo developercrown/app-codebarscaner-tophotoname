@@ -60,7 +60,12 @@ const EquipmentInformationView = (props: any) => {
     const getInformation = async (code: any) => {
         setErrorImage(false)
         setWait(true);
-        instance.get(`/rows/${code}`).then(({ status, data }: any) => {
+        const config = {
+            headers: {
+                origin: "https://inventorytool.upn164.edu.mx"
+            }
+        }
+        instance.get(`/rows/${code}`, config).then(({ status, data }: any) => {
             if (status === 200) {
                 setData(data.data);
             }
@@ -258,6 +263,16 @@ const EquipmentInformationView = (props: any) => {
         
     }, []);
 
+    const handleClone = () => {
+        sound.drop()
+        navigation.replace(
+            "RegisterEquipment",
+            {
+                data
+            }
+        );
+    }
+
     const currentStatus = (data?.status+"").toLowerCase();
 
     return <View style={styles.container}>
@@ -291,7 +306,7 @@ const EquipmentInformationView = (props: any) => {
             </Modal>
         }
 
-        <InternalHeader title="Información del equipo" leftIcon="chevron-back" leftAction={handleBack} rightAction={handleBack} style={{backgroundColor: 'rgba(0, 0, 0, .5)'}}/>
+        <InternalHeader title="Información del equipo" leftIcon="chevron-back" leftAction={handleBack} rightAction={(role === "admin" || role === "support") && handleClone} rightIcon={(role === "admin" || role === "support") && "copy"} rightIconstyle={{backgroundColor: 'rgba(0, 0, 0, .5)'}}/>
         
         {
             data && data != null ? <>
@@ -385,6 +400,7 @@ const EquipmentInformationView = (props: any) => {
                                 <ItemRight background="orange" label='Código' value={data.codebar}/>
                                 <ItemRight background="red" label='Marca' value={data.trademark}/>
                                 <ItemRight background="blue" label='Modelo' value={data.model}/>
+                                
                             </View>
                             
                         </View>
@@ -443,8 +459,8 @@ const EquipmentInformationView = (props: any) => {
                             }}>
                                 <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
                                     <Text style={[colors.black, textStyles.bold, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Datos del resguardo:</Text>
-                                    <Text style={[colors.black, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>Departamento: {data.safeguard_apartment}</Text>
-                                    <Text style={[colors.black, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>Resguardante: {data.safeguard_person}</Text>
+                                    <Text style={[colors.blue, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center', textTransform: "uppercase"}]}>Departamento: {data.safeguard_apartment}</Text>
+                                    <Text style={[colors.brown, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center', textTransform: "uppercase"}]}>Resguardante: {data.safeguard_person}</Text>
                                 </View>
                             </View>
                             <View style={{
@@ -466,9 +482,10 @@ const EquipmentInformationView = (props: any) => {
                             }}>
                                 <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
                                     <Text style={[colors.black, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Notas adicionales:</Text>
-                                    <Text style={[colors.black, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>{data.notes}</Text>
+                                    <Text style={[colors.blue, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>{data.notes}</Text>
                                 </View>
                             </View>
+
                             <View style={{
                                 width: '100%',
                                 flexDirection: 'row',
@@ -476,10 +493,12 @@ const EquipmentInformationView = (props: any) => {
                                 paddingHorizontal: 20
                             }}>
                                 <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-                                    <Text style={[colors.black, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Fecha de registro:</Text>
-                                    <Text style={[colors.black, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>{data.created_at}</Text>
+                                    <Text style={[colors.black, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Registrado por:</Text>
+                                    <Text style={[colors.blue, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center',textTransform: "uppercase"}]}>{data.creator_name}</Text>
+                                    <Text style={[colors.blue, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>{data.created_at}</Text>
                                 </View>
                             </View>
+
                             <View style={{
                                 width: '100%',
                                 flexDirection: 'row',
@@ -487,8 +506,9 @@ const EquipmentInformationView = (props: any) => {
                                 paddingHorizontal: 20
                             }}>
                                 <View style={{alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-                                    <Text style={[colors.black, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Fecha de actualización:</Text>
-                                    <Text style={[colors.black, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>{data.updated_at}</Text>
+                                    <Text style={[colors.black, textStyles.md, {marginVertical: 2, marginBottom: 4}]}>Actualizado por:</Text>
+                                    <Text style={[colors.blue, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center', textTransform: "uppercase"}]}>{data.updater_name}</Text>
+                                    <Text style={[colors.blue, textStyles.xs, textStyles.bold, {marginVertical: 2, textAlign: 'center'}]}>{data.updated_at}</Text>
                                 </View>
                             </View>
                     </View>
